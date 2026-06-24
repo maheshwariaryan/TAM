@@ -12,7 +12,6 @@ Mock: returns templated questions per flag category.
 """
 
 import asyncio
-import json
 import logging
 from typing import Any
 

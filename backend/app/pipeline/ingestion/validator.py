@@ -41,6 +41,7 @@ def validate(lines: list[RawGLLine], deal_id: str) -> ValidationReport:
             difference=Decimal("0"),
             is_balanced=False,
             periods_checked=0,
+            is_pl_only_export=False,
             warnings=["No GL lines to validate"],
         )
 
@@ -76,13 +77,31 @@ def validate(lines: list[RawGLLine], deal_id: str) -> ValidationReport:
         for line in lines
         if line.account_code and line.account_code[0].isdigit()
     )
-    if unbalanced_periods and not has_bs_lines:
+    has_revenue_lines = any(
+        line.account_code.startswith("4")
+        for line in lines
+        if line.account_code and line.account_code[0].isdigit()
+    )
+    is_pl_only_export = not has_bs_lines
+    # Mixed export: has both P&L activity (revenue accounts) and BS snapshot rows.
+    # The global trial balance will not sum to zero (expected), so we relax that check.
+    is_mixed_export = has_bs_lines and has_revenue_lines
+
+    if unbalanced_periods and is_pl_only_export:
         warnings.append(
             f"Per-period imbalance in {len(unbalanced_periods)} period(s) — "
             "this is expected for P&L-only exports (no balance sheet accounts). "
             "Full trial balance check skipped."
         )
         unbalanced_periods = []
+
+    if is_mixed_export and not is_balanced:
+        warnings.append(
+            "Global trial balance does not sum to zero — this is expected for a mixed "
+            "P&L activity + balance sheet snapshot export. Balance sheet quality is "
+            "verified per-period by the financial builder."
+        )
+        is_balanced = True  # treat as acceptable; BS builder enforces Assets = Liab + Eq
 
     # ── 2. Date coverage check ────────────────────────────────────────────────
     periods = sorted({line.period for line in lines})
@@ -102,8 +121,8 @@ def validate(lines: list[RawGLLine], deal_id: str) -> ValidationReport:
 
     # ── 3. Revenue account heuristic ─────────────────────────────────────────
     revenue_like = [
-        l for l in lines
-        if l.account_code and l.account_code.startswith("4") and l.amount < 0
+        gl for gl in lines
+        if gl.account_code and gl.account_code.startswith("4") and gl.amount < 0
     ]
     if not revenue_like:
         warnings.append(
@@ -135,5 +154,7 @@ def validate(lines: list[RawGLLine], deal_id: str) -> ValidationReport:
         tolerance=BALANCE_TOLERANCE,
         periods_checked=periods_checked,
         unbalanced_periods=unbalanced_periods,
+        is_pl_only_export=is_pl_only_export,
+        is_mixed_export=is_mixed_export,
         warnings=warnings,
     )

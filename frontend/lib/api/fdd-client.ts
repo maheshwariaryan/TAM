@@ -39,6 +39,9 @@ export interface DealStages {
   financial_builder: string;
   qoe_engine: string;
   redflag_detector: string;
+  nwc_analyzer?: string;
+  dcf_engine?: string;
+  net_debt_bridge?: string;
 }
 
 export interface UploadedFile {
@@ -166,3 +169,41 @@ export interface RedFlagReport {
 
 export const getRedFlags = (dealId: string, severity?: string) =>
   get<RedFlagReport>(`/deals/${dealId}/redflags${severity ? `?severity=${severity}` : ""}`);
+
+// ─── Documents ────────────────────────────────────────────────────────────────
+
+export interface DocumentRecord {
+  filename: string;
+  stored_path: string;
+  size_bytes: number;
+  uploaded_at: string | null;
+  document_type: string;
+  parse_status: string;
+  parse_error: string | null;
+  confidence: number;
+}
+
+export interface DocumentInventory {
+  deal_id: string;
+  documents: DocumentRecord[];
+  missing_recommended: string[];
+}
+
+export const getDocumentInventory = (dealId: string) =>
+  get<DocumentInventory>(`/deals/${dealId}/documents`);
+
+// ─── Databook ─────────────────────────────────────────────────────────────────
+
+export async function exportDatabook(dealId: string, filename: string): Promise<void> {
+  const res = await fetch(`${BASE}/deals/${dealId}/databook/export`, { method: "POST" });
+  if (!res.ok) throw new Error(`Databook export failed: ${await res.text()}`);
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  window.URL.revokeObjectURL(url);
+}

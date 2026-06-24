@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/tables/data-table";
@@ -16,6 +16,14 @@ import { useGlobalStore } from "@/lib/store/use-global-store";
 import { X } from "lucide-react";
 
 export default function DocumentsPage() {
+  return (
+    <Suspense fallback={<div className="h-80 animate-pulse rounded-lg bg-muted" />}>
+      <DocumentsPageContent />
+    </Suspense>
+  );
+}
+
+function DocumentsPageContent() {
   const router = useRouter();
   const params = useSearchParams();
   const highlightedFile = params.get("file");

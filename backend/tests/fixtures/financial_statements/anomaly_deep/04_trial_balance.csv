@@ -1,0 +1,123 @@
+As Of Period,Account Code,Account Description,Statement,Debit,Credit,Source
+2022-12,1000,Cash,BS,4019723.37,0.0,Generated BS support schedule
+2022-12,1100,Accounts Receivable,BS,1735427.39,0.0,Generated BS support schedule
+2022-12,1200,Inventory,BS,1291509.04,0.0,Generated BS support schedule
+2022-12,1300,Prepaids,BS,225389.32,0.0,Generated BS support schedule
+2022-12,1500,Net PP&E,BS,5794030.77,0.0,Generated BS support schedule
+2022-12,1600,Intangible Assets,BS,688300.57,0.0,Generated BS support schedule
+2022-12,2000,Accounts Payable,BS,0.0,807851.5,Generated BS support schedule
+2022-12,2100,Accrued Expenses,BS,0.0,176447.39,Generated BS support schedule
+2022-12,2200,Deferred Revenue,BS,0.0,112804.79,Generated BS support schedule
+2022-12,2300,Debt,BS,0.0,7674685.67,Generated BS support schedule
+2022-12,2400,Lease Liabilities,BS,0.0,831600.0,Generated BS support schedule
+2022-12,3000,Common Stock,BS,0.0,100000.0,Generated BS support schedule
+2022-12,3100,APIC,BS,0.0,2500000.0,Generated BS support schedule
+2022-12,3200,Retained Earnings,BS,0.0,1550991.11,Generated BS support schedule
+2022-12,4001,Product Sales - Domestic,P&L,0.0,10504319.81,GL annual activity
+2022-12,4002,Product Sales - Export,P&L,0.0,1435703.47,GL annual activity
+2022-12,4003,Service Revenue,P&L,0.0,537791.4,GL annual activity
+2022-12,4004,Shipping & Handling Income,P&L,0.0,144338.12,GL annual activity
+2022-12,5001,Raw Materials - Steel,P&L,3361053.09,0.0,GL annual activity
+2022-12,5002,Raw Materials - Plastics,P&L,652076.63,0.0,GL annual activity
+2022-12,5003,Direct Labour,P&L,2517753.79,0.0,GL annual activity
+2022-12,5004,Manufacturing Overhead,P&L,1135824.06,0.0,GL annual activity
+2022-12,5005,Freight In,P&L,214909.58,0.0,GL annual activity
+2022-12,6001,Management Salaries,P&L,1435834.75,0.0,GL annual activity
+2022-12,6002,Sales Team Salaries,P&L,786614.19,0.0,GL annual activity
+2022-12,6003,Office Rent,P&L,261507.71,0.0,GL annual activity
+2022-12,6004,Utilities,P&L,101476.52,0.0,GL annual activity
+2022-12,6005,Insurance,P&L,50564.34,0.0,GL annual activity
+2022-12,6006,Marketing & Advertising,P&L,215561.5,0.0,GL annual activity
+2022-12,6007,Professional Fees,P&L,142925.99,0.0,GL annual activity
+2022-12,6008,IT & Software,P&L,77933.01,0.0,GL annual activity
+2022-12,6009,Travel & Entertainment,P&L,59987.79,0.0,GL annual activity
+2022-12,6010,Office Supplies,P&L,21202.29,0.0,GL annual activity
+2022-12,6011,Telephone & Internet,P&L,26526.0,0.0,GL annual activity
+2022-12,6097,Consulting - Acme Holdings LLC (related party),P&L,264000.0,0.0,GL annual activity
+2022-12,7001,Depreciation - Equipment,P&L,335969.23,0.0,GL annual activity
+2022-12,7002,Amortisation - IP,P&L,71699.43,0.0,GL annual activity
+2022-12,8001,Interest Expense,P&L,168440.75,0.0,GL annual activity
+2022-12,8002,Income Tax Provision,P&L,419301.04,0.0,GL annual activity
+2022-12,3999,Current Year Earnings Close,Equity,300991.11,0.0,Balancing close of P&L activity to equity
+2023-12,1000,Cash,BS,5446838.13,0.0,Generated BS support schedule
+2023-12,1100,Accounts Receivable,BS,1900753.69,0.0,Generated BS support schedule
+2023-12,1200,Inventory,BS,1278553.87,0.0,Generated BS support schedule
+2023-12,1300,Prepaids,BS,225845.59,0.0,Generated BS support schedule
+2023-12,1500,Net PP&E,BS,6441074.78,0.0,Generated BS support schedule
+2023-12,1600,Intangible Assets,BS,613737.8,0.0,Generated BS support schedule
+2023-12,2000,Accounts Payable,BS,0.0,883262.0,Generated BS support schedule
+2023-12,2100,Accrued Expenses,BS,0.0,179792.02,Generated BS support schedule
+2023-12,2200,Deferred Revenue,BS,0.0,116434.83,Generated BS support schedule
+2023-12,2300,Debt,BS,0.0,10083085.67,Generated BS support schedule
+2023-12,2400,Lease Liabilities,BS,0.0,583200.0,Generated BS support schedule
+2023-12,3000,Common Stock,BS,0.0,100000.0,Generated BS support schedule
+2023-12,3100,APIC,BS,0.0,2500000.0,Generated BS support schedule
+2023-12,3200,Retained Earnings,BS,0.0,1461029.34,Generated BS support schedule
+2023-12,4001,Product Sales - Domestic,P&L,0.0,10994992.89,GL annual activity
+2023-12,4002,Product Sales - Export,P&L,0.0,1492074.94,GL annual activity
+2023-12,4003,Service Revenue,P&L,0.0,560911.44,GL annual activity
+2023-12,4004,Shipping & Handling Income,P&L,0.0,150149.06,GL annual activity
+2023-12,5001,Raw Materials - Steel,P&L,3463129.99,0.0,GL annual activity
+2023-12,5002,Raw Materials - Plastics,P&L,680682.99,0.0,GL annual activity
+2023-12,5003,Direct Labour,P&L,2621251.36,0.0,GL annual activity
+2023-12,5004,Manufacturing Overhead,P&L,1179328.67,0.0,GL annual activity
+2023-12,5005,Freight In,P&L,224886.8,0.0,GL annual activity
+2023-12,6001,Management Salaries,P&L,1495455.46,0.0,GL annual activity
+2023-12,6002,Sales Team Salaries,P&L,800586.32,0.0,GL annual activity
+2023-12,6003,Office Rent,P&L,275204.14,0.0,GL annual activity
+2023-12,6004,Utilities,P&L,105457.38,0.0,GL annual activity
+2023-12,6005,Insurance,P&L,52266.48,0.0,GL annual activity
+2023-12,6006,Marketing & Advertising,P&L,225616.7,0.0,GL annual activity
+2023-12,6007,Professional Fees,P&L,148364.7,0.0,GL annual activity
+2023-12,6008,IT & Software,P&L,80569.09,0.0,GL annual activity
+2023-12,6009,Travel & Entertainment,P&L,61884.34,0.0,GL annual activity
+2023-12,6010,Office Supplies,P&L,22349.43,0.0,GL annual activity
+2023-12,6011,Telephone & Internet,P&L,27628.01,0.0,GL annual activity
+2023-12,6097,Consulting - Acme Holdings LLC (related party),P&L,264000.0,0.0,GL annual activity
+2023-12,6099,Legal Settlement - Vendor Dispute,P&L,285000.0,0.0,GL annual activity
+2023-12,7001,Depreciation - Equipment,P&L,351461.47,0.0,GL annual activity
+2023-12,7002,Amortisation - IP,P&L,74562.77,0.0,GL annual activity
+2023-12,8001,Interest Expense,P&L,175468.72,0.0,GL annual activity
+2023-12,8002,Income Tax Provision,P&L,432935.28,0.0,GL annual activity
+2023-12,3999,Current Year Earnings Close,Equity,150038.23,0.0,Balancing close of P&L activity to equity
+2024-12,1000,Cash,BS,6920002.44,0.0,Generated BS support schedule
+2024-12,1100,Accounts Receivable,BS,1948898.18,0.0,Generated BS support schedule
+2024-12,1200,Inventory,BS,1394859.11,0.0,Generated BS support schedule
+2024-12,1300,Prepaids,BS,226191.12,0.0,Generated BS support schedule
+2024-12,1500,Net PP&E,BS,7082569.54,0.0,Generated BS support schedule
+2024-12,1600,Intangible Assets,BS,537223.25,0.0,Generated BS support schedule
+2024-12,2000,Accounts Payable,BS,0.0,951327.57,Generated BS support schedule
+2024-12,2100,Accrued Expenses,BS,0.0,182203.02,Generated BS support schedule
+2024-12,2200,Deferred Revenue,BS,0.0,116716.32,Generated BS support schedule
+2024-12,2300,Debt,BS,0.0,12491485.67,Generated BS support schedule
+2024-12,2400,Lease Liabilities,BS,0.0,334800.0,Generated BS support schedule
+2024-12,3000,Common Stock,BS,0.0,100000.0,Generated BS support schedule
+2024-12,3100,APIC,BS,0.0,2500000.0,Generated BS support schedule
+2024-12,3200,Retained Earnings,BS,0.0,1433211.06,Generated BS support schedule
+2024-12,4001,Product Sales - Domestic,P&L,0.0,11211569.91,GL annual activity
+2024-12,4002,Product Sales - Export,P&L,0.0,1534040.45,GL annual activity
+2024-12,4003,Service Revenue,P&L,0.0,570679.46,GL annual activity
+2024-12,4004,Shipping & Handling Income,P&L,0.0,153504.98,GL annual activity
+2024-12,5001,Raw Materials - Steel,P&L,3581921.0,0.0,GL annual activity
+2024-12,5002,Raw Materials - Plastics,P&L,698454.39,0.0,GL annual activity
+2024-12,5003,Direct Labour,P&L,2668586.73,0.0,GL annual activity
+2024-12,5004,Manufacturing Overhead,P&L,1193492.0,0.0,GL annual activity
+2024-12,5005,Freight In,P&L,227552.92,0.0,GL annual activity
+2024-12,6001,Management Salaries,P&L,1535375.45,0.0,GL annual activity
+2024-12,6002,Sales Team Salaries,P&L,825795.56,0.0,GL annual activity
+2024-12,6003,Office Rent,P&L,279023.05,0.0,GL annual activity
+2024-12,6004,Utilities,P&L,107793.8,0.0,GL annual activity
+2024-12,6005,Insurance,P&L,53473.11,0.0,GL annual activity
+2024-12,6006,Marketing & Advertising,P&L,230364.28,0.0,GL annual activity
+2024-12,6007,Professional Fees,P&L,153041.6,0.0,GL annual activity
+2024-12,6008,IT & Software,P&L,82517.34,0.0,GL annual activity
+2024-12,6009,Travel & Entertainment,P&L,63854.47,0.0,GL annual activity
+2024-12,6010,Office Supplies,P&L,22943.26,0.0,GL annual activity
+2024-12,6011,Telephone & Internet,P&L,28096.29,0.0,GL annual activity
+2024-12,6097,Consulting - Acme Holdings LLC (related party),P&L,264000.0,0.0,GL annual activity
+2024-12,6098,M&A Advisory Fees - Project Falcon,P&L,180000.0,0.0,GL annual activity
+2024-12,7001,Depreciation - Equipment,P&L,357789.75,0.0,GL annual activity
+2024-12,7002,Amortisation - IP,P&L,76514.55,0.0,GL annual activity
+2024-12,8001,Interest Expense,P&L,177729.1,0.0,GL annual activity
+2024-12,8002,Income Tax Provision,P&L,449294.43,0.0,GL annual activity
+2024-12,3999,Current Year Earnings Close,Equity,212181.72,123456.78,Balancing close of P&L activity to equity

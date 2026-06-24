@@ -53,7 +53,7 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
 
 function Topbar() {
   const router = useRouter();
-  const { deal, dealId, setActiveDeal } = useGlobalStore();
+  const { dealId, setActiveDeal } = useGlobalStore();
   const [deals, setDeals] = useState<Deal[]>([]);
 
   // Load deals from backend on mount and whenever the page focuses

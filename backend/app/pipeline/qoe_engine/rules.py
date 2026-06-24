@@ -20,7 +20,8 @@ import uuid
 from datetime import date
 from decimal import Decimal
 
-from app.schemas.gl import ChartOfAccountsCategory as CAT, MappedGLLine
+from app.schemas.gl import ChartOfAccountsCategory as CAT
+from app.schemas.gl import MappedGLLine
 from app.schemas.qoe import QoEAdjustment
 
 logger = logging.getLogger(__name__)
@@ -114,7 +115,7 @@ def _rule_full_addback(
 
     adjustments = []
     for (period, desc), group_lines in sorted(groups.items()):
-        total = sum(abs(l.amount) for l in group_lines)
+        total = sum(abs(gl.amount) for gl in group_lines)
         if total == 0:
             continue
 
@@ -128,7 +129,7 @@ def _rule_full_addback(
             reported_amount=total,
             adjustment_amount=total,
             normalized_amount=Decimal("0"),
-            source_gl_line_ids=[l.line_id for l in group_lines],
+            source_gl_line_ids=[gl.line_id for gl in group_lines],
             detection_method="rule",
             rule_triggered=rule_id,
         ))
@@ -156,7 +157,7 @@ def _rule_owner_comp_excess(
 
     adjustments = []
     for period, group_lines in sorted(period_groups.items()):
-        total_comp = sum(abs(l.amount) for l in group_lines)
+        total_comp = sum(abs(gl.amount) for gl in group_lines)
         excess = total_comp - OWNER_COMP_MONTHLY_BENCHMARK
 
         if excess > Decimal("0.01"):
@@ -170,7 +171,7 @@ def _rule_owner_comp_excess(
                 reported_amount=total_comp,
                 adjustment_amount=excess,
                 normalized_amount=OWNER_COMP_MONTHLY_BENCHMARK,
-                source_gl_line_ids=[l.line_id for l in group_lines],
+                source_gl_line_ids=[gl.line_id for gl in group_lines],
                 detection_method="rule",
                 rule_triggered="OWNER_COMP_EXCESS",
             ))

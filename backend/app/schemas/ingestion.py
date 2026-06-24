@@ -20,6 +20,10 @@ class UploadedFileInfo(BaseModel):
     stored_path: str
     size_bytes: int
     uploaded_at: datetime
+    document_type: str | None = None
+    parse_status: str | None = None
+    parse_error: str | None = None
+    confidence: float | None = None
 
 
 class DealResponse(BaseModel):
@@ -47,6 +51,9 @@ ProcessingStage = Literal[
     "financial_builder",
     "qoe_engine",
     "redflag_detector",
+    "nwc_analyzer",
+    "dcf_engine",
+    "net_debt_bridge",
 ]
 
 

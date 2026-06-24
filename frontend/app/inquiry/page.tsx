@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DataTable } from "@/components/tables/data-table";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -11,6 +11,14 @@ import { useApiQuery } from "@/hooks/use-api-query";
 import { DecisionQueueResponseSchema, InquiryResponseSchema } from "@/lib/schemas/types";
 
 export default function InquiryPage() {
+  return (
+    <Suspense fallback={<div className="h-80 animate-pulse rounded-lg bg-muted" />}>
+      <InquiryPageContent />
+    </Suspense>
+  );
+}
+
+function InquiryPageContent() {
   const router = useRouter();
   const params = useSearchParams();
   const { deal, period, basis } = useGlobalStore();

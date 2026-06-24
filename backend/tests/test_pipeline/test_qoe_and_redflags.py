@@ -14,15 +14,13 @@ import asyncio
 from decimal import Decimal
 from pathlib import Path
 
-import pytest
-
+from app.agents.coa_mapper import CoAMapperAgent
 from app.pipeline.financial_builder.orchestrator import _apply_classifications
 from app.pipeline.ingestion.loader import infer_column_map, load_file
 from app.pipeline.ingestion.normalizer import normalise
-from app.pipeline.qoe_engine import rules as qoe_rules, normalizer as qoe_normalizer
+from app.pipeline.qoe_engine import normalizer as qoe_normalizer
+from app.pipeline.qoe_engine import rules as qoe_rules
 from app.pipeline.redflag_detector import rules as rf_rules
-from app.agents.coa_mapper import CoAMapperAgent
-from app.schemas.financials import PnLStatement
 from app.schemas.qoe import QoEAdjustment
 
 FIXTURE_GL = Path(__file__).parent.parent / "fixtures" / "sample_gl.csv"
@@ -35,7 +33,7 @@ def _build_mapped_and_pnl():
     df = load_file(FIXTURE_GL)
     col_map = infer_column_map(df)
     raw = normalise(df, col_map, "sample_gl.csv", DEAL_ID)
-    unique_pairs = list({(l.account_code, l.account_description) for l in raw})
+    unique_pairs = list({(gl.account_code, gl.account_description) for gl in raw})
     agent = CoAMapperAgent()
     cls_map = asyncio.run(agent.map_accounts(unique_pairs))
     mapped = _apply_classifications(raw, cls_map)
@@ -209,8 +207,9 @@ class TestRedFlagRules:
 
 class TestAgentMocks:
     def test_qoe_reviewer_accepts_all_in_mock(self):
-        from app.agents.qoe_reviewer import QoEReviewerAgent
         from datetime import date
+
+        from app.agents.qoe_reviewer import QoEReviewerAgent
 
         candidates = [
             QoEAdjustment(

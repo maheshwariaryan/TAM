@@ -12,7 +12,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query
 
-from app.schemas.gl import RawGLLine, ValidationReport
+from app.schemas.gl import ValidationReport
 from app.storage import file_store
 
 router = APIRouter(tags=["GL Inspection"])

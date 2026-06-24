@@ -12,7 +12,7 @@ from app.pipeline.financial_builder.orchestrator import load_mapped_gl
 from app.pipeline.qoe_engine.orchestrator import load_qoe_report
 from app.pipeline.redflag_detector import rules
 from app.schemas.financials import BalanceSheet, CashFlowStatement, PnLStatement
-from app.schemas.redflags import RedFlag, RedFlagReport, RedFlagSummary
+from app.schemas.redflags import RedFlagReport, RedFlagSummary
 from app.storage import file_store
 
 logger = logging.getLogger(__name__)

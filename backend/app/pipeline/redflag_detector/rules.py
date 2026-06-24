@@ -17,10 +17,11 @@ Rules implemented:
 
 import logging
 import uuid
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 
 from app.schemas.financials import BalanceSheet, CashFlowStatement, PnLStatement
-from app.schemas.gl import ChartOfAccountsCategory as CAT, MappedGLLine
+from app.schemas.gl import ChartOfAccountsCategory as CAT
+from app.schemas.gl import MappedGLLine
 from app.schemas.qoe import QoEReport
 from app.schemas.redflags import RedFlag
 

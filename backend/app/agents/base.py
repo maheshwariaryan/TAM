@@ -20,7 +20,7 @@ import logging
 import time
 from typing import Any
 
-from anthropic import AsyncAnthropic, APIStatusError, APIConnectionError, RateLimitError
+from anthropic import APIConnectionError, APIStatusError, AsyncAnthropic, RateLimitError
 
 from app.config import settings
 

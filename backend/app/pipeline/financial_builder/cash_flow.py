@@ -18,8 +18,9 @@ import logging
 from collections import defaultdict
 from decimal import Decimal
 
-from app.schemas.financials import CashFlowRow, CashFlowStatement, PnLStatement, BalanceSheet
-from app.schemas.gl import ChartOfAccountsCategory as CAT, MappedGLLine
+from app.schemas.financials import BalanceSheet, CashFlowRow, CashFlowStatement, PnLStatement
+from app.schemas.gl import ChartOfAccountsCategory as CAT
+from app.schemas.gl import MappedGLLine
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,9 @@ def build(
         # D&A is presented as negative in P&L (reduces income); add back = negate
 
         rows.append(CashFlowRow(period=period, label="Net Income", amount=ni, section="Operating"))
-        rows.append(CashFlowRow(period=period, label="Add: Depreciation & Amortisation", amount=da, section="Operating"))
+        rows.append(CashFlowRow(
+            period=period, label="Add: Depreciation & Amortisation", amount=da, section="Operating"
+        ))
 
         # ── Working capital movements ─────────────────────────────────────────
         wc_cats = {
@@ -121,7 +124,9 @@ def build(
         dist_prev = prev_bs_cat.get(CAT.OWNER_DISTRIBUTIONS.value, Decimal("0"))
         dist_change = dist_cur - dist_prev
         if dist_change != 0:
-            rows.append(CashFlowRow(period=period, label="Owner Distributions", amount=-dist_change, section="Financing"))
+            rows.append(CashFlowRow(
+                period=period, label="Owner Distributions", amount=-dist_change, section="Financing"
+            ))
             fin_total -= dist_change
 
         financing_cf[pk] = fin_total

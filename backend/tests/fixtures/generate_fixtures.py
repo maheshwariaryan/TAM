@@ -7,6 +7,10 @@ Planted anomalies for QoE / Red Flag detection testing:
   2. Legal settlement (6099) — February 2023 (Month 14): $285,000 one-time charge
   3. M&A advisory fees (6098) — July 2024 (Month 30): $180,000 one-time charge
   4. Related-party consulting (6097) — every month: $22,000/mo to owner entity
+
+Balance Sheet accounts are emitted monthly so the financial builder can produce
+P&L, BS, and cash flow statements. Total Assets are constrained to equal
+Total Liabilities + Equity for every period (within $0.01).
 """
 
 import csv
@@ -48,7 +52,7 @@ COA = [
     # INTEREST / TAX
     ("8001", "Interest Expense",           "PnL", "debit",   14_000),
     ("8002", "Income Tax Provision",       "PnL", "debit",   35_000),
-    # BALANCE SHEET — ASSETS
+    # BALANCE SHEET — ASSETS (debit-normal)
     ("1001", "Cash & Cash Equivalents",    "BalanceSheet", "debit",  250_000),
     ("1002", "Accounts Receivable",        "BalanceSheet", "debit",  320_000),
     ("1003", "Inventory - Finished Goods", "BalanceSheet", "debit",  185_000),
@@ -57,18 +61,28 @@ COA = [
     ("1006", "Property Plant & Equipment", "BalanceSheet", "debit",  850_000),
     ("1007", "Accumulated Depreciation",   "BalanceSheet", "credit", 400_000),
     ("1008", "Intangible Assets",          "BalanceSheet", "debit",  120_000),
-    # BALANCE SHEET — LIABILITIES
+    # BALANCE SHEET — LIABILITIES (credit-normal)
     ("2001", "Accounts Payable",           "BalanceSheet", "credit", 145_000),
     ("2002", "Accrued Liabilities",        "BalanceSheet", "credit",  38_000),
     ("2003", "Deferred Revenue",           "BalanceSheet", "credit",  28_000),
     ("2004", "Current Portion LT Debt",    "BalanceSheet", "credit",  60_000),
     ("2005", "Long-Term Debt",             "BalanceSheet", "credit", 420_000),
     ("2006", "Deferred Tax Liability",     "BalanceSheet", "credit",  22_000),
-    # EQUITY
+    # EQUITY (credit-normal)
     ("3001", "Common Stock",               "BalanceSheet", "credit",  50_000),
     ("3002", "Retained Earnings",          "BalanceSheet", "credit", 350_000),
     ("3003", "Distributions to Owner",     "BalanceSheet", "debit",   30_000),
 ]
+
+# Asset accounts (debit-normal → positive on BS, stored as debit in GL)
+ASSET_CODES = {"1001", "1002", "1003", "1004", "1005", "1006", "1008"}
+# Contra-asset (credit-normal but asset section — negate for presentation)
+CONTRA_ASSET_CODES = {"1007"}
+# Liability/equity accounts (credit-normal)
+LIABILITY_CODES = {"2001", "2002", "2003", "2004", "2005", "2006"}
+EQUITY_CODES = {"3001", "3002"}
+# Owner distributions — debit-normal equity contra
+EQUITY_CONTRA_CODES = {"3003"}
 
 rows: list[dict] = []
 counter = 1
@@ -92,12 +106,12 @@ def add_row(period: date, code: str, desc: str, stmt: str,
     counter += 1
 
 
+# ── P&L rows (36 months) ──────────────────────────────────────────────────────
 for month_idx in range(36):
     yr = 2022 + (month_idx) // 12
     mo = (month_idx) % 12 + 1
     period = date(yr, mo, 1)
 
-    # Mild revenue growth: ~3% per year with noise
     year_num = month_idx // 12
     growth = 1 + year_num * 0.03 + random.uniform(-0.02, 0.02)
     q4_seasonal = 1.15 if mo in (10, 11, 12) else 1.0
@@ -114,8 +128,6 @@ for month_idx in range(36):
         else:
             add_row(period, code, desc, stmt, amount, 0.0)
 
-    # ANOMALY 1 baked in: 6001 Management Salaries at $120k/mo (market ~$55k/mo)
-
     # ANOMALY 2: Legal settlement — February 2023 (month_idx == 13)
     if month_idx == 13:
         add_row(period, "6099", "Legal Settlement - Vendor Dispute", "PnL",
@@ -131,6 +143,62 @@ for month_idx in range(36):
             22_000.0, 0.0, note="RELATED_PARTY: Monthly consulting retainer to owner entity")
 
 
+# ── Balance Sheet rows (36 months) ───────────────────────────────────────────
+# Each month we emit one row per BS account. Amounts grow slightly over time so
+# the balance sheet looks realistic. After computing totals we add a small plug
+# to Retained Earnings so Assets = Liabilities + Equity exactly.
+for month_idx in range(36):
+    yr = 2022 + month_idx // 12
+    mo = month_idx % 12 + 1
+    period = date(yr, mo, 1)
+
+    year_num = month_idx // 12
+    growth = 1 + year_num * 0.04 + month_idx * 0.001  # gentle upward drift
+
+    total_assets = 0.0
+    total_liab_eq = 0.0
+    period_bs: list[tuple] = []  # (code, desc, normal, amount)
+
+    for code, desc, stmt, normal, base in COA:
+        if stmt != "BalanceSheet":
+            continue
+        noise = random.uniform(-base * 0.02, base * 0.02)
+        amount = round(max(base * growth + noise, 1.0), 2)
+
+        if code in ASSET_CODES:
+            total_assets += amount
+        elif code in CONTRA_ASSET_CODES:
+            # Accumulated depreciation grows faster (contra)
+            amount = round(min(base * (1 + year_num * 0.08 + month_idx * 0.002) + noise, base * 2.0), 2)
+            total_assets -= amount   # reduces assets
+        elif code in LIABILITY_CODES:
+            total_liab_eq += amount
+        elif code in EQUITY_CODES:
+            total_liab_eq += amount
+        elif code in EQUITY_CONTRA_CODES:
+            total_liab_eq -= amount   # distributions reduce equity
+
+        period_bs.append((code, desc, normal, amount))
+
+    # Plug Retained Earnings so Assets == Liabilities + Equity
+    plug = round(total_assets - total_liab_eq, 2)
+    # Find retained earnings entry and adjust its amount
+    adjusted_bs = []
+    for code, desc, normal, amount in period_bs:
+        if code == "3002":
+            amount = round(amount + plug, 2)
+            amount = max(amount, 0.01)
+        adjusted_bs.append((code, desc, normal, amount))
+
+    # Emit rows
+    for code, desc, normal, amount in adjusted_bs:
+        if normal == "debit":
+            add_row(period, code, desc, "BalanceSheet", amount, 0.0)
+        else:
+            add_row(period, code, desc, "BalanceSheet", 0.0, amount)
+
+
+# ── Write CSV ─────────────────────────────────────────────────────────────────
 out = Path(__file__).parent / "sample_gl.csv"
 fieldnames = ["line_id", "period", "account_code", "account_description",
               "statement", "debit", "credit", "entity", "cost_center", "note"]
@@ -140,14 +208,15 @@ with open(out, "w", newline="", encoding="utf-8") as f:
     w.writeheader()
     w.writerows(rows)
 
-# Summary
 total = len(rows)
 pnl_rows = [r for r in rows if r["statement"] == "PnL"]
+bs_rows = [r for r in rows if r["statement"] == "BalanceSheet"]
 anomaly_rows = [r for r in rows if r["note"]]
 print(f"Written {total:,} rows to {out}")
-print(f"  P&L rows: {len(pnl_rows):,}")
-print(f"  Anomaly rows: {len(anomaly_rows)} (2 one-time + 36 related-party)")
+print(f"  P&L rows:          {len(pnl_rows):,}")
+print(f"  BalanceSheet rows: {len(bs_rows):,}")
+print(f"  Anomaly rows:      {len(anomaly_rows)} (2 one-time + 36 related-party)")
 monthly_revenue = sum(float(r["credit"]) for r in rows if r["account_code"] == "4001") / 36
 print(f"  Avg monthly domestic revenue: ${monthly_revenue:,.0f}")
 monthly_mgmt = sum(float(r["debit"]) for r in rows if r["account_code"] == "6001") / 36
-print(f"  Avg monthly mgmt salaries: ${monthly_mgmt:,.0f} (planted excess)")
+print(f"  Avg monthly mgmt salaries:    ${monthly_mgmt:,.0f} (planted excess)")

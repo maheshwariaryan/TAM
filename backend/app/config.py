@@ -1,4 +1,5 @@
-from pathlib import Path
+﻿from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # config.py lives at backend/app/config.py
@@ -30,12 +31,15 @@ class Settings(BaseSettings):
 
     # Server
     cors_origins: list[str] = [
-        "http://localhost:5173",
         "http://localhost:3000",
-        "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
     ]
     log_level: str = "INFO"
+    log_json: bool = False  # set to true in production / cloud environments
 
 
 settings = Settings()

@@ -5,8 +5,6 @@ Tests use the pre-generated sample_gl.csv fixture and synthetic in-memory DataFr
 No database, no network, no LLM calls.
 """
 
-import io
-import tempfile
 from decimal import Decimal
 from pathlib import Path
 
@@ -14,7 +12,7 @@ import pandas as pd
 import pytest
 
 from app.pipeline.ingestion.loader import LoaderError, infer_column_map, load_file
-from app.pipeline.ingestion.normalizer import NormalizerError, normalise
+from app.pipeline.ingestion.normalizer import normalise
 from app.pipeline.ingestion.validator import validate
 
 FIXTURE_GL = Path(__file__).parent.parent / "fixtures" / "sample_gl.csv"
@@ -26,7 +24,7 @@ DEAL_ID = "test-deal-001"
 class TestLoader:
     def test_loads_fixture_csv(self):
         df = load_file(FIXTURE_GL)
-        assert len(df) == 902
+        assert len(df) == 1514
         assert "account_code" in df.columns
         assert "debit" in df.columns
         assert "credit" in df.columns
@@ -93,7 +91,7 @@ class TestNormalizer:
         df = load_file(FIXTURE_GL)
         mapping = infer_column_map(df)
         lines = normalise(df, mapping, "sample_gl.csv", DEAL_ID)
-        assert len(lines) == 902
+        assert len(lines) == 1514
 
     def test_debit_credit_to_signed_amount(self):
         df = self._make_df([
@@ -104,8 +102,8 @@ class TestNormalizer:
         ])
         lines = normalise(df, self._std_map(), "test.csv", DEAL_ID)
         assert len(lines) == 2
-        revenue = next(l for l in lines if l.account_code == "4001")
-        cogs = next(l for l in lines if l.account_code == "5001")
+        revenue = next(gl for gl in lines if gl.account_code == "4001")
+        cogs = next(gl for gl in lines if gl.account_code == "5001")
         assert revenue.amount == Decimal("-100000")   # credit → negative
         assert cogs.amount == Decimal("80000")         # debit → positive
 
@@ -173,6 +171,7 @@ class TestValidator:
     def _make_lines(self, entries: list[tuple]) -> list:
         """entries: list of (account_code, amount_decimal) tuples."""
         from datetime import date
+
         from app.schemas.gl import RawGLLine
         return [
             RawGLLine(
@@ -217,6 +216,24 @@ class TestValidator:
         assert report.difference == Decimal("50000")
         assert report.is_balanced is False
 
+    def test_pl_only_export_flag(self):
+        df = load_file(FIXTURE_GL)
+        mapping = infer_column_map(df)
+        lines = normalise(df, mapping, "sample_gl.csv", DEAL_ID)
+        report = validate(lines, DEAL_ID)
+        # Fixture now includes BalanceSheet rows so it is a mixed export, not P&L-only
+        assert report.is_pl_only_export is False
+        assert report.is_mixed_export is True
+
+    def test_full_tb_not_pl_only(self):
+        lines = self._make_lines([
+            ("1001", Decimal("50000")),
+            ("2001", Decimal("-80000")),
+            ("3002", Decimal("-90000")),
+        ])
+        report = validate(lines, DEAL_ID)
+        assert report.is_pl_only_export is False
+
     def test_warns_on_insufficient_periods(self):
         lines = self._make_lines([("4001", Decimal("-10000"))])
         report = validate(lines, DEAL_ID)
@@ -229,6 +246,7 @@ class TestValidator:
 
     def test_36_periods_no_period_warning(self):
         from datetime import date
+
         from app.schemas.gl import RawGLLine
         lines = []
         for i in range(36):
@@ -259,28 +277,71 @@ class TestIngestionE2E:
         lines = normalise(df, mapping, "sample_gl.csv", DEAL_ID)
         report = validate(lines, DEAL_ID)
 
-        # 902 rows in fixture
-        assert len(lines) == 902
+        # 1514 rows: 902 P&L + 612 BalanceSheet (17 accounts × 36 periods)
+        assert len(lines) == 1514
 
         # 36 months of data
         assert report.periods_checked == 36
 
         # All planted anomalies are present in the normalised lines
-        anomaly_lines = [l for l in lines if l.note and l.note.startswith("ONE_TIME")]
+        anomaly_lines = [gl for gl in lines if gl.note and gl.note.startswith("ONE_TIME")]
         assert len(anomaly_lines) == 2, f"Expected 2 one-time anomalies, got {len(anomaly_lines)}"
 
-        related_party = [l for l in lines if l.note and "RELATED_PARTY" in l.note]
+        related_party = [gl for gl in lines if gl.note and "RELATED_PARTY" in gl.note]
         assert len(related_party) == 36, f"Expected 36 related-party rows, got {len(related_party)}"
 
         # Legal settlement is in February 2023
         from datetime import date
-        settlement = next((l for l in anomaly_lines if l.account_code == "6099"), None)
+        settlement = next((gl for gl in anomaly_lines if gl.account_code == "6099"), None)
         assert settlement is not None
         assert settlement.period == date(2023, 2, 1)
         assert settlement.amount == Decimal("285000")
 
         # M&A fees in June 2024 (month_idx 29: 2022 + 29//12=2024, mo=29%12+1=6)
-        ma_fee = next((l for l in anomaly_lines if l.account_code == "6098"), None)
+        ma_fee = next((gl for gl in anomaly_lines if gl.account_code == "6098"), None)
         assert ma_fee is not None
         assert ma_fee.period == date(2024, 6, 1)
         assert ma_fee.amount == Decimal("180000")
+
+
+class TestExcelParity:
+    FIXTURE_XLSX = Path(__file__).parent.parent / "fixtures" / "ABC_Subsidiary.xlsx"
+
+    def test_excel_matches_csv_row_count(self):
+        if not self.FIXTURE_XLSX.exists():
+            pytest.skip("ABC_Subsidiary.xlsx fixture not present")
+        df_csv = load_file(FIXTURE_GL)
+        df_xlsx = load_file(self.FIXTURE_XLSX)
+        assert len(df_csv) == len(df_xlsx)
+
+    def test_excel_normalises_identically_to_csv(self):
+        if not self.FIXTURE_XLSX.exists():
+            pytest.skip("ABC_Subsidiary.xlsx fixture not present")
+        csv_lines = normalise(
+            load_file(FIXTURE_GL), infer_column_map(load_file(FIXTURE_GL)),
+            "sample_gl.csv", DEAL_ID,
+        )
+        xlsx_lines = normalise(
+            load_file(self.FIXTURE_XLSX), infer_column_map(load_file(self.FIXTURE_XLSX)),
+            "ABC_Subsidiary.xlsx", DEAL_ID,
+        )
+        csv_tuples = sorted((line.account_code, line.period, line.amount) for line in csv_lines)
+        xlsx_tuples = sorted((line.account_code, line.period, line.amount) for line in xlsx_lines)
+        assert csv_tuples == xlsx_tuples
+
+
+class TestOrchestratorFailure:
+    def test_unbalanced_full_tb_raises(self, tmp_path, monkeypatch):
+        from app.config import settings
+        from app.pipeline.ingestion import orchestrator as orch
+        from app.pipeline.ingestion.orchestrator import IngestionError
+
+        deal_id = "test-unbalanced-deal"
+        upload_dir = settings.upload_dir / deal_id
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        fixture = Path(__file__).parent.parent / "fixtures" / "unbalanced_trial_balance.csv"
+        dest = upload_dir / "unbalanced_trial_balance.csv"
+        dest.write_bytes(fixture.read_bytes())
+
+        with pytest.raises(IngestionError, match="Trial balance does not balance"):
+            orch.run(deal_id)
