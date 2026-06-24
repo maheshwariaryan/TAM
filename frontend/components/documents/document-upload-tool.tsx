@@ -60,15 +60,15 @@ export function DocumentUploadTool({
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const accepted = ".xlsx,.xls,.csv,.pdf";
-  const acceptedExt = [".xlsx", ".xls", ".csv", ".pdf"];
+  const accepted = ".xlsx,.csv,.pdf,.zip";
+  const acceptedExt = [".xlsx", ".csv", ".pdf", ".zip"];
 
   const runUpload = (files: File[]) => {
     if (!files.length) return;
     const valid = files.filter((file) => acceptedExt.some((ext) => file.name.toLowerCase().endsWith(ext)));
     const invalid = files.length - valid.length;
     if (invalid > 0) {
-      setError(`${invalid} file(s) were skipped. Allowed types: .xlsx, .xls, .csv, .pdf`);
+      setError(`${invalid} file(s) were skipped. Allowed types: .xlsx, .csv, .pdf, .zip`);
     } else {
       setError(null);
     }
@@ -132,7 +132,7 @@ export function DocumentUploadTool({
         >
           <UploadCloud className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
           <p className="text-sm font-medium">Drag and drop files here</p>
-          <p className="text-xs text-muted-foreground">or choose files from your computer (.xlsx, .csv, .pdf)</p>
+          <p className="text-xs text-muted-foreground">or choose files from your computer (.xlsx, .csv, .pdf, .zip)</p>
           <div className="mt-3">
             <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
               Select files

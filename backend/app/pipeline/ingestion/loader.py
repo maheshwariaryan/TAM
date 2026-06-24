@@ -19,7 +19,7 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-SUPPORTED_EXTENSIONS = {".csv", ".xlsx", ".xls"}
+SUPPORTED_EXTENSIONS = {".csv", ".xlsx"}
 
 
 class LoaderError(Exception):
@@ -94,7 +94,7 @@ def _load_excel(path: Path) -> pd.DataFrame:
         sheet_name=0,
         dtype=str,
         keep_default_na=False,
-        engine="openpyxl" if path.suffix.lower() == ".xlsx" else "xlrd",
+        engine="openpyxl",
     )
     if df.empty:
         raise LoaderError(f"Excel file '{path.name}' contains no data rows")

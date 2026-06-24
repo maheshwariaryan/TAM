@@ -8,7 +8,6 @@ Mock: accepts all candidates (suitable for development and testing).
 Real: sends batches of candidates to GPT with financial context for review.
 """
 
-import json
 import logging
 from typing import Any
 

@@ -11,9 +11,12 @@ GET    /api/v1/deals/{deal_id}/status   Poll processing status (lightweight)
 Route handlers contain NO business logic — they delegate to storage and pipeline.
 """
 
+import logging
+
 from fastapi import APIRouter, BackgroundTasks, HTTPException, UploadFile
 
 from app import pipeline_orchestrator
+from app.pipeline.ingestion.zip_extractor import ZipExtractorError, extract_zip
 from app.schemas.ingestion import (
     CreateDealRequest,
     DealResponse,
@@ -24,10 +27,13 @@ from app.schemas.ingestion import (
 )
 from app.storage import deal_store, file_store
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/deals", tags=["Ingestion"])
 
-ALLOWED_EXTENSIONS = {".csv", ".xlsx", ".xls", ".pdf"}
+ALLOWED_EXTENSIONS = {".csv", ".xlsx", ".pdf", ".zip"}
 MAX_FILE_SIZE_MB = 50
+MAX_ZIP_SIZE_MB = 200
 
 
 def _to_deal_response(deal: dict) -> DealResponse:
@@ -51,6 +57,10 @@ def create_deal(body: CreateDealRequest) -> DealResponse:
         company_name=body.company_name,
         deal_name=body.deal_name,
         currency=body.currency,
+    )
+    logger.info(
+        "AUDIT deal_created deal_id=%s company=%r deal_name=%r currency=%s",
+        deal["deal_id"], body.company_name, body.deal_name, body.currency,
     )
     return _to_deal_response(deal)
 
@@ -89,6 +99,10 @@ async def upload_files(deal_id: str, files: list[UploadFile]) -> UploadResponse:
         suffix = "." + filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
 
         if suffix not in ALLOWED_EXTENSIONS:
+            logger.warning(
+                "AUDIT upload_rejected deal_id=%s filename=%r reason=disallowed_extension ext=%r",
+                deal_id, filename, suffix,
+            )
             raise HTTPException(
                 status_code=422,
                 detail=f"File type '{suffix}' not allowed. Accepted: {sorted(ALLOWED_EXTENSIONS)}",
@@ -96,10 +110,15 @@ async def upload_files(deal_id: str, files: list[UploadFile]) -> UploadResponse:
 
         content = await upload.read()
         size_mb = len(content) / (1024 * 1024)
-        if size_mb > MAX_FILE_SIZE_MB:
+        limit_mb = MAX_ZIP_SIZE_MB if suffix == ".zip" else MAX_FILE_SIZE_MB
+        if size_mb > limit_mb:
+            logger.warning(
+                "AUDIT upload_rejected deal_id=%s filename=%r reason=too_large size_mb=%.1f",
+                deal_id, filename, size_mb,
+            )
             raise HTTPException(
                 status_code=413,
-                detail=f"File '{filename}' exceeds {MAX_FILE_SIZE_MB} MB limit ({size_mb:.1f} MB)",
+                detail=f"File '{filename}' exceeds {limit_mb} MB limit ({size_mb:.1f} MB)",
             )
 
         stored_path, size_bytes = file_store.save_upload(deal_id, filename, content)
@@ -110,6 +129,31 @@ async def upload_files(deal_id: str, files: list[UploadFile]) -> UploadResponse:
             size_bytes=size_bytes,
         )
         saved.append(UploadedFileInfo(**record["uploaded_files"][-1]))
+        logger.info(
+            "AUDIT file_uploaded deal_id=%s filename=%r size_bytes=%d",
+            deal_id, filename, size_bytes,
+        )
+
+        if suffix == ".zip":
+            try:
+                extracted = extract_zip(stored_path, file_store.get_upload_dir(deal_id))
+                for ext_path in extracted:
+                    ext_suffix = ext_path.suffix.lower()
+                    if ext_suffix not in {".csv", ".xlsx", ".pdf"}:
+                        continue
+                    ext_record = deal_store.add_uploaded_file(
+                        deal_id=deal_id,
+                        filename=ext_path.name,
+                        stored_path=str(ext_path),
+                        size_bytes=ext_path.stat().st_size,
+                    )
+                    saved.append(UploadedFileInfo(**ext_record["uploaded_files"][-1]))
+                    logger.info(
+                        "AUDIT zip_extracted deal_id=%s filename=%r",
+                        deal_id, ext_path.name,
+                    )
+            except ZipExtractorError as exc:
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     return UploadResponse(deal_id=deal_id, files_received=len(saved), files=saved)
 
@@ -131,7 +175,10 @@ def process_deal(
         )
 
     # Determine which stages to run
-    all_stages = ["ingestion", "coa_mapping", "financial_builder", "qoe_engine", "redflag_detector"]
+    all_stages = [
+        "ingestion", "coa_mapping", "financial_builder", "qoe_engine", "redflag_detector",
+        "nwc_analyzer", "dcf_engine", "net_debt_bridge",
+    ]
     stages = body.stages if body.stages else all_stages
 
     # Guard: don't re-process a running job
@@ -147,6 +194,10 @@ def process_deal(
         deal["stages"][stage] = "pending"
     deal_store.update_deal(deal_id, {"stages": deal["stages"], "error": None, "progress_pct": 0})
 
+    logger.info(
+        "AUDIT pipeline_triggered deal_id=%s stages=%s file_count=%d",
+        deal_id, stages, len(deal.get("uploaded_files", [])),
+    )
     background_tasks.add_task(pipeline_orchestrator.run, deal_id=deal_id, stages=stages)
 
     return ProcessResponse(

@@ -5,12 +5,11 @@ Each RedFlag is a discrete, actionable risk item with severity, estimated financ
 impact, source data links, and LLM-generated diligence questions.
 """
 
-from datetime import date, datetime
+from datetime import datetime
 from decimal import Decimal
 from typing import Literal
 
 from pydantic import BaseModel, Field
-
 
 Severity = Literal["High", "Medium", "Low", "Informational"]
 FlagSource = Literal["rule_engine", "llm_analysis", "contract_parser", "manual"]

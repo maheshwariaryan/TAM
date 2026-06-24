@@ -1,7 +1,9 @@
-import pytest
 import time
 from pathlib import Path
+
+import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
@@ -33,25 +35,25 @@ def run_pipeline_on_dataset(file_path: Path):
 
     # 3. Trigger processing
     process_response = client.post(f"/api/v1/deals/{deal_id}/process", json={
-        "stages": ["ingestion", "coa_mapping", "financial_builder", "qoe_engine", "redflag_detector"]
+        "stages": ["ingestion", "coa_mapping", "financial_builder", "qoe_engine", "redflag_detector"],
     })
     assert process_response.status_code == 200
+    queued_stages = process_response.json()["stages_queued"]
     print("[+] Triggered Processing Pipeline")
 
     # 4. Wait for processing to finish
-    max_retries = 300  # Wait up to 300 seconds (5 minutes) for LLM agents to finish
+    max_retries = 300
     for _ in range(max_retries):
         status_resp = client.get(f"/api/v1/deals/{deal_id}/status")
         assert status_resp.status_code == 200
         deal = status_resp.json()
         stages = deal.get("stages", {})
-        
-        # Check if all requested stages are complete
-        if all(v == "complete" for k, v in stages.items()):
+
+        if all(stages.get(s) == "complete" for s in queued_stages):
             print("[+] Pipeline completed successfully.")
             return deal
-        
-        if any(v == "failed" for k, v in stages.items()):
+
+        if any(stages.get(s) == "failed" for s in queued_stages):
             error = deal.get("error", "Unknown error")
             pytest.fail(f"Pipeline failed: {error}")
             

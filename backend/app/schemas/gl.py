@@ -10,13 +10,13 @@ the exact row in the client's original file — the audit trail requirement.
 
 from datetime import date
 from decimal import Decimal
-from enum import Enum
+from enum import StrEnum
 from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
 
-class ChartOfAccountsCategory(str, Enum):
+class ChartOfAccountsCategory(StrEnum):
     # Revenue
     REVENUE = "Revenue"
     OTHER_INCOME = "Other Income"
@@ -184,5 +184,17 @@ class ValidationReport(BaseModel):
     unbalanced_periods: list[str] = Field(
         default_factory=list,
         description="Periods (YYYY-MM) where debits != credits beyond tolerance",
+    )
+    is_pl_only_export: bool = Field(
+        default=False,
+        description="True when upload contains no balance sheet accounts (1xx/2xx/3xx); imbalance may be expected",
+    )
+    is_mixed_export: bool = Field(
+        default=False,
+        description=(
+            "True when upload contains both P&L activity and balance sheet snapshot rows. "
+            "Global trial balance will not sum to zero (expected), so the imbalance check "
+            "is relaxed. BS quality is verified per-period by the balance sheet builder."
+        ),
     )
     warnings: list[str] = Field(default_factory=list)

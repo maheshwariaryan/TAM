@@ -1,8 +1,7 @@
 """
 Pipeline Orchestrator — coordinates all processing stages for a deal.
 
-This is a stub for Step 1. Full implementation in Step 2+.
-Each stage is run sequentially; status is updated in the deal store after each.
+Runs stages sequentially; status is updated in the deal store after each.
 """
 
 import logging
@@ -17,16 +16,14 @@ STAGE_ORDER = [
     "financial_builder",
     "qoe_engine",
     "redflag_detector",
+    "nwc_analyzer",
+    "dcf_engine",
+    "net_debt_bridge",
 ]
 
 
 def run(deal_id: str, stages: list[str]) -> None:
-    """
-    Entry point called as a FastAPI BackgroundTask.
-    Runs each requested stage in order, updating deal status as it goes.
-
-    In Step 2+ each stage delegates to its dedicated pipeline module.
-    """
+    """Entry point called as a FastAPI BackgroundTask."""
     logger.info("Pipeline started for deal %s | stages: %s", deal_id, stages)
 
     for stage in stages:
@@ -37,37 +34,33 @@ def run(deal_id: str, stages: list[str]) -> None:
         try:
             deal_store.set_stage_status(deal_id, stage, "running")
             logger.info("Stage '%s' started for deal %s", stage, deal_id)
-
             _run_stage(deal_id, stage)
-
             deal_store.set_stage_status(deal_id, stage, "complete")
             logger.info("Stage '%s' complete for deal %s", stage, deal_id)
-
         except Exception as exc:
             logger.exception("Stage '%s' failed for deal %s: %s", stage, deal_id, exc)
             deal_store.set_stage_status(deal_id, stage, "failed")
             deal_store.update_deal(deal_id, {"error": str(exc)})
-            return  # Abort remaining stages on failure
+            return
 
     logger.info("Pipeline complete for deal %s", deal_id)
 
 
 def _run_stage(deal_id: str, stage: str) -> None:
-    """
-    Dispatches to the appropriate pipeline module.
-    Stages are stubs until their respective implementation steps.
-    """
     if stage == "ingestion":
         from app.pipeline.ingestion import orchestrator as ingestion_orch
-        lines, report = ingestion_orch.run(deal_id)
+        result = ingestion_orch.run(deal_id)
+        report = result.validation_report
         logger.info(
-            "Ingestion complete: %d lines, %d periods, balanced=%s",
-            len(lines), report.periods_checked, report.is_balanced,
+            "Ingestion complete: %d GL lines, %d periods, balanced=%s, warnings=%d",
+            len(result.gl_lines),
+            report.periods_checked if report else 0,
+            report.is_balanced if report else False,
+            len(result.warnings),
         )
 
     elif stage == "coa_mapping":
-        # CoA mapping is handled as part of financial_builder to share the mapped GL
-        logger.info("coa_mapping is run as part of financial_builder stage — no-op here")
+        logger.info("coa_mapping is run as part of financial_builder — no-op here")
 
     elif stage == "financial_builder":
         from app.pipeline.financial_builder import orchestrator as fb_orch
@@ -80,3 +73,15 @@ def _run_stage(deal_id: str, stage: str) -> None:
     elif stage == "redflag_detector":
         from app.pipeline.redflag_detector import orchestrator as rf_orch
         rf_orch.run(deal_id)
+
+    elif stage == "nwc_analyzer":
+        from app.pipeline.nwc_analyzer import orchestrator as nwc_orch
+        nwc_orch.run(deal_id)
+
+    elif stage == "dcf_engine":
+        from app.pipeline.dcf_engine import orchestrator as dcf_orch
+        dcf_orch.run(deal_id)
+
+    elif stage == "net_debt_bridge":
+        from app.pipeline.net_debt_bridge import orchestrator as nd_orch
+        nd_orch.run(deal_id)

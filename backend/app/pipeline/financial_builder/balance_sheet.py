@@ -16,7 +16,8 @@ from decimal import Decimal
 from typing import Literal
 
 from app.schemas.financials import BalanceSheet, BalanceSheetRow
-from app.schemas.gl import ChartOfAccountsCategory as CAT, MappedGLLine
+from app.schemas.gl import ChartOfAccountsCategory as CAT
+from app.schemas.gl import MappedGLLine
 
 logger = logging.getLogger(__name__)
 
@@ -59,12 +60,15 @@ _LIABILITY_SECTIONS = {"Current Liabilities", "Non-Current Liabilities"}
 
 
 def build(lines: list[MappedGLLine]) -> BalanceSheet:
-    bs_lines = [l for l in lines if l.financial_statement == "BalanceSheet"]
+    bs_lines = [gl for gl in lines if gl.financial_statement == "BalanceSheet"]
     if not bs_lines:
-        raise ValueError("No BalanceSheet lines in mapped GL. If this is a P&L-only upload, balance sheet analysis is unavailable.")
+        raise ValueError(
+            "No BalanceSheet lines in mapped GL. "
+            "If this is a P&L-only upload, balance sheet analysis is unavailable."
+        )
 
     deal_id = bs_lines[0].deal_id
-    periods = sorted({l.period for l in bs_lines})
+    periods = sorted({gl.period for gl in bs_lines})
 
     # Aggregate by (period, account_code, description, category)
     agg: dict[tuple, Decimal] = defaultdict(Decimal)

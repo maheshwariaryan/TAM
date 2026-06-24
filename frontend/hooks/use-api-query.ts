@@ -8,7 +8,7 @@ export function useApiQuery<T extends z.ZodTypeAny>(
   url: string,
   schema: T
 ) {
-  return useQuery({
+  return useQuery<z.infer<T>>({
     queryKey: key,
     queryFn: async () => {
       const res = await fetch(url);

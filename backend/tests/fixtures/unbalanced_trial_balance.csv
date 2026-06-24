@@ -1,0 +1,5 @@
+period,account_code,account_description,debit,credit,entity
+2024-01-01,1001,Cash,50000,0,Acme Corp
+2024-01-01,1002,Accounts Receivable,120000,0,Acme Corp
+2024-01-01,2001,Accounts Payable,0,80000,Acme Corp
+2024-01-01,3002,Retained Earnings,0,40000,Acme Corp

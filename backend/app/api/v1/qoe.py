@@ -5,7 +5,6 @@ GET /api/v1/deals/{deal_id}/qoe                              Full QoE report + w
 GET /api/v1/deals/{deal_id}/qoe/adjustments/{adj_id}/source  GL line drill-through
 """
 
-import json
 
 from fastapi import APIRouter, HTTPException
 
@@ -42,7 +41,7 @@ def get_adjustment_source(deal_id: str, adjustment_id: str) -> dict:
         raise HTTPException(status_code=404, detail=str(exc))
 
     source_ids = set(adj.source_gl_line_ids)
-    source_lines = [l.model_dump(mode="json") for l in mapped if l.line_id in source_ids]
+    source_lines = [gl.model_dump(mode="json") for gl in mapped if gl.line_id in source_ids]
 
     return {
         "adjustment_id": adjustment_id,

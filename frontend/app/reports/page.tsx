@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { InquiryResponseSchema, RiskResponseSchema } from "@/lib/schemas/types";
 import { useGlobalStore } from "@/lib/store/use-global-store";
+import { exportDatabook } from "@/lib/api/fdd-client";
 
 const exports = [
   "Independent Accountants Report (PDF)",
@@ -28,8 +29,18 @@ const exportMeta: Record<string, { filename: string; mime: string }> = {
 };
 
 export default function ReportsPage() {
+  return (
+    <Suspense fallback={<div className="h-80 animate-pulse rounded-lg bg-muted" />}>
+      <ReportsPageContent />
+    </Suspense>
+  );
+}
+
+function ReportsPageContent() {
   const params = useSearchParams();
-  const { deal, period, basis } = useGlobalStore();
+  const { deal, dealId, period, basis } = useGlobalStore();
+  const [databookLoading, setDatabookLoading] = useState(false);
+  const [databookError, setDatabookError] = useState<string | null>(null);
   const inquiryQuery = useApiQuery(
     ["inquiry-reports", deal, period, basis],
     `/api/deal/inquiry?deal=${encodeURIComponent(deal)}&period=${encodeURIComponent(period)}&basis=${encodeURIComponent(basis)}`,
@@ -155,6 +166,23 @@ export default function ReportsPage() {
     downloadBlob(meta.filename, meta.mime, generatePdfLikeContent(item, stamp));
   };
 
+  const handleDatabookExport = async () => {
+    if (!dealId) {
+      setDatabookError("No active deal. Upload and process files on the Upload page first.");
+      return;
+    }
+    setDatabookLoading(true);
+    setDatabookError(null);
+    try {
+      const filename = `${deal.replace(/\s+/g, "_")}_FDD_Databook.xlsx`;
+      await exportDatabook(dealId, filename);
+    } catch (err) {
+      setDatabookError(err instanceof Error ? err.message : "Export failed");
+    } finally {
+      setDatabookLoading(false);
+    }
+  };
+
   const handleDownloadAll = async () => {
     setDownloadingAll(true);
     try {
@@ -197,6 +225,22 @@ export default function ReportsPage() {
           Report Readiness: {readiness}
         </span>
       </div>
+
+      <Card>
+        <CardHeader><CardTitle>FDD Databook (Excel)</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Multi-tab Excel export with QoE waterfall, adjustment ledger, GL mapping, tie-outs, and IRL.
+          </p>
+          <Button onClick={handleDatabookExport} disabled={databookLoading || !dealId}>
+            {databookLoading ? "Generating..." : "Download FDD Databook (.xlsx)"}
+          </Button>
+          {!dealId ? (
+            <p className="text-xs text-muted-foreground">Process a deal on the Upload page to enable export.</p>
+          ) : null}
+          {databookError ? <p className="text-xs text-rose-600">{databookError}</p> : null}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader><CardTitle>Export Center</CardTitle></CardHeader>

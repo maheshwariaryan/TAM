@@ -1,0 +1,23 @@
+File Name,Statement / Schedule,Data Origin,Dummy Values Created?,Notes
+01_income_statement.csv,Income Statement,GL-derived,No,"Revenue, COGS, OPEX, D&A, interest, tax, and net income tied to sample_gl.csv"
+02_balance_sheet.csv,Balance Sheet,Synthetic support values,Yes,GL has no BS accounts; generated values tie to support schedules
+03_cash_flow_statement.csv,Cash Flow Statement,Mixed,Yes,Net income/D&A from GL; WC/capex/financing generated and tied to BS cash
+04_trial_balance.csv,Trial Balance,Mixed,Yes,GL P&L plus generated BS accounts and earnings close
+05_general_ledger_source_copy.csv,General Ledger,GL-derived,No,Source GL copied with signed amount
+06_ar_aging.csv,AR Aging,Synthetic support values,Yes,Invoice-level AR tied to latest BS AR
+07_ap_aging.csv,AP Aging,Synthetic support values,Yes,Vendor-level AP tied to latest BS AP
+08_inventory_rollforward.csv,Inventory Rollforward,Synthetic support values,Yes,Inventory rollforward ties to BS inventory and GL COGS
+08b_inventory_sku_detail.csv,Inventory SKU Detail,Synthetic support values,Yes,SKU detail ties to latest BS inventory
+09_fixed_asset_register.csv,Fixed Asset Register,Synthetic support values,Yes,Asset-level FAR ties to BS net PP&E
+10_revenue_schedule_gl_by_account.csv,Revenue Schedule,GL-derived,No,Account revenue ties to IS
+10b_revenue_by_customer_product_region.csv,Revenue Detail,Synthetic allocation of GL revenue,Yes,Customer/product/region allocation ties to IS revenue
+11_cogs_schedule.csv,COGS Schedule,GL-derived,No,Account COGS ties to IS
+12_opex_schedule.csv,OPEX Schedule,GL-derived,No,Account OPEX/D&A ties to IS
+13_payroll_headcount.csv,Payroll,Mixed,Yes,FY2024 headcount detail ties to GL payroll/direct labor accounts
+14_bank_statement_cashbook.csv,Bank Statement / Cashbook,Synthetic support values,Yes,Latest month cashbook ties to BS cash
+15_debt_schedule.csv,Debt Schedule,Synthetic support values,Yes,Debt schedule ties to BS debt and GL interest
+16_lease_schedule.csv,Lease Schedule,Synthetic support values,Yes,Lease schedule ties to BS lease liability
+17_equity_rollforward_cap_table.csv,Equity Rollforward / Cap Table,Synthetic support values,Yes,Ownership totals 100%; equity ties to BS
+18_working_capital_schedule.csv,Working Capital Schedule,Synthetic support values,Yes,WC components tie to BS
+19_cash_rollforward.csv,Cash Rollforward,Mixed,Yes,Cash rollforward ties to CF and BS
+00_checks_summary.csv,Validation Checks,Generated audit file,Yes,Clean package tie-out checks

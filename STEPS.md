@@ -8,96 +8,120 @@
 
 ---
 
-## STEP 1 — Backend Foundation (Current)
-**Goal**: FastAPI server starts, deal can be created, file can be uploaded, status can be polled.
+## STEP 1 — Backend Foundation
+**Status: PENDING**
 
-### Files Created
-- [ ] `backend/pyproject.toml` — all Python dependencies declared
-- [ ] `backend/app/__init__.py`
-- [ ] `backend/app/main.py` — FastAPI app factory, CORS, router mounting
-- [ ] `backend/app/config.py` — pydantic-settings reading .env
-- [ ] `backend/app/storage/__init__.py`
-- [ ] `backend/app/storage/deal_store.py` — JSON file persistence per deal
-- [ ] `backend/app/storage/file_store.py` — uploaded file management
-- [ ] `backend/app/schemas/__init__.py`
-- [ ] `backend/app/schemas/ingestion.py` — UploadJob, DealStatus, ProcessingStage
-- [ ] `backend/app/api/__init__.py`
-- [ ] `backend/app/api/v1/__init__.py`
-- [ ] `backend/app/api/v1/router.py` — aggregates all v1 routers
-- [ ] `backend/app/api/v1/ingestion.py` — deal CRUD + file upload + status endpoints
-- [ ] `.env.example`
-- [ ] `.gitignore`
+Foundation exists on fork (FastAPI, deal store, upload/process API, pipeline orchestrator) but this step is not formally signed off in the tracker.
 
-### Manual Test Checklist (before advancing to Step 2)
-- [ ] `cd backend && pip install -e ".[dev]"` runs without errors
-- [ ] `uvicorn app.main:app --reload` starts without errors
-- [ ] `GET http://localhost:8000/health` returns `{"status": "ok"}`
-- [ ] `POST http://localhost:8000/api/v1/deals` with body `{"company_name": "Acme Corp", "deal_name": "Project Falcon", "currency": "USD"}` returns `{"deal_id": "<uuid>", ...}`
-- [ ] `POST http://localhost:8000/api/v1/deals/{deal_id}/upload` with a CSV file returns `{"files_received": 1, ...}`
-- [ ] `GET http://localhost:8000/api/v1/deals/{deal_id}/status` returns current status JSON
-- [ ] Uploaded file exists on disk at `data/uploads/{deal_id}/`
-- [ ] Deal JSON exists at `data/deals/{deal_id}.json`
-- [ ] FastAPI auto-docs at `http://localhost:8000/docs` show all endpoints
-
-**Status: IN PROGRESS**
+### Manual Test Checklist
+- [x] `cd backend && pip install -e ".[dev]"` runs without errors
+- [x] `uvicorn app.main:app --reload` starts without errors
+- [x] `GET http://localhost:8000/health` returns `{"status": "ok"}`
+- [x] `POST http://localhost:8000/api/v1/deals` returns `deal_id`
+- [x] `POST http://localhost:8000/api/v1/deals/{deal_id}/upload` accepts files
+- [x] `POST http://localhost:8000/api/v1/deals/{deal_id}/process` triggers pipeline
+- [x] `GET http://localhost:8000/api/v1/deals/{deal_id}/status` returns status JSON
+- [ ] Formal Step 1 sign-off recorded in tracker
 
 ---
 
-## STEP 2 — Data Ingestion Pipeline (Pending)
-**Goal**: GL CSV/Excel files are loaded, normalized, and validated. Trial balance check passes.
+## STEP 2 — Data Ingestion Pipeline
+**Status: COMPLETE**
 
-Files: `pipeline/ingestion/loader.py`, `normalizer.py`, `validator.py`
-Schemas: `schemas/gl.py` (RawGLLine, MappedGLLine, ChartOfAccountsCategory)
+**Goal:** GL CSV/Excel files are loaded, normalized, and validated. Trial balance check passes. Multi-document data room intake supported.
 
-Test Checklist:
-- [ ] Upload `tests/fixtures/sample_gl.csv` → process → normalized GL lines returned
-- [ ] Unbalanced trial balance file returns validation error with details
-- [ ] Excel (.xlsx) file processes identically to CSV
+Files: `pipeline/ingestion/loader.py`, `normalizer.py`, `validator.py`, `document_registry.py`, `zip_extractor.py`, aging/projections parsers, `schemas/gl.py`
 
----
-
-## STEP 3 — Chart of Accounts Mapper + Financial Statement Builder (Pending)
-**Goal**: Unknown GL codes mapped to standard categories; P&L, Balance Sheet, Cash Flow built from mapped GL.
-
-Files: `agents/base.py`, `agents/coa_mapper.py`, `pipeline/financial_builder/pnl.py`, `balance_sheet.py`, `cash_flow.py`
-
-Test Checklist:
-- [ ] `GET /api/v1/deals/{id}/financials/pnl?period=annual` returns structured P&L
-- [ ] Revenue + COGS = Gross Profit (exactly, to the cent)
-- [ ] Balance Sheet balances: Assets == Liabilities + Equity
-- [ ] Mock mode works without Anthropic API key
+### Test Checklist
+- [x] Upload `tests/fixtures/sample_gl.csv` → process → normalized GL lines returned
+- [x] Unbalanced trial balance file returns validation error with details
+- [x] Excel (.xlsx) file processes identically to CSV
+- [x] Multi-file / ZIP data room upload classifies and ingests AR/AP aging, projections, PDF debt agreements
+- [x] `GET /api/v1/deals/{id}/documents` returns document inventory
+- [x] Cross-document AR/AP aging tie-outs vs GL balance sheet
 
 ---
 
-## STEP 4 — QoE Engine + Red Flag Detector (Pending)
-**Goal**: One-time items detected, EBITDA adjusted, waterfall data produced, red flags classified.
+## STEP 3 — Chart of Accounts Mapper + Financial Statement Builder
+**Status: COMPLETE**
 
-Files: `pipeline/qoe_engine/`, `pipeline/redflag_detector/`, `agents/qoe_reviewer.py`, `agents/redflag_analyst.py`
+CoA mapper agent, P&L / Balance Sheet / Cash Flow builders, and `GET /financials/*` API endpoints fully implemented and tested.
 
-Test Checklist:
-- [ ] Planted legal settlement in fixture GL detected as one-time item
-- [ ] Owner comp excess detected across all 36 months
-- [ ] `GET /api/v1/deals/{id}/qoe` waterfall array sums correctly
-- [ ] `GET /api/v1/deals/{id}/redflags` returns ≥3 flags with correct severity
+### Test Checklist
+- [x] `GET /api/v1/deals/{id}/financials/pnl?period=annual` returns 3 annual periods (2022–2024)
+- [x] Revenue + COGS = Gross Profit (exactly, to the cent) — asserted in `TestPnLBuilder`
+- [x] Balance Sheet balances: Assets == Liabilities + Equity in every period — asserted in `TestBalanceSheetBuilder` and `TestBalanceSheetEndpoint`
+- [x] Mock mode works without Anthropic API key — all 125 tests pass with `USE_MOCK_LLM=true`
+
+### Architecture notes
+- `backend/tests/fixtures/generate_fixtures.py` extended to emit 612 monthly BalanceSheet rows (17 accounts × 36 periods) alongside the existing 902 P&L rows; totals 1,514 rows
+- Synthetic BS rows are balanced per-period via a Retained Earnings plug (Assets = Liabilities + Equity within $0.05)
+- Validator extended with `is_mixed_export` flag: mixed P&L-activity + BS-snapshot uploads pass the ingestion check (BS quality enforced per-period by the builder)
+- Root `tests/` folder relocated to `backend/tests/fixtures/financial_statements/{proper,anomaly,anomaly_deep}` and removed from `.gitignore`
+- `GET /financials/pnl?period=annual` rolls up 36 monthly rows into 3 annual periods; summary dicts keyed by "YYYY"
 
 ---
 
-## STEP 5 — React Frontend Dashboard (Pending)
-**Goal**: Upload → Process → View QoE waterfall + Red Flag table in browser.
+## STEP 4 — QoE Engine + Red Flag Detector
+**Status: COMPLETE**
 
-Files: `frontend/` (Vite + React + TypeScript scaffold)
+QoE rules engine, waterfall, red flag detector, LLM reviewer/enrichment agents, and API endpoints fully implemented and tested.
 
-Test Checklist:
-- [ ] `npm run dev` starts at localhost:5173 without errors
-- [ ] Upload page accepts CSV file, polls status, shows "Complete"
+### Test Checklist
+- [x] Planted legal settlement in fixture GL detected as one-time item — asserted in `TestQoERules` and `TestQoEOrchestrator`
+- [x] Owner comp excess detected across all 36 months — asserted in `TestQoERules.test_owner_comp_excess_detected_all_36_periods`
+- [x] `GET /api/v1/deals/{id}/qoe` waterfall array sums correctly — asserted in `TestQoEEndpoint.test_qoe_waterfall_base_plus_bars_equals_result`
+- [x] `GET /api/v1/deals/{id}/redflags` returns ≥3 flags with correct severity — asserted in `TestRedFlagEndpoint`
+
+### Architecture notes
+- All pipeline logic was pre-existing; Step 4 sign-off added orchestrator integration tests (`TestQoEOrchestrator`) and API-level HTTP tests (`test_api/test_qoe_redflags.py`, 23 tests)
+- `TestRedFlagRulesWithBSCF` verifies that `detect_all()` accepts and handles `balance_sheet` / `cash_flow` arguments without error; BS/CF-dependent rules don't breach thresholds in the synthetic fixture (AR days ~10d, DR growing, cash conversion healthy)
+- Mock LLM agents inject diligence questions on all High/Medium flags — verified end-to-end in `test_high_medium_flags_have_diligence_questions`
+
+---
+
+## STEP 5 — React Frontend Dashboard
+**Status: PENDING**
+
+Partial work complete: Next.js upload page, QoE Center, Red Flag Center wired to backend; upload accepts ZIP; reports page has backend databook download (local).
+
+### Test Checklist
+- [ ] `npm run dev` starts without errors
+- [ ] Upload page accepts CSV/ZIP, polls status, shows "Complete"
 - [ ] QoE Center renders waterfall chart with clickable bars
 - [ ] Red Flag table shows High/Medium/Low badges, sortable by severity
 
 ---
 
-## STEP 6 — NWC Analyzer + Commercial Health (Pending)
-## STEP 7 — PDF Contract Parser (Pending)
-## STEP 8 — Databook Export + Narrative Drafter (Pending)
+## STEP 6 — NWC Analyzer + Commercial Health
+**Status: PENDING**
+
+Partial work complete:
+- [x] `nwc_analyzer` pipeline stage stub (validates AR/AP aging inputs ingested)
+- [ ] Full NWC peg calculation
+- [ ] Commercial health analyzer
+- [ ] `GET /api/v1/deals/{id}/nwc`
+
+---
+
+## STEP 7 — PDF Contract Parser
+**Status: PENDING**
+
+Partial work complete:
+- [x] PDF text extraction (pdfplumber) in ingestion
+- [x] Mock LLM debt instrument extraction from PDF agreements
+- [ ] Full contract clause analysis and obligations parsing
+- [ ] `POST /api/v1/deals/{id}/contracts/analyze`
+
+---
+
+## STEP 8 — Databook Export + Narrative Drafter
+**Status: PENDING**
+
+Partial work complete:
+- [x] Excel databook export (`POST /api/v1/deals/{id}/databook/export`) — QoE waterfall, adjustments, GL mapping, aging, tie-outs, IRL tabs (local)
+- [ ] Narrative drafter (executive summary generation)
+- [ ] PDF report generation from backend
 
 ---
 
@@ -109,3 +133,9 @@ Test Checklist:
 | 2026-05-28 | Python Decimal for all financial amounts | Prevents floating-point drift in financial calculations |
 | 2026-05-28 | Amounts serialized as strings in JSON | Frontend parses to number only for display; preserves precision |
 | 2026-05-28 | FastAPI BackgroundTasks for processing | Sufficient for <50K row files; will replace with Celery+Redis for cloud |
+| 2026-06-08 | Multi-document ingestion in single `ingestion` stage | Classify and route GL, aging, projections, PDFs; optional docs non-blocking |
+| 2026-06-08 | `.xls` removed until xlrd dependency needed | Avoid broken loader path; `.xlsx` and CSV cover POC |
+| 2026-06-24 | Synthetic BS rows in generator (not schedule conversion) | Faster, self-contained; schedule files deferred to Steps 4–8 validation work |
+| 2026-06-24 | `is_mixed_export` validator flag instead of raising on global TB imbalance | P&L + BS snapshot file won't sum to zero globally; BS quality enforced per-period by builder |
+| 2026-06-24 | Annual P&L rollup in API layer (not stored) | Keep storage simple (monthly JSON); rollup is cheap at query time |
+| 2026-06-24 | BS/CF red-flag rules non-blocking (optional args) | Gracefully degrades to P&L-only flags when BS/CF unavailable; rules don't breach thresholds in synthetic fixture but are exercised in tests |

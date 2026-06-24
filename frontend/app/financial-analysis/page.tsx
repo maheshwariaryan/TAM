@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { KpiCard } from "@/components/kpi-card";
 import { ChartCard } from "@/components/charts/chart-card";
@@ -41,6 +41,14 @@ const fallbackMetric: Metric = {
 };
 
 export default function FinancialAnalysisPage() {
+  return (
+    <Suspense fallback={<div className="h-80 animate-pulse rounded-lg bg-muted" />}>
+      <FinancialAnalysisPageContent />
+    </Suspense>
+  );
+}
+
+function FinancialAnalysisPageContent() {
   const params = useSearchParams();
   const router = useRouter();
   const sub = (params.get("sub") as SubTab) || "qoe";
@@ -52,13 +60,11 @@ export default function FinancialAnalysisPage() {
     AnalysisResponseSchema
   );
   const [statementMetric, setStatementMetric] = useState<Metric | null>(null);
-  const [highlightedAdjustmentId, setHighlightedAdjustmentId] = useState<string | null>(null);
   const data = query.data;
   useEffect(() => {
     if (sub !== "qoe" || !focusedAdjustmentId || !data) return;
     const target = data.adjustments.find((row) => row.id.toLowerCase() === focusedAdjustmentId.toLowerCase());
     if (!target) return;
-    setHighlightedAdjustmentId(target.id);
 
     const scrollTimer = window.setTimeout(() => {
       const node = document.querySelector(`[data-adjustment-id="${target.id}"]`);
@@ -67,10 +73,8 @@ export default function FinancialAnalysisPage() {
       }
     }, 220);
 
-    const clearTimer = window.setTimeout(() => setHighlightedAdjustmentId(null), 2200);
     return () => {
       window.clearTimeout(scrollTimer);
-      window.clearTimeout(clearTimer);
     };
   }, [data, focusedAdjustmentId, sub]);
 

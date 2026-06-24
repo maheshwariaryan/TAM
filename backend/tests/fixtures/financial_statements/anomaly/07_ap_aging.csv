@@ -1,0 +1,51 @@
+As Of Period,Vendor Name,Invoice Number,Aging Bucket,Days Outstanding,Invoice Amount,Total Outstanding
+2024-12,Nucor Steel,VEN-1000,Current,12,34211.2,34211.2
+2024-12,Nucor Steel,VEN-1001,1-30 Days,34,14928.53,14928.53
+2024-12,Nucor Steel,VEN-1002,31-60 Days,55,8086.29,8086.29
+2024-12,Nucor Steel,VEN-1003,61-90 Days,78,3421.12,3421.12
+2024-12,Nucor Steel,VEN-1004,90+ Days,112,1555.06,1555.06
+2024-12,ResinWorks Inc.,VEN-1005,Current,12,43267.1,43267.1
+2024-12,ResinWorks Inc.,VEN-1006,1-30 Days,34,18880.19,18880.19
+2024-12,ResinWorks Inc.,VEN-1007,31-60 Days,55,10226.77,10226.77
+2024-12,ResinWorks Inc.,VEN-1008,61-90 Days,78,4326.71,4326.71
+2024-12,ResinWorks Inc.,VEN-1009,90+ Days,112,1966.68,1966.68
+2024-12,Midwest Freight Lines,VEN-1010,Current,12,52323.02,52323.02
+2024-12,Midwest Freight Lines,VEN-1011,1-30 Days,34,22831.86,22831.86
+2024-12,Midwest Freight Lines,VEN-1012,31-60 Days,55,12367.26,12367.26
+2024-12,Midwest Freight Lines,VEN-1013,61-90 Days,78,5232.3,5232.3
+2024-12,Midwest Freight Lines,VEN-1014,90+ Days,112,2378.32,2378.32
+2024-12,Plant Maintenance Co.,VEN-1015,Current,12,61378.92,61378.92
+2024-12,Plant Maintenance Co.,VEN-1016,1-30 Days,34,26783.53,26783.53
+2024-12,Plant Maintenance Co.,VEN-1017,31-60 Days,55,14507.75,14507.75
+2024-12,Plant Maintenance Co.,VEN-1018,61-90 Days,78,6137.89,6137.89
+2024-12,Plant Maintenance Co.,VEN-1019,90+ Days,112,2789.95,2789.95
+2024-12,Precision Labor Services,VEN-1020,Current,12,70434.82,70434.82
+2024-12,Precision Labor Services,VEN-1021,1-30 Days,34,30735.2,30735.2
+2024-12,Precision Labor Services,VEN-1022,31-60 Days,55,16648.23,16648.23
+2024-12,Precision Labor Services,VEN-1023,61-90 Days,78,7043.48,7043.48
+2024-12,Precision Labor Services,VEN-1024,90+ Days,112,3201.59,3201.59
+2024-12,Utility Provider,VEN-1025,Current,12,34211.2,34211.2
+2024-12,Utility Provider,VEN-1026,1-30 Days,34,14928.53,14928.53
+2024-12,Utility Provider,VEN-1027,31-60 Days,55,8086.29,8086.29
+2024-12,Utility Provider,VEN-1028,61-90 Days,78,3421.12,3421.12
+2024-12,Utility Provider,VEN-1029,90+ Days,112,1555.06,1555.06
+2024-12,Industrial Insurance Brokers,VEN-1030,Current,12,43267.1,43267.1
+2024-12,Industrial Insurance Brokers,VEN-1031,1-30 Days,34,18880.19,18880.19
+2024-12,Industrial Insurance Brokers,VEN-1032,31-60 Days,55,10226.77,10226.77
+2024-12,Industrial Insurance Brokers,VEN-1033,61-90 Days,78,4326.71,4326.71
+2024-12,Industrial Insurance Brokers,VEN-1034,90+ Days,112,1966.68,1966.68
+2024-12,Audit & Tax LLP,VEN-1035,Current,12,52323.02,52323.02
+2024-12,Audit & Tax LLP,VEN-1036,1-30 Days,34,22831.86,22831.86
+2024-12,Audit & Tax LLP,VEN-1037,31-60 Days,55,12367.26,12367.26
+2024-12,Audit & Tax LLP,VEN-1038,61-90 Days,78,5232.3,5232.3
+2024-12,Audit & Tax LLP,VEN-1039,90+ Days,112,2378.32,2378.32
+2024-12,Cloud Systems Inc.,VEN-1040,Current,12,61378.92,61378.92
+2024-12,Cloud Systems Inc.,VEN-1041,1-30 Days,34,26783.53,26783.53
+2024-12,Cloud Systems Inc.,VEN-1042,31-60 Days,55,14507.75,14507.75
+2024-12,Cloud Systems Inc.,VEN-1043,61-90 Days,78,6137.89,6137.89
+2024-12,Cloud Systems Inc.,VEN-1044,90+ Days,112,2789.95,2789.95
+2024-12,Office Depot Business,VEN-1045,Current,12,70434.82,70434.82
+2024-12,Office Depot Business,VEN-1046,1-30 Days,34,30735.2,30735.2
+2024-12,Office Depot Business,VEN-1047,31-60 Days,55,16648.23,16648.23
+2024-12,Office Depot Business,VEN-1048,61-90 Days,78,7043.48,7043.48
+2024-12,Office Depot Business,VEN-1049,90+ Days,112,3201.62,3201.62

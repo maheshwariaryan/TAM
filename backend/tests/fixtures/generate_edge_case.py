@@ -1,8 +1,10 @@
 import csv
-from datetime import date, timedelta
-from dateutil.relativedelta import relativedelta
-from pathlib import Path
 import random
+from datetime import date
+from pathlib import Path
+
+from dateutil.relativedelta import relativedelta
+
 
 def generate():
     out_path = Path(__file__).parent / "synthetic_edge_case.csv"

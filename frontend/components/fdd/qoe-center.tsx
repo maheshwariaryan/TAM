@@ -129,7 +129,7 @@ function AdjustmentRow({ adj, dealId }: { adj: QoEAdjustment; dealId: string }) 
       {expanded && (
         <div className="mx-4 mb-3 rounded-md bg-muted/40 p-3 text-xs space-y-2">
           {adj.llm_reasoning && (
-            <p className="text-muted-foreground italic">"{adj.llm_reasoning}"</p>
+            <p className="text-muted-foreground italic">&quot;{adj.llm_reasoning}&quot;</p>
           )}
           <p className="text-muted-foreground">{adj.source_gl_line_ids.length} source GL line(s)</p>
           {loading && <Skeleton className="h-6 w-full" />}

@@ -81,7 +81,7 @@ async def _run_async(deal_id: str) -> None:
     # Persist mapped GL
     _save_json(
         _processed_path(deal_id, "mapped_gl.json"),
-        [l.model_dump(mode="json") for l in mapped_lines],
+        [gl.model_dump(mode="json") for gl in mapped_lines],
     )
 
     # ── Step 4: Build financial statements ────────────────────────────────────
@@ -90,7 +90,7 @@ async def _run_async(deal_id: str) -> None:
     logger.info("P&L built: %d periods", len(pnl.periods))
 
     # Balance sheet (only if BS lines exist)
-    bs_lines = [l for l in mapped_lines if l.financial_statement == "BalanceSheet"]
+    bs_lines = [gl for gl in mapped_lines if gl.financial_statement == "BalanceSheet"]
     if bs_lines:
         bs = bs_builder.build(mapped_lines)
         _save_json(_processed_path(deal_id, "financials_bs.json"), bs.model_dump(mode="json"))

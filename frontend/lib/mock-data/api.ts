@@ -433,7 +433,7 @@ export async function getSummary(
   data.lastUpdated = new Date().toISOString();
   data.trend = trend;
   data.metrics = data.metrics
-    .map((metric) => {
+    .map((metric): Metric => {
     if (metric.id === "revenue-ltm") {
       return { ...metric, value: moneyM(numbers.revenueLtm), delta: pct((trend[11].revenue / Math.max(trend[8].revenue, 0.1) - 1) * 100) };
     }
@@ -538,7 +538,7 @@ export async function getAnalysis(
   const recurringRevenuePct = clamp(profile.recurringRevenuePct - profile.riskTilt * 6 + (mult - 1) * 6, 45, 92);
   const top10 = clamp(profile.top10Concentration + profile.riskTilt * 3 + (mult - 1) * 8, 20, 70);
 
-  data.revenueMetrics = data.revenueMetrics.map((metric) => {
+  data.revenueMetrics = data.revenueMetrics.map((metric): Metric => {
     if (metric.id === "rev-reported-norm") {
       return { ...metric, value: `${moneyM(numbers.revenueLtm)} / ${moneyM(numbers.revenueLtm * 0.986)}` };
     }
@@ -564,7 +564,7 @@ export async function getAnalysis(
     return metric;
   });
 
-  data.qoeMetrics = data.qoeMetrics.map((metric) => {
+  data.qoeMetrics = data.qoeMetrics.map((metric): Metric => {
     if (metric.id === "qoe-reported-ebitda") return { ...metric, value: moneyM(numbers.reportedEbitdaLtm) };
     if (metric.id === "qoe-adjusted-ebitda") return { ...metric, value: moneyM(numbers.adjustedEbitdaLtm) };
     if (metric.id === "qoe-adjustment-pct") return { ...metric, value: pct(numbers.adjustmentPct) };
@@ -585,7 +585,7 @@ export async function getAnalysis(
     return metric;
   });
 
-  data.marginMetrics = data.marginMetrics.map((metric) => {
+  data.marginMetrics = data.marginMetrics.map((metric): Metric => {
     if (metric.id === "margin-gross") {
       return { ...metric, value: pct(clamp((1 - (0.56 - profile.reportedMargin * 0.42)) * 100, 28, 72)) };
     }
@@ -605,7 +605,7 @@ export async function getAnalysis(
   });
 
   const avgNwc = numbers.avgNwc;
-  data.wcMetrics = data.wcMetrics.map((metric) => {
+  data.wcMetrics = data.wcMetrics.map((metric): Metric => {
     if (metric.id === "wc-avg") return { ...metric, value: moneyM(avgNwc) };
     if (metric.id === "wc-peg") return { ...metric, value: moneyM(avgNwc * 1.03) };
     if (metric.id === "wc-dso") {
@@ -626,7 +626,7 @@ export async function getAnalysis(
     return metric;
   });
 
-  data.cashMetrics = data.cashMetrics.map((metric) => {
+  data.cashMetrics = data.cashMetrics.map((metric): Metric => {
     if (metric.id === "cash-ocf") return { ...metric, value: moneyM(trend.reduce((sum, t) => sum + t.ocf, 0)) };
     if (metric.id === "cash-conv") return { ...metric, value: `${numbers.avgCashConversion.toFixed(0)}%` };
     if (metric.id === "cash-capex") return { ...metric, value: moneyM(Math.max(0.8, numbers.revenueLtm * (0.028 + profile.riskTilt * 0.01))) };
@@ -831,7 +831,7 @@ export async function getCustomer(
     };
   });
 
-  data.metrics = data.metrics.map((metric) => {
+  data.metrics = data.metrics.map((metric): Metric => {
     if (metric.id === "cust-top10") {
       return { ...metric, value: `${data.topTrend[data.topTrend.length - 1].top10.toFixed(0)}%` };
     }

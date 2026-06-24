@@ -15,7 +15,6 @@ Golden rule enforced: this agent outputs a classification dict only.
 No arithmetic, no amounts, no DataFrames touch this code.
 """
 
-import json
 import logging
 from typing import Any
 

@@ -8,7 +8,7 @@ export type ColumnDef<T> = {
   render?: (row: T) => ReactNode;
 };
 
-export function DataTable<T extends { id?: string }>({
+export function DataTable<T extends object>({
   title,
   columns,
   rows,
@@ -39,10 +39,13 @@ export function DataTable<T extends { id?: string }>({
               </TR>
             </THead>
             <TBody>
-              {rows.map((row, idx) => (
+              {rows.map((row, idx) => {
+                const rowId = (row as { id?: string }).id ?? idx;
+
+                return (
                 <TR
-                  key={row.id ?? idx}
-                  data-rowid={String(row.id ?? idx)}
+                  key={rowId}
+                  data-rowid={String(rowId)}
                   onClick={() => onRowClick?.(row)}
                   className={`${onRowClick ? "cursor-pointer" : ""} ${rowClassName ? rowClassName(row) : ""}`}
                 >
@@ -50,7 +53,8 @@ export function DataTable<T extends { id?: string }>({
                     <TD key={String(c.key)}>{c.render ? c.render(row) : String((row as Record<string, unknown>)[String(c.key)] ?? "")}</TD>
                   ))}
                 </TR>
-              ))}
+                );
+              })}
             </TBody>
           </Table>
         </div>

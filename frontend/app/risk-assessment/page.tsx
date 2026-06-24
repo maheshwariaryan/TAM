@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartCard } from "@/components/charts/chart-card";
@@ -18,6 +18,14 @@ import { useGlobalStore } from "@/lib/store/use-global-store";
 import { RedFlagCenter } from "@/components/fdd/redflag-center";
 
 export default function RiskAssessmentPage() {
+  return (
+    <Suspense fallback={<div className="h-80 animate-pulse rounded-lg bg-muted" />}>
+      <RiskAssessmentPageContent />
+    </Suspense>
+  );
+}
+
+function RiskAssessmentPageContent() {
   const router = useRouter();
   const params = useSearchParams();
   const { deal, dealId, period, basis } = useGlobalStore();
