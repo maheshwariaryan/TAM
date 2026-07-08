@@ -28,6 +28,16 @@ def classify_by_filename(filename: str) -> tuple[DocumentType, float]:
         return DocumentType.TRIAL_BALANCE, 0.8
     if any(k in name for k in ("gl_", "_gl", "general_ledger", "general ledger", "ledger")):
         return DocumentType.GENERAL_LEDGER, 0.75
+    # Wide-format financial schedule files — NOT GL rows; must not be routed to the GL loader.
+    # These have periods as column headers (e.g. "2022-01", "2022-02"…) rather than a period column.
+    if any(k in name for k in (
+        "balance_sheet", "income_statement", "cash_flow",
+        "cogs_schedule", "opex_schedule", "revenue_schedule",
+        "payroll", "debt_schedule", "lease_schedule",
+        "fixed_asset", "inventory_rollforward", "working_capital",
+        "equity_rollforward", "bank_statement",
+    )):
+        return DocumentType.UNCLASSIFIED, 0.7
     if name.endswith(".pdf"):
         return DocumentType.CONTRACT_OTHER, 0.5
     if name.endswith((".csv", ".xlsx")):

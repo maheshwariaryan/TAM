@@ -116,7 +116,7 @@ function Topbar() {
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const noShellRoutes = ["/welcome", "/login", "/signup", "/onboarding"];
+  const noShellRoutes = ["/welcome", "/login", "/signup", "/onboarding", "/upload"];
   const hideShell = noShellRoutes.some((r) => pathname === r || pathname.startsWith(`${r}/`));
 
   if (hideShell) return <>{children}</>;

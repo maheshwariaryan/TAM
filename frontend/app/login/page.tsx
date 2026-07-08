@@ -27,7 +27,7 @@ export default function LoginPage() {
         setError(json.message ?? "Unable to sign in");
         return;
       }
-      router.push(json.firstLogin ? "/onboarding" : "/dashboard");
+      router.push("/upload");
       router.refresh();
     } catch {
       setError("Unable to sign in");

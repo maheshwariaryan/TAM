@@ -1,0 +1,378 @@
+period,account_code,account_description,debit,credit
+2022-01-01,4000,Revenue - Subscription,0,480476
+2022-01-01,4001,Revenue - One-time implementation,0,24777
+2022-01-01,4002,Misc Income - Ask Accountant,0,482
+2022-01-01,5000,COGS - Cloud Hosting,74068,0
+2022-01-01,5001,COGS - Support Labor,126728,0
+2022-01-01,6000,Salaries & Wages,205239,0
+2022-01-01,6002,Misc Expense - Do Not Use,1459,0
+2022-01-01,7000,Rent Expense,25021,0
+2022-01-01,7001,Legal fees - Standard Corporate,4915,0
+2022-01-01,1000,Cash,68305,0
+2022-02-01,4000,Revenue - Subscription,0,509494
+2022-02-01,4001,Revenue - One-time implementation,0,23737
+2022-02-01,4002,Misc Income - Ask Accountant,0,486
+2022-02-01,5000,COGS - Cloud Hosting,79204,0
+2022-02-01,5001,COGS - Support Labor,122305,0
+2022-02-01,6000,Salaries & Wages,208963,0
+2022-02-01,6002,Misc Expense - Do Not Use,1616,0
+2022-02-01,7000,Rent Expense,23006,0
+2022-02-01,7001,Legal fees - Standard Corporate,4771,0
+2022-02-01,1000,Cash,93852,0
+2022-03-01,4000,Revenue - Subscription,0,471870
+2022-03-01,4001,Revenue - One-time implementation,0,23511
+2022-03-01,4002,Misc Income - Ask Accountant,0,504
+2022-03-01,5000,COGS - Cloud Hosting,77975,0
+2022-03-01,5001,COGS - Support Labor,116898,0
+2022-03-01,6000,Salaries & Wages,195885,0
+2022-03-01,6002,Misc Expense - Do Not Use,1480,0
+2022-03-01,7000,Rent Expense,26403,0
+2022-03-01,7001,Legal fees - Standard Corporate,4646,0
+2022-03-01,8000,Consulting fees - XYZ Management LLC,75000,0
+2022-03-01,1000,Cash,0,2402
+2022-04-01,4000,Revenue - Subscription,0,482341
+2022-04-01,4001,Revenue - One-time implementation,0,24485
+2022-04-01,4002,Misc Income - Ask Accountant,0,467
+2022-04-01,5000,COGS - Cloud Hosting,81949,0
+2022-04-01,5001,COGS - Support Labor,123674,0
+2022-04-01,6000,Salaries & Wages,205831,0
+2022-04-01,6002,Misc Expense - Do Not Use,1391,0
+2022-04-01,7000,Rent Expense,25149,0
+2022-04-01,7001,Legal fees - Standard Corporate,5055,0
+2022-04-01,1000,Cash,64244,0
+2022-05-01,4000,Revenue - Subscription,0,525484
+2022-05-01,4001,Revenue - One-time implementation,0,27392
+2022-05-01,4002,Misc Income - Ask Accountant,0,452
+2022-05-01,5000,COGS - Cloud Hosting,87355,0
+2022-05-01,5001,COGS - Support Labor,126588,0
+2022-05-01,6000,Salaries & Wages,213115,0
+2022-05-01,6002,Misc Expense - Do Not Use,1450,0
+2022-05-01,7000,Rent Expense,24746,0
+2022-05-01,7001,Legal fees - Standard Corporate,5470,0
+2022-05-01,1000,Cash,94604,0
+2022-06-01,4000,Revenue - Subscription,0,492565
+2022-06-01,4001,Revenue - One-time implementation,0,27479
+2022-06-01,4002,Misc Income - Ask Accountant,0,458
+2022-06-01,5000,COGS - Cloud Hosting,72796,0
+2022-06-01,5001,COGS - Support Labor,118635,0
+2022-06-01,6000,Salaries & Wages,185435,0
+2022-06-01,6002,Misc Expense - Do Not Use,1517,0
+2022-06-01,7000,Rent Expense,26058,0
+2022-06-01,7001,Legal fees - Standard Corporate,5372,0
+2022-06-01,8000,Consulting fees - XYZ Management LLC,75000,0
+2022-06-01,1000,Cash,35689,0
+2022-07-01,4000,Revenue - Subscription,0,500191
+2022-07-01,4001,Revenue - One-time implementation,0,22718
+2022-07-01,4002,Misc Income - Ask Accountant,0,511
+2022-07-01,5000,COGS - Cloud Hosting,76001,0
+2022-07-01,5001,COGS - Support Labor,130814,0
+2022-07-01,6000,Salaries & Wages,215581,0
+2022-07-01,6002,Misc Expense - Do Not Use,1568,0
+2022-07-01,7000,Rent Expense,23472,0
+2022-07-01,7001,Legal fees - Standard Corporate,4904,0
+2022-07-01,1000,Cash,71080,0
+2022-08-01,4000,Revenue - Subscription,0,548246
+2022-08-01,4001,Revenue - One-time implementation,0,23606
+2022-08-01,4002,Misc Income - Ask Accountant,0,490
+2022-08-01,5000,COGS - Cloud Hosting,84436,0
+2022-08-01,5001,COGS - Support Labor,125074,0
+2022-08-01,6000,Salaries & Wages,208532,0
+2022-08-01,6002,Misc Expense - Do Not Use,1353,0
+2022-08-01,7000,Rent Expense,25846,0
+2022-08-01,7001,Legal fees - Standard Corporate,4715,0
+2022-08-01,1000,Cash,122386,0
+2022-09-01,4000,Revenue - Subscription,0,492763
+2022-09-01,4001,Revenue - One-time implementation,0,23065
+2022-09-01,4002,Misc Income - Ask Accountant,0,488
+2022-09-01,5000,COGS - Cloud Hosting,72490,0
+2022-09-01,5001,COGS - Support Labor,109957,0
+2022-09-01,6000,Salaries & Wages,188674,0
+2022-09-01,6002,Misc Expense - Do Not Use,1418,0
+2022-09-01,7000,Rent Expense,23044,0
+2022-09-01,7001,Legal fees - Standard Corporate,4765,0
+2022-09-01,8000,Consulting fees - XYZ Management LLC,75000,0
+2022-09-01,1000,Cash,40968,0
+2022-10-01,4000,Revenue - Subscription,0,465718
+2022-10-01,4001,Revenue - One-time implementation,0,22737
+2022-10-01,4002,Misc Income - Ask Accountant,0,502
+2022-10-01,5000,COGS - Cloud Hosting,79094,0
+2022-10-01,5001,COGS - Support Labor,113996,0
+2022-10-01,6000,Salaries & Wages,200297,0
+2022-10-01,6002,Misc Expense - Do Not Use,1650,0
+2022-10-01,7000,Rent Expense,25100,0
+2022-10-01,7001,Legal fees - Standard Corporate,4823,0
+2022-10-01,1000,Cash,63997,0
+2022-11-01,4000,Revenue - Subscription,0,501513
+2022-11-01,4001,Revenue - One-time implementation,0,25675
+2022-11-01,4002,Misc Income - Ask Accountant,0,510
+2022-11-01,5000,COGS - Cloud Hosting,73851,0
+2022-11-01,5001,COGS - Support Labor,131936,0
+2022-11-01,6000,Salaries & Wages,180646,0
+2022-11-01,6002,Misc Expense - Do Not Use,1513,0
+2022-11-01,7000,Rent Expense,23219,0
+2022-11-01,7001,Legal fees - Standard Corporate,4632,0
+2022-11-01,1000,Cash,111901,0
+2022-12-01,4000,Revenue - Subscription,0,502493
+2022-12-01,4001,Revenue - One-time implementation,0,26585
+2022-12-01,4002,Misc Income - Ask Accountant,0,456
+2022-12-01,5000,COGS - Cloud Hosting,85539,0
+2022-12-01,5001,COGS - Support Labor,125819,0
+2022-12-01,6000,Salaries & Wages,185243,0
+2022-12-01,6001,Owner's Discretionary Bonus - Non-Operating,500000,0
+2022-12-01,6002,Misc Expense - Do Not Use,1430,0
+2022-12-01,7000,Rent Expense,27463,0
+2022-12-01,7001,Legal fees - Standard Corporate,5045,0
+2022-12-01,8000,Consulting fees - XYZ Management LLC,75000,0
+2022-12-01,1000,Cash,0,476005
+2023-01-01,4000,Revenue - Subscription,0,490812
+2023-01-01,4001,Revenue - One-time implementation,0,25156
+2023-01-01,4002,Misc Income - Ask Accountant,0,475
+2023-01-01,5000,COGS - Cloud Hosting,79342,0
+2023-01-01,5001,COGS - Support Labor,115935,0
+2023-01-01,6000,Salaries & Wages,186314,0
+2023-01-01,6002,Misc Expense - Do Not Use,1464,0
+2023-01-01,7000,Rent Expense,22541,0
+2023-01-01,7001,Legal fees - Standard Corporate,5250,0
+2023-01-01,1000,Cash,105597,0
+2023-02-01,4000,Revenue - Subscription,0,458604
+2023-02-01,4001,Revenue - One-time implementation,0,23728
+2023-02-01,4002,Misc Income - Ask Accountant,0,541
+2023-02-01,5000,COGS - Cloud Hosting,81732,0
+2023-02-01,5001,COGS - Support Labor,124257,0
+2023-02-01,6000,Salaries & Wages,191536,0
+2023-02-01,6002,Misc Expense - Do Not Use,1423,0
+2023-02-01,7000,Rent Expense,27096,0
+2023-02-01,7001,Legal fees - Standard Corporate,4841,0
+2023-02-01,1000,Cash,51988,0
+2023-03-01,4000,Revenue - Subscription,0,522753
+2023-03-01,4001,Revenue - One-time implementation,0,23236
+2023-03-01,4002,Misc Income - Ask Accountant,0,454
+2023-03-01,5000,COGS - Cloud Hosting,84536,0
+2023-03-01,5001,COGS - Support Labor,130155,0
+2023-03-01,6000,Salaries & Wages,204424,0
+2023-03-01,6002,Misc Expense - Do Not Use,1581,0
+2023-03-01,7000,Rent Expense,23860,0
+2023-03-01,7001,Legal fees - Standard Corporate,5149,0
+2023-03-01,8000,Consulting fees - XYZ Management LLC,75000,0
+2023-03-01,1000,Cash,21738,0
+2023-04-01,4000,Revenue - Subscription,0,477297
+2023-04-01,4001,Revenue - One-time implementation,0,25219
+2023-04-01,4002,Misc Income - Ask Accountant,0,490
+2023-04-01,5000,COGS - Cloud Hosting,76074,0
+2023-04-01,5001,COGS - Support Labor,110551,0
+2023-04-01,6000,Salaries & Wages,189445,0
+2023-04-01,6002,Misc Expense - Do Not Use,1517,0
+2023-04-01,7000,Rent Expense,24472,0
+2023-04-01,7001,Legal fees - Standard Corporate,5196,0
+2023-04-01,1000,Cash,95751,0
+2023-05-01,4000,Revenue - Subscription,0,498333
+2023-05-01,4001,Revenue - One-time implementation,0,26353
+2023-05-01,4002,Misc Income - Ask Accountant,0,519
+2023-05-01,4100,PPP Loan Forgiveness,0,1500000
+2023-05-01,5000,COGS - Cloud Hosting,74806,0
+2023-05-01,5001,COGS - Support Labor,120683,0
+2023-05-01,6000,Salaries & Wages,195390,0
+2023-05-01,6002,Misc Expense - Do Not Use,1466,0
+2023-05-01,7000,Rent Expense,24404,0
+2023-05-01,7001,Legal fees - Standard Corporate,4662,0
+2023-05-01,1000,Cash,1603794,0
+2023-06-01,4000,Revenue - Subscription,0,542041
+2023-06-01,4001,Revenue - One-time implementation,0,23923
+2023-06-01,4002,Misc Income - Ask Accountant,0,452
+2023-06-01,5000,COGS - Cloud Hosting,87049,0
+2023-06-01,5001,COGS - Support Labor,118316,0
+2023-06-01,6000,Salaries & Wages,214475,0
+2023-06-01,6002,Misc Expense - Do Not Use,1573,0
+2023-06-01,7000,Rent Expense,23067,0
+2023-06-01,7001,Legal fees - Standard Corporate,5343,0
+2023-06-01,8000,Consulting fees - XYZ Management LLC,75000,0
+2023-06-01,1000,Cash,41593,0
+2023-07-01,4000,Revenue - Subscription,0,537457
+2023-07-01,4001,Revenue - One-time implementation,0,22546
+2023-07-01,4002,Misc Income - Ask Accountant,0,511
+2023-07-01,5000,COGS - Cloud Hosting,80068,0
+2023-07-01,5001,COGS - Support Labor,109738,0
+2023-07-01,6000,Salaries & Wages,190828,0
+2023-07-01,6002,Misc Expense - Do Not Use,1589,0
+2023-07-01,7000,Rent Expense,24059,0
+2023-07-01,7001,Legal fees - Standard Corporate,4967,0
+2023-07-01,1000,Cash,149265,0
+2023-08-01,4000,Revenue - Subscription,0,478364
+2023-08-01,4001,Revenue - One-time implementation,0,26015
+2023-08-01,4002,Misc Income - Ask Accountant,0,459
+2023-08-01,5000,COGS - Cloud Hosting,83969,0
+2023-08-01,5001,COGS - Support Labor,108197,0
+2023-08-01,6000,Salaries & Wages,184680,0
+2023-08-01,6002,Misc Expense - Do Not Use,1444,0
+2023-08-01,7000,Rent Expense,23784,0
+2023-08-01,7001,Legal fees - Standard Corporate,4868,0
+2023-08-01,1000,Cash,97896,0
+2023-09-01,4000,Revenue - Subscription,0,514983
+2023-09-01,4001,Revenue - One-time implementation,0,26208
+2023-09-01,4002,Misc Income - Ask Accountant,0,504
+2023-09-01,5000,COGS - Cloud Hosting,86987,0
+2023-09-01,5001,COGS - Support Labor,125772,0
+2023-09-01,6000,Salaries & Wages,193327,0
+2023-09-01,6002,Misc Expense - Do Not Use,1604,0
+2023-09-01,7000,Rent Expense,24161,0
+2023-09-01,7001,Legal fees - Standard Corporate,4620,0
+2023-09-01,8000,Consulting fees - XYZ Management LLC,75000,0
+2023-09-01,1000,Cash,30224,0
+2023-10-01,4000,Revenue - Subscription,0,528356
+2023-10-01,4001,Revenue - One-time implementation,0,23119
+2023-10-01,4002,Misc Income - Ask Accountant,0,457
+2023-10-01,5000,COGS - Cloud Hosting,73369,0
+2023-10-01,5001,COGS - Support Labor,115832,0
+2023-10-01,6000,Salaries & Wages,214553,0
+2023-10-01,6002,Misc Expense - Do Not Use,1362,0
+2023-10-01,7000,Rent Expense,26305,0
+2023-10-01,7001,Legal fees - Standard Corporate,5473,0
+2023-10-01,1000,Cash,115038,0
+2023-11-01,4000,Revenue - Subscription,0,497775
+2023-11-01,4001,Revenue - One-time implementation,0,25124
+2023-11-01,4002,Misc Income - Ask Accountant,0,497
+2023-11-01,5000,COGS - Cloud Hosting,76088,0
+2023-11-01,5001,COGS - Support Labor,112417,0
+2023-11-01,6000,Salaries & Wages,216040,0
+2023-11-01,6002,Misc Expense - Do Not Use,1486,0
+2023-11-01,7000,Rent Expense,26047,0
+2023-11-01,7001,Legal fees - Standard Corporate,4801,0
+2023-11-01,1000,Cash,86517,0
+2023-12-01,4000,Revenue - Subscription,0,511559
+2023-12-01,4001,Revenue - One-time implementation,0,23056
+2023-12-01,4002,Misc Income - Ask Accountant,0,480
+2023-12-01,5000,COGS - Cloud Hosting,82142,0
+2023-12-01,5001,COGS - Support Labor,108009,0
+2023-12-01,6000,Salaries & Wages,183322,0
+2023-12-01,6001,Owner's Discretionary Bonus - Non-Operating,500000,0
+2023-12-01,6002,Misc Expense - Do Not Use,1440,0
+2023-12-01,7000,Rent Expense,24932,0
+2023-12-01,7001,Legal fees - Standard Corporate,4743,0
+2023-12-01,8000,Consulting fees - XYZ Management LLC,75000,0
+2023-12-01,1000,Cash,0,444493
+2024-01-01,4000,Revenue - Subscription,0,504430
+2024-01-01,4001,Revenue - One-time implementation,0,27237
+2024-01-01,4002,Misc Income - Ask Accountant,0,543
+2024-01-01,5000,COGS - Cloud Hosting,73491,0
+2024-01-01,5001,COGS - Support Labor,111930,0
+2024-01-01,6000,Salaries & Wages,194028,0
+2024-01-01,6002,Misc Expense - Do Not Use,1487,0
+2024-01-01,7000,Rent Expense,26941,0
+2024-01-01,7001,Legal fees - Standard Corporate,5371,0
+2024-01-01,1000,Cash,118962,0
+2024-02-01,4000,Revenue - Subscription,0,452759
+2024-02-01,4001,Revenue - One-time implementation,0,25690
+2024-02-01,4002,Misc Income - Ask Accountant,0,492
+2024-02-01,5000,COGS - Cloud Hosting,85022,0
+2024-02-01,5001,COGS - Support Labor,109648,0
+2024-02-01,6000,Salaries & Wages,219914,0
+2024-02-01,6002,Misc Expense - Do Not Use,1562,0
+2024-02-01,7000,Rent Expense,23513,0
+2024-02-01,7001,Legal fees - Standard Corporate,5425,0
+2024-02-01,7002,Legal fees - Settlement of pending IP litigation,2500000,0
+2024-02-01,1000,Cash,0,2466143
+2024-03-01,4000,Revenue - Subscription,0,474118
+2024-03-01,4001,Revenue - One-time implementation,0,27021
+2024-03-01,4002,Misc Income - Ask Accountant,0,458
+2024-03-01,5000,COGS - Cloud Hosting,86444,0
+2024-03-01,5001,COGS - Support Labor,113041,0
+2024-03-01,6000,Salaries & Wages,191516,0
+2024-03-01,6002,Misc Expense - Do Not Use,1626,0
+2024-03-01,7000,Rent Expense,24770,0
+2024-03-01,7001,Legal fees - Standard Corporate,5471,0
+2024-03-01,8000,Consulting fees - XYZ Management LLC,75000,0
+2024-03-01,1000,Cash,3729,0
+2024-04-01,4000,Revenue - Subscription,0,530109
+2024-04-01,4001,Revenue - One-time implementation,0,25442
+2024-04-01,4002,Misc Income - Ask Accountant,0,469
+2024-04-01,5000,COGS - Cloud Hosting,83331,0
+2024-04-01,5001,COGS - Support Labor,115553,0
+2024-04-01,6000,Salaries & Wages,219360,0
+2024-04-01,6002,Misc Expense - Do Not Use,1445,0
+2024-04-01,7000,Rent Expense,23933,0
+2024-04-01,7001,Legal fees - Standard Corporate,4870,0
+2024-04-01,1000,Cash,107528,0
+2024-05-01,4000,Revenue - Subscription,0,502838
+2024-05-01,4001,Revenue - One-time implementation,0,24787
+2024-05-01,4002,Misc Income - Ask Accountant,0,495
+2024-05-01,5000,COGS - Cloud Hosting,87400,0
+2024-05-01,5001,COGS - Support Labor,127579,0
+2024-05-01,6000,Salaries & Wages,195178,0
+2024-05-01,6002,Misc Expense - Do Not Use,1422,0
+2024-05-01,7000,Rent Expense,22791,0
+2024-05-01,7001,Legal fees - Standard Corporate,4879,0
+2024-05-01,1000,Cash,88871,0
+2024-06-01,4000,Revenue - Subscription,0,484393
+2024-06-01,4001,Revenue - One-time implementation,0,24794
+2024-06-01,4002,Misc Income - Ask Accountant,0,485
+2024-06-01,5000,COGS - Cloud Hosting,78793,0
+2024-06-01,5001,COGS - Support Labor,108254,0
+2024-06-01,6000,Salaries & Wages,204371,0
+2024-06-01,6002,Misc Expense - Do Not Use,1569,0
+2024-06-01,7000,Rent Expense,23847,0
+2024-06-01,7001,Legal fees - Standard Corporate,5496,0
+2024-06-01,8000,Consulting fees - XYZ Management LLC,75000,0
+2024-06-01,1000,Cash,12342,0
+2024-07-01,4000,Revenue - Subscription,0,488922
+2024-07-01,4001,Revenue - One-time implementation,0,27376
+2024-07-01,4002,Misc Income - Ask Accountant,0,458
+2024-07-01,5000,COGS - Cloud Hosting,81681,0
+2024-07-01,5001,COGS - Support Labor,117100,0
+2024-07-01,6000,Salaries & Wages,202866,0
+2024-07-01,6002,Misc Expense - Do Not Use,1420,0
+2024-07-01,7000,Rent Expense,24720,0
+2024-07-01,7001,Legal fees - Standard Corporate,5342,0
+2024-07-01,1000,Cash,83627,0
+2024-08-01,4000,Revenue - Subscription,0,543873
+2024-08-01,4001,Revenue - One-time implementation,0,26521
+2024-08-01,4002,Misc Income - Ask Accountant,0,473
+2024-08-01,5000,COGS - Cloud Hosting,86676,0
+2024-08-01,5001,COGS - Support Labor,115436,0
+2024-08-01,6000,Salaries & Wages,206968,0
+2024-08-01,6002,Misc Expense - Do Not Use,1547,0
+2024-08-01,7000,Rent Expense,22990,0
+2024-08-01,7001,Legal fees - Standard Corporate,5183,0
+2024-08-01,1000,Cash,132067,0
+2024-09-01,4000,Revenue - Subscription,0,539520
+2024-09-01,4001,Revenue - One-time implementation,0,25920
+2024-09-01,4002,Misc Income - Ask Accountant,0,467
+2024-09-01,5000,COGS - Cloud Hosting,74536,0
+2024-09-01,5001,COGS - Support Labor,114523,0
+2024-09-01,6000,Salaries & Wages,213387,0
+2024-09-01,6002,Misc Expense - Do Not Use,1569,0
+2024-09-01,7000,Rent Expense,27430,0
+2024-09-01,7001,Legal fees - Standard Corporate,5210,0
+2024-09-01,8000,Consulting fees - XYZ Management LLC,75000,0
+2024-09-01,1000,Cash,54252,0
+2024-10-01,4000,Revenue - Subscription,0,507673
+2024-10-01,4001,Revenue - One-time implementation,0,26519
+2024-10-01,4002,Misc Income - Ask Accountant,0,461
+2024-10-01,5000,COGS - Cloud Hosting,87672,0
+2024-10-01,5001,COGS - Support Labor,120684,0
+2024-10-01,6000,Salaries & Wages,180575,0
+2024-10-01,6002,Misc Expense - Do Not Use,1401,0
+2024-10-01,7000,Rent Expense,26890,0
+2024-10-01,7001,Legal fees - Standard Corporate,4725,0
+2024-10-01,1000,Cash,112706,0
+2024-11-01,4000,Revenue - Subscription,0,502857
+2024-11-01,4001,Revenue - One-time implementation,0,23851
+2024-11-01,4002,Misc Income - Ask Accountant,0,546
+2024-11-01,5000,COGS - Cloud Hosting,84856,0
+2024-11-01,5001,COGS - Support Labor,131606,0
+2024-11-01,6000,Salaries & Wages,215346,0
+2024-11-01,6002,Misc Expense - Do Not Use,1372,0
+2024-11-01,7000,Rent Expense,22806,0
+2024-11-01,7001,Legal fees - Standard Corporate,5089,0
+2024-11-01,1000,Cash,66179,0
+2024-12-01,4000,Revenue - Subscription,0,505005
+2024-12-01,4001,Revenue - One-time implementation,0,24363
+2024-12-01,4002,Misc Income - Ask Accountant,0,528
+2024-12-01,5000,COGS - Cloud Hosting,81344,0
+2024-12-01,5001,COGS - Support Labor,108523,0
+2024-12-01,6000,Salaries & Wages,191996,0
+2024-12-01,6001,Owner's Discretionary Bonus - Non-Operating,500000,0
+2024-12-01,6002,Misc Expense - Do Not Use,1422,0
+2024-12-01,7000,Rent Expense,23464,0
+2024-12-01,7001,Legal fees - Standard Corporate,5214,0
+2024-12-01,8000,Consulting fees - XYZ Management LLC,75000,0
+2024-12-01,1000,Cash,0,457067

@@ -13,6 +13,7 @@ import { DecisionQueueResponseSchema, SummaryResponseSchema, type Metric } from 
 import { useGlobalStore } from "@/lib/store/use-global-store";
 import { formatDateTime } from "@/lib/utils/format";
 import { DealSummaryBanner } from "@/components/fdd/deal-summary-banner";
+import { JuniorAnalystReport } from "@/components/fdd/junior-analyst-report";
 
 const kpiTabs = [
   { key: "overview", label: "Executive Overview" },
@@ -121,6 +122,8 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* ── Real deal metrics from FDD backend ── */}
       {dealId && <DealSummaryBanner dealId={dealId} />}
+
+      <JuniorAnalystReport dealId={dealId} deal={deal} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
