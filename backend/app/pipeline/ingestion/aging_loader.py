@@ -21,7 +21,7 @@ def infer_aging_column_map(df: pd.DataFrame, doc_type: str) -> dict[str, str]:
 
     mapping: dict[str, str] = {}
 
-    period_col = find(["period", "date", "as of", "as_of", "report date", "month"])
+    period_col = find(["period", "date", "as of period", "as of", "as_of", "report date", "month", "reporting period"])
     if period_col:
         mapping[period_col] = "period"
 

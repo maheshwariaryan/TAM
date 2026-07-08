@@ -157,8 +157,70 @@ def _parse_gl(path: Path, deal_id: str) -> list[RawGLLine]:
 
 def _parse_aging(path: Path, deal_id: str, doc_type: str) -> list:
     df = load_file(path)
+    # Detect row-per-invoice (detailed) format and aggregate to summary before normalising
+    if "aging bucket" in {c.lower().strip() for c in df.columns}:
+        df = _aggregate_detailed_aging(df, path.name)
     col_map = infer_aging_column_map(df, doc_type)
     return normalise_aging(df, col_map, path.name, deal_id, doc_type)
+
+
+def _aggregate_detailed_aging(df: "pd.DataFrame", filename: str) -> "pd.DataFrame":
+    """Pivot a row-per-invoice aging file into one-summary-row-per-period format.
+
+    Input columns (detected):  As Of Period, Aging Bucket, Total Outstanding / Invoice Amount
+    Output columns:            <period_col>, 0-30, 31-60, 61-90, 90+, total
+    """
+    import pandas as pd  # already imported at module level but guarded here for clarity
+    from app.pipeline.ingestion.loader import LoaderError
+
+    cols_lower = {c.lower().strip(): c for c in df.columns}
+
+    period_col = next(
+        (cols_lower[k] for k in ["as of period", "period", "date", "report date"] if k in cols_lower),
+        None,
+    )
+    amount_col = next(
+        (cols_lower[k] for k in ["total outstanding", "invoice amount", "amount", "balance"] if k in cols_lower),
+        None,
+    )
+    bucket_col = cols_lower.get("aging bucket")
+
+    if not (period_col and amount_col and bucket_col):
+        raise LoaderError(
+            f"Detailed aging '{filename}' missing required columns. Found: {list(df.columns)}"
+        )
+
+    bucket_name_map: dict[str, str] = {
+        "current": "0-30", "1-30 days": "0-30", "0-30": "0-30",
+        "31-60 days": "31-60", "31-60": "31-60",
+        "61-90 days": "61-90", "61-90": "61-90",
+        "90+ days": "90+", "90+": "90+", "over 90": "90+",
+        "91+ days": "90+", "91+": "90+",
+    }
+
+    work = df.copy()
+    work["_bucket"] = work[bucket_col].str.lower().str.strip().map(bucket_name_map)
+    work["_amount"] = pd.to_numeric(work[amount_col], errors="coerce").fillna(0)
+
+    agg = (
+        work.groupby([period_col, "_bucket"], dropna=False)["_amount"]
+        .sum()
+        .reset_index()
+    )
+    pivoted = agg.pivot_table(
+        index=period_col, columns="_bucket", values="_amount", aggfunc="sum", fill_value=0
+    )
+    pivoted.columns.name = None
+    pivoted = pivoted.reset_index()
+
+    bucket_cols = [c for c in pivoted.columns if c in {"0-30", "31-60", "61-90", "90+"}]
+    pivoted["total"] = pivoted[bucket_cols].sum(axis=1)
+
+    logger.debug(
+        "Aggregated detailed aging '%s': %d summary rows from %d detail rows",
+        filename, len(pivoted), len(df),
+    )
+    return pivoted
 
 
 def _parse_pdf_contract(path: Path, deal_id: str) -> list[DebtInstrument]:

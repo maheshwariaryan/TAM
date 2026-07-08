@@ -164,11 +164,8 @@ export default function UploadPage() {
             </p>
             <StageProgress stages={deal.stages} />
             <div className="flex gap-3 pt-2">
-              <Button onClick={() => router.push("/financial-analysis")} className="flex-1">
-                View Financial Analysis
-              </Button>
-              <Button variant="outline" onClick={() => router.push("/risk-assessment")} className="flex-1">
-                View Red Flags
+              <Button onClick={() => router.push("/dashboard")} className="flex-1">
+                Open Dashboard
               </Button>
             </div>
             <Button variant="ghost" size="sm" className="w-full" onClick={() => {

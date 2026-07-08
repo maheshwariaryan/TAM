@@ -118,7 +118,7 @@ export default function OnboardingPage() {
         window.localStorage.setItem("tam-company-profiles", JSON.stringify(merged));
         setDeal(profile.companyName || "Project Atlas");
       } finally {
-        router.push("/dashboard");
+        router.push("/upload");
         router.refresh();
       }
     }, 8200);

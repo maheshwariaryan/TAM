@@ -122,8 +122,8 @@ def infer_column_map(df: pd.DataFrame) -> dict[str, str]:
     mapping: dict[str, str] = {}
 
     # Date / Period
-    date_col = find(["period", "date", "posting date", "transaction date", "gl date",
-                     "accounting date", "post date", "month"])
+    date_col = find(["period", "date", "as of period", "posting date", "transaction date",
+                     "gl date", "accounting date", "post date", "month", "reporting period"])
     if date_col:
         mapping[date_col] = "period"
 
