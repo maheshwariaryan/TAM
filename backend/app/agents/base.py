@@ -109,7 +109,6 @@ class BaseAgent:
                 kwargs: dict[str, Any] = {
                     "model": settings.anthropic_model,
                     "messages": api_messages,
-                    "temperature": 0.0,
                     "max_tokens": 4000,
                 }
                 if system_prompt:

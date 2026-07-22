@@ -16,6 +16,8 @@ import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import pandas as pd
+
 from app.agents.contract_parser import parse_debt_from_text
 from app.pipeline.contracts.pdf_extractor import PdfExtractorError, extract_text
 from app.pipeline.ingestion.aging_loader import infer_aging_column_map
@@ -164,13 +166,12 @@ def _parse_aging(path: Path, deal_id: str, doc_type: str) -> list:
     return normalise_aging(df, col_map, path.name, deal_id, doc_type)
 
 
-def _aggregate_detailed_aging(df: "pd.DataFrame", filename: str) -> "pd.DataFrame":
+def _aggregate_detailed_aging(df: pd.DataFrame, filename: str) -> pd.DataFrame:
     """Pivot a row-per-invoice aging file into one-summary-row-per-period format.
 
     Input columns (detected):  As Of Period, Aging Bucket, Total Outstanding / Invoice Amount
     Output columns:            <period_col>, 0-30, 31-60, 61-90, 90+, total
     """
-    import pandas as pd  # already imported at module level but guarded here for clarity
     from app.pipeline.ingestion.loader import LoaderError
 
     cols_lower = {c.lower().strip(): c for c in df.columns}

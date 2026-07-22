@@ -15,10 +15,11 @@ STAGE_ORDER = [
     "coa_mapping",
     "financial_builder",
     "qoe_engine",
-    "redflag_detector",
     "nwc_analyzer",
+    "redflag_detector",
     "dcf_engine",
     "net_debt_bridge",
+    "narrative_drafter",
 ]
 
 
@@ -85,3 +86,7 @@ def _run_stage(deal_id: str, stage: str) -> None:
     elif stage == "net_debt_bridge":
         from app.pipeline.net_debt_bridge import orchestrator as nd_orch
         nd_orch.run(deal_id)
+
+    elif stage == "narrative_drafter":
+        from app.pipeline.narrative import orchestrator as narrative_orch
+        narrative_orch.run(deal_id)

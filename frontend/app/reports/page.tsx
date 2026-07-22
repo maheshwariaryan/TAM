@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { InquiryResponseSchema, RiskResponseSchema } from "@/lib/schemas/types";
 import { useGlobalStore } from "@/lib/store/use-global-store";
-import { exportDatabook } from "@/lib/api/fdd-client";
+import { exportDatabook, getRedFlags, getTieOuts } from "@/lib/api/fdd-client";
+import { JuniorAnalystReport } from "@/components/fdd/junior-analyst-report";
 
 const exports = [
   "Independent Accountants Report (PDF)",
@@ -53,6 +54,23 @@ function ReportsPageContent() {
   );
   const [open, setOpen] = useState(false);
   const [downloadingAll, setDownloadingAll] = useState(false);
+  const [realReadiness, setRealReadiness] = useState<"Ready" | "Draft" | "Blocked" | null>(null);
+
+  useEffect(() => {
+    if (!dealId) {
+      setRealReadiness(null);
+      return;
+    }
+    Promise.allSettled([getRedFlags(dealId), getTieOuts(dealId)]).then(([rf, to]) => {
+      const highCount = rf.status === "fulfilled" ? rf.value.summary.high : 0;
+      const mediumCount = rf.status === "fulfilled" ? rf.value.summary.medium : 0;
+      const tieOutFails = to.status === "fulfilled" ? to.value.tie_outs.filter((t) => t.status === "Fail").length : 0;
+      const tieOutWarns = to.status === "fulfilled" ? to.value.tie_outs.filter((t) => t.status === "Warn").length : 0;
+      if (highCount > 0 || tieOutFails > 0) setRealReadiness("Blocked");
+      else if (mediumCount > 0 || tieOutWarns > 0) setRealReadiness("Draft");
+      else setRealReadiness("Ready");
+    });
+  }, [dealId]);
 
   const triggerDownload = (filename: string, blob: Blob) => {
     const url = window.URL.createObjectURL(blob);
@@ -217,13 +235,18 @@ function ReportsPageContent() {
     return warns > 0 ? "Draft" : "Ready";
   }, [query.data, inquiryQuery.data]);
 
+  const displayReadiness = dealId ? realReadiness : readiness;
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Reports</h2>
-        <span className={`rounded-full px-3 py-1 text-sm font-semibold ${readiness === "Ready" ? "bg-emerald-100 text-emerald-700" : readiness === "Draft" ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700"}`}>
-          Report Readiness: {readiness}
-        </span>
+        {displayReadiness && (
+          <span className={`rounded-full px-3 py-1 text-sm font-semibold ${displayReadiness === "Ready" ? "bg-emerald-100 text-emerald-700" : displayReadiness === "Draft" ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700"}`}>
+            Report Readiness: {displayReadiness}
+            {dealId ? " (from red flags + tie-outs)" : ""}
+          </span>
+        )}
       </div>
 
       <Card>
@@ -242,36 +265,46 @@ function ReportsPageContent() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader><CardTitle>Export Center</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          {exports.map((item) => (
-            <div key={item} className="flex items-center justify-between rounded border bg-card p-3">
-              <p className="font-medium">{item}</p>
-              <Button size="sm" variant="outline" onClick={() => handleExport(item)}>Export</Button>
-            </div>
-          ))}
-          <Button onClick={() => setOpen(true)}>Export Pack</Button>
-        </CardContent>
-      </Card>
+      {dealId ? (
+        <JuniorAnalystReport dealId={dealId} deal={deal} />
+      ) : (
+        <>
+          <Card>
+            <CardHeader><CardTitle>Export Center (Demo)</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                No deal selected — these are demo/mock report previews only. Select a processed deal to
+                download the real Excel databook and narrative report above.
+              </p>
+              {exports.map((item) => (
+                <div key={item} className="flex items-center justify-between rounded border bg-card p-3">
+                  <p className="font-medium">{item}</p>
+                  <Button size="sm" variant="outline" onClick={() => handleExport(item)}>Export</Button>
+                </div>
+              ))}
+              <Button onClick={() => setOpen(true)}>Export Pack</Button>
+            </CardContent>
+          </Card>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogTitle className="text-lg font-semibold">Export Pack Contents</DialogTitle>
-          <div className="space-y-2 text-sm">
-            <p>Included outputs:</p>
-            <ul className="list-disc pl-5">
-              {exports.map((item) => <li key={item}>{item}</li>)}
-            </ul>
-            <p>Pack also includes methodology notes, lineage snippets, and inquiry status appendix (mock).</p>
-            <div className="pt-2">
-              <Button onClick={handleDownloadAll} disabled={downloadingAll}>
-                {downloadingAll ? "Preparing ZIP..." : "Download all (ZIP)"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogContent className="max-w-2xl">
+              <DialogTitle className="text-lg font-semibold">Export Pack Contents</DialogTitle>
+              <div className="space-y-2 text-sm">
+                <p>Included outputs:</p>
+                <ul className="list-disc pl-5">
+                  {exports.map((item) => <li key={item}>{item}</li>)}
+                </ul>
+                <p>Pack also includes methodology notes, lineage snippets, and inquiry status appendix (mock).</p>
+                <div className="pt-2">
+                  <Button onClick={handleDownloadAll} disabled={downloadingAll}>
+                    {downloadingAll ? "Preparing ZIP..." : "Download all (ZIP)"}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
     </div>
   );
 }

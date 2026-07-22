@@ -176,8 +176,9 @@ def process_deal(
 
     # Determine which stages to run
     all_stages = [
-        "ingestion", "coa_mapping", "financial_builder", "qoe_engine", "redflag_detector",
-        "nwc_analyzer", "dcf_engine", "net_debt_bridge",
+        "ingestion", "coa_mapping", "financial_builder", "qoe_engine",
+        "nwc_analyzer", "redflag_detector", "dcf_engine", "net_debt_bridge",
+        "narrative_drafter",
     ]
     stages = body.stages if body.stages else all_stages
 

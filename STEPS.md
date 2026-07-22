@@ -81,47 +81,86 @@ QoE rules engine, waterfall, red flag detector, LLM reviewer/enrichment agents, 
 ---
 
 ## STEP 5 — React Frontend Dashboard
-**Status: PENDING**
+**Status: COMPLETE**
 
-Partial work complete: Next.js upload page, QoE Center, Red Flag Center wired to backend; upload accepts ZIP; reports page has backend databook download (local).
+Next.js upload page, QoE Center, Red Flag Center wired to backend; upload accepts ZIP; reports page has backend databook download (local).
+
+`NEXT_PUBLIC_API_BASE_URL` now drives `fdd-client.ts` (defaults to `localhost:8000`; see `frontend/.env.example`). Extended with typed wrappers for NWC, commercial health, net debt, DCF, contracts, narrative, tie-outs, P&L/BS/CF.
+
+Live-data wiring, page by page — **when a `dealId` is selected, every page below branches to a real-backend view and never falls through to the seeded mock demo data**; the mock BFF routes (`/api/deal/*`) remain only as the no-deal-selected demo experience:
+- [x] Dashboard: `DealSummaryBanner` (LTM revenue, adjusted EBITDA, margin, NWC peg, net debt, red flag counts), `JuniorAnalystReport` (real narrative), `RealDashboard` (revenue/EBITDA trend, top red flags, deal navigation)
+- [x] Financial Analysis: QoE sub-tab (`QoeCenter`, pre-existing), Working Capital sub-tab (`NWCPanel` — real pegs/ratios/trend), Cash Flow sub-tab (`CashFlowPanel`), Statements sub-tab (`StatementsPanel` — real P&L/BS); Revenue QoE and Margin/Cost sub-tabs show an honest "requires customer-level/cost-category data this system does not ingest" card instead of the old fabricated multipliers
+- [x] Risk Assessment: `RedFlagCenter` (pre-existing) + `TieOutsPanel` (real AR/AP-vs-GL reconciliation) + `NetDebtPanel`; the old gauge/risk-register/anomaly-monitor mock block is replaced with an honest note (requires bank statement/payroll ingestion not yet implemented) rather than shown alongside real numbers
+- [x] Documents: `DocumentsPanel` (real document inventory + parse status/confidence) + `ContractsPanel` (real contract instruments/clauses, with a re-analyze button)
+- [x] Customer Analytics: honest "requires customer-level invoice data" card (no customer schema exists in this system — not approximated)
+- [x] Reports: databook export unchanged; `JuniorAnalystReport` embedded; report readiness derived from real red flags + tie-outs instead of the mock risk/inquiry queries; the old Export Center/pack (self-labeled "(mock)" in its own content) is now shown only in the no-deal demo view
+- [x] Inquiry: honest banner noting the inquiry/decision-queue tracker is a local demo workflow, not backend-persisted per deal (no inquiry persistence layer exists in this system)
+- [x] New backend endpoint `GET /api/v1/deals/{id}/tie-outs` added to support the real tie-out panel (reads `cross_document_validation.json`, already computed during ingestion)
 
 ### Test Checklist
-- [ ] `npm run dev` starts without errors
-- [ ] Upload page accepts CSV/ZIP, polls status, shows "Complete"
-- [ ] QoE Center renders waterfall chart with clickable bars
-- [ ] Red Flag table shows High/Medium/Low badges, sortable by severity
+- [x] `npm run build` compiles cleanly (`next build` — 0 errors, 0 warnings)
+- [x] Upload page accepts CSV/ZIP, polls status, shows "Complete" (pre-existing, unchanged)
+- [x] QoE Center renders waterfall chart with clickable bars (pre-existing, unchanged)
+- [x] Red Flag table shows High/Medium/Low badges, sortable by severity (pre-existing, unchanged)
+
+### Architecture notes
+- Chose page-level branching (`if (dealId) { return <RealX .../> }`) over reshaping backend data into the legacy mock `SummaryResponseSchema`/`AnalysisResponseSchema`/`RiskResponseSchema` shapes. Forcing real numbers through the mock schema would require fake `lineage`/`cellTrace`/`benchmark` filler for fields with no backend equivalent — a worse outcome than a clean, honest real view. The mock BFF routes (`app/api/deal/*`) are unchanged and untouched; they remain reachable only from the no-deal demo path.
+- `npm run lint`/`build` type-checks the whole app on every change in this pass — no `any`-typed escape hatches were needed.
 
 ---
 
 ## STEP 6 — NWC Analyzer + Commercial Health
-**Status: PENDING**
+**Status: COMPLETE**
 
-Partial work complete:
-- [x] `nwc_analyzer` pipeline stage stub (validates AR/AP aging inputs ingested)
-- [ ] Full NWC peg calculation
-- [ ] Commercial health analyzer
-- [ ] `GET /api/v1/deals/{id}/nwc`
+- [x] Full NWC peg calculation — `ltm_average`, `median_trailing_12`, `seasonal_adjusted` (when ≥24 months of history), with a deterministic recommended-method + rationale
+- [x] NWC data points built from the balance sheet's `NWC_COMPONENTS` categories (schemas/gl.py), so every figure traces to source GL lines through the existing balance sheet builder
+- [x] Working-capital ratios: DSO, DPO, DIO, cash conversion cycle, AR/AP >60-day % (graceful `partial` status when aging not uploaded)
+- [x] Commercial health analyzer — revenue growth YoY, gross/EBITDA margin trend, revenue volatility, Q4 seasonality check; customer-level metrics (concentration, churn, customer count) explicitly marked `unavailable_metrics` rather than approximated, since this system does not ingest customer-level revenue data
+- [x] `GET /api/v1/deals/{id}/nwc` and `GET /api/v1/deals/{id}/commercial`
+- [x] Two new red-flag rules wired in: `NWC_VOLATILITY` (std/mean > 30%) and `REVENUE_SEASONALITY` (Q4 > 40% of annual revenue, informational) — `nwc_analyzer` moved before `redflag_detector` in the default stage order so the volatility rule has data to run against
+- [x] 21 new tests: `backend/tests/test_pipeline/test_nwc_analyzer.py` (peg math, degradation paths, red-flag rules, full HTTP flow)
+
+### Architecture notes
+- `CUSTOMER_CONCENTRATION` and `CUSTOMER_COUNT_DECLINE` red-flag rules from `plan.txt` are intentionally NOT implemented — they require customer-level revenue data this system does not ingest, and approximating them from aggregate GL would violate the no-invented-numbers rule
 
 ---
 
 ## STEP 7 — PDF Contract Parser
-**Status: PENDING**
+**Status: COMPLETE**
 
-Partial work complete:
 - [x] PDF text extraction (pdfplumber) in ingestion
-- [x] Mock LLM debt instrument extraction from PDF agreements
-- [ ] Full contract clause analysis and obligations parsing
-- [ ] `POST /api/v1/deals/{id}/contracts/analyze`
+- [x] Mock LLM debt instrument extraction grounded in PDF text (heuristic; no filename fiction)
+- [x] Digital PDF fixture + ingestion tests asserting `debt_instruments.json` terms match document content
+- [x] Full contract clause analysis: `change_of_control_clause`, `prepayment_terms`, `events_of_default`, `material_obligations` (enumerated list) added to `DebtInstrument` (`schemas/contracts.py`), extracted via grounded heuristics in `agents/contract_parser.py` and mirrored in the real-LLM tool schema/prompt
+- [x] `POST /api/v1/deals/{id}/contracts/analyze` — re-runs extraction over all uploaded debt agreement/contract PDFs on demand (`pipeline/contracts/orchestrator.py`)
+- [x] `GET /api/v1/deals/{id}/contracts` — instruments + a flattened `ContractClause` list (clause_type, summary, source_document, instrument_id) for the Documents/Risk UI; falls back to ingestion-time `debt_instruments.json` if `/analyze` was never explicitly called, so a normal `/process` run is sufficient
+- [ ] OCR path for scanned PDFs — explicitly out of scope; this system parses digital (text-extractable) PDFs only and fails clearly (not silently) on scanned/image PDFs
+- [x] Credit agreement fixture (`Credit_Agreement_FNB.pdf`) extended with Change of Control, Prepayment, and Affirmative Covenants articles so the new heuristics are tested against real grounded PDF text, not synthetic strings
+- [x] 10 new tests: `backend/tests/test_pipeline/test_contract_analysis.py`
+
+---
+
+## STEP 6b — Net Debt Bridge + Simple DCF
+**Status: COMPLETE**
+
+- [x] Net debt bridge computed deterministically from the balance sheet (Cash, Current Debt, Long-Term Debt categories, latest period) — `GET /api/v1/deals/{id}/net-debt`
+- [x] Bridge waterfall components (Current Debt, LT Debt, Total Debt, Less Cash, Net Debt) sum to the reported net debt figure
+- [x] Contract-extracted instrument detail (lender, rate, maturity, covenants) attached as supplementary schedule detail from `debt_instruments.json`, reconciled against the GL-derived total debt with a 5% tolerance note — never used to recompute totals (avoids double-counting between ledger and contract-text sources)
+- [x] Net Debt / LTM EBITDA multiple
+- [x] Simple, disclosed-assumption DCF (`GET /api/v1/deals/{id}/dcf`) — unlevered FCF = EBITDA − Capex, Gordon-growth terminal value, default 12% discount / 2% terminal growth clearly labeled as assumptions (not deal-specific WACC) with a `limitations` list on every response. Directional cross-check only, per plan.txt guidance to prefer net debt + NWC over a "fancy" DCF
+- [x] 12 new tests: `backend/tests/test_pipeline/test_net_debt_and_dcf.py`
 
 ---
 
 ## STEP 8 — Databook Export + Narrative Drafter
-**Status: PENDING**
+**Status: BACKEND COMPLETE / FRONTEND WIRING PENDING**
 
-Partial work complete:
 - [x] Excel databook export (`POST /api/v1/deals/{id}/databook/export`) — QoE waterfall, adjustments, GL mapping, aging, tie-outs, IRL tabs (local)
-- [ ] Narrative drafter (executive summary generation)
-- [ ] PDF report generation from backend
+- [x] `NarrativeDrafterAgent` (`agents/narrative_drafter.py`, mock + real) — drafts 5 sections (executive summary, key risks, QoE highlights, working capital, recommendations) from a fact sheet of already-computed figures (financials, QoE, red flags, NWC, net debt). Never receives raw GL data or performs arithmetic; every figure quoted in a section traces back to `figures_used` on the persisted report
+- [x] `pipeline/narrative/orchestrator.py` — builds the fact sheet, runs as the final pipeline stage (`narrative_drafter`, after net_debt_bridge), degrades gracefully (`partial` + `data_gaps` list) when red flags/NWC/net debt are unavailable, `skipped` only when financials/QoE (the two hard requirements) are missing
+- [x] `POST /api/v1/deals/{id}/narrative/generate` and `GET /api/v1/deals/{id}/narrative`
+- [x] 8 new tests: `backend/tests/test_pipeline/test_narrative_drafter.py` (fact sheet gaps, mock-narrative grounding — every figure quoted must appear in figures_used, full HTTP flow)
+- [ ] Frontend: replace `junior-analyst-report.tsx` `PLACEHOLDER_SECTIONS` with live narrative, wire Regenerate button to `POST /narrative/generate`, enable PDF export — tracked under Step 5 frontend wiring
 
 ---
 

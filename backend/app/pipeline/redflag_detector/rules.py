@@ -13,6 +13,12 @@ Rules implemented:
   AR_DAYS_HIGH            — Accounts receivable days >75                 → Medium
   DEFERRED_REVENUE_DECLINE — Deferred revenue shrinking YoY             → High
   EBITDA_VOLATILITY       — Monthly EBITDA std dev / mean >40%           → Medium
+  NWC_VOLATILITY          — Monthly NWC std dev / mean >30%              → Medium
+  REVENUE_SEASONALITY     — Q4 revenue >40% of annual revenue            → Informational
+
+Not implemented (require customer-level revenue data this system does not ingest —
+skipped rather than approximated from aggregate GL, per the no-invented-numbers rule):
+  CUSTOMER_CONCENTRATION, CUSTOMER_COUNT_DECLINE
 """
 
 import logging
@@ -22,6 +28,7 @@ from decimal import Decimal
 from app.schemas.financials import BalanceSheet, CashFlowStatement, PnLStatement
 from app.schemas.gl import ChartOfAccountsCategory as CAT
 from app.schemas.gl import MappedGLLine
+from app.schemas.nwc import NWCReport
 from app.schemas.qoe import QoEReport
 from app.schemas.redflags import RedFlag
 
@@ -34,6 +41,8 @@ RELATED_PARTY_PCT_THRESHOLD = Decimal("0.02") # >2% of revenue flags related-par
 CASH_CONVERSION_THRESHOLD = 0.60
 AR_DAYS_THRESHOLD = 75
 EBITDA_VOLATILITY_THRESHOLD = 0.40       # std dev / mean
+NWC_VOLATILITY_THRESHOLD = 0.30          # std dev / mean (plan.txt threshold)
+REVENUE_SEASONALITY_Q4_THRESHOLD = 0.40  # Q4 share of annual revenue
 
 
 def detect_all(
@@ -43,6 +52,7 @@ def detect_all(
     qoe: QoEReport,
     balance_sheet: BalanceSheet | None = None,
     cash_flow: CashFlowStatement | None = None,
+    nwc_report: NWCReport | None = None,
 ) -> list[RedFlag]:
     """Run all rules and return the combined flag list, sorted by severity."""
     flags: list[RedFlag] = []
@@ -52,6 +62,7 @@ def detect_all(
     flags.extend(_rule_related_party_material(deal_id, pnl, mapped_lines))
     flags.extend(_rule_one_time_items_present(deal_id, qoe))
     flags.extend(_rule_ebitda_volatility(deal_id, pnl))
+    flags.extend(_rule_revenue_seasonality(deal_id, pnl))
 
     if balance_sheet:
         flags.extend(_rule_ar_days_high(deal_id, pnl, balance_sheet))
@@ -59,6 +70,9 @@ def detect_all(
 
     if cash_flow:
         flags.extend(_rule_low_cash_conversion(deal_id, cash_flow, pnl))
+
+    if nwc_report and nwc_report.status != "skipped":
+        flags.extend(_rule_nwc_volatility(deal_id, nwc_report))
 
     # Sort: High → Medium → Low → Informational
     order = {"High": 0, "Medium": 1, "Low": 2, "Informational": 3}
@@ -397,4 +411,70 @@ def _rule_low_cash_conversion(
         ),
         rule_id="LOW_CASH_CONVERSION",
         affected_periods=[f"{yr}-01" for yr in low_years],
+    )]
+
+
+def _rule_nwc_volatility(deal_id: str, nwc_report: NWCReport) -> list[RedFlag]:
+    """Flag if monthly NWC has a coefficient of variation > 30% (plan.txt threshold)."""
+    cv = nwc_report.nwc_volatility
+    if cv is None or cv <= NWC_VOLATILITY_THRESHOLD:
+        return []
+
+    periods = [dp.period.strftime("%Y-%m") for dp in nwc_report.data_points]
+    return [_flag(
+        deal_id=deal_id,
+        severity="Medium",
+        category="Working Capital",
+        title=f"High NWC Volatility (CV: {cv:.0%})",
+        description=(
+            f"Monthly net working capital has a coefficient of variation of {cv:.0%}, above the "
+            f"{NWC_VOLATILITY_THRESHOLD:.0%} threshold. Volatile NWC increases peg risk and may "
+            "indicate seasonality, inconsistent collections/payment timing, or lumpy inventory builds — "
+            "see the NWC seasonal_adjusted peg for a normalized alternative."
+        ),
+        rule_id="NWC_VOLATILITY",
+        affected_periods=periods,
+    )]
+
+
+def _rule_revenue_seasonality(deal_id: str, pnl: PnLStatement) -> list[RedFlag]:
+    """Informational: flag if Q4 revenue exceeds 40% of annual revenue on average."""
+    from collections import defaultdict
+
+    annual: dict[str, list[str]] = defaultdict(list)
+    for pk in pnl.revenue:
+        annual[pk[:4]].append(pk)
+
+    q4_pcts = []
+    full_years = []
+    for yr, periods in annual.items():
+        if len(periods) < 12:
+            continue
+        yr_total = sum(pnl.revenue[pk] for pk in periods)
+        if not yr_total:
+            continue
+        q4_total = sum(pnl.revenue[pk] for pk in periods if pk.split("-")[1] in ("10", "11", "12"))
+        q4_pcts.append(float(q4_total / yr_total))
+        full_years.append(yr)
+
+    if not q4_pcts:
+        return []
+
+    avg_q4_pct = sum(q4_pcts) / len(q4_pcts)
+    if avg_q4_pct <= REVENUE_SEASONALITY_Q4_THRESHOLD:
+        return []
+
+    return [_flag(
+        deal_id=deal_id,
+        severity="Informational",
+        category="Revenue Quality",
+        title=f"Significant Revenue Seasonality (Q4: {avg_q4_pct:.0%} of Annual Revenue)",
+        description=(
+            f"Q4 revenue averages {avg_q4_pct:.0%} of annual revenue across {len(full_years)} full "
+            f"year(s), above the {REVENUE_SEASONALITY_Q4_THRESHOLD:.0%} concentration threshold. "
+            "This is informational context for NWC peg timing and quarterly run-rate comparisons, "
+            "not necessarily a defect."
+        ),
+        rule_id="REVENUE_SEASONALITY",
+        affected_periods=sorted(pk for yr in full_years for pk in annual[yr]),
     )]

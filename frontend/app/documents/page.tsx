@@ -14,6 +14,8 @@ import { SeverityBadge } from "@/components/severity-badge";
 import { DocumentUploadTool } from "@/components/documents/document-upload-tool";
 import { useGlobalStore } from "@/lib/store/use-global-store";
 import { X } from "lucide-react";
+import { DocumentsPanel } from "@/components/fdd/documents-panel";
+import { ContractsPanel } from "@/components/fdd/contracts-panel";
 
 export default function DocumentsPage() {
   return (
@@ -29,7 +31,7 @@ function DocumentsPageContent() {
   const highlightedFile = params.get("file");
   const focusedCoverageSchedule = params.get("focus") === "coverage" ? params.get("schedule") : null;
   const focusedCoverageMonth = params.get("focus") === "coverage" ? params.get("month") : null;
-  const { deal } = useGlobalStore();
+  const { deal, dealId } = useGlobalStore();
   const query = useApiQuery(
     ["documents", deal],
     `/api/deal/documents?deal=${encodeURIComponent(deal)}`,
@@ -109,6 +111,20 @@ function DocumentsPageContent() {
       window.clearTimeout(clearTimer);
     };
   }, [focusedCoverageMonth, focusedCoverageSchedule, query.data]);
+
+  // A processed deal is selected — show real document inventory + contract analysis only.
+  // The coverage heatmap and PBC suggestions below are seeded mock data.
+  if (dealId) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Documents</h2>
+        </div>
+        <DocumentsPanel dealId={dealId} />
+        <ContractsPanel dealId={dealId} />
+      </div>
+    );
+  }
 
   if (query.isLoading || !query.data) return <div className="grid gap-4"><div className="h-72 animate-pulse rounded-lg bg-muted" /><div className="h-72 animate-pulse rounded-lg bg-muted" /></div>;
 

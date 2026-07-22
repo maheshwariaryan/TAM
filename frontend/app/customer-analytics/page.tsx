@@ -9,12 +9,30 @@ import { CustomerResponseSchema } from "@/lib/schemas/types";
 import { useGlobalStore } from "@/lib/store/use-global-store";
 
 export default function CustomerAnalyticsPage() {
-  const { deal, period, basis } = useGlobalStore();
+  const { deal, dealId, period, basis } = useGlobalStore();
   const query = useApiQuery(
     ["customer", deal, period, basis],
     `/api/deal/customer?deal=${encodeURIComponent(deal)}&period=${encodeURIComponent(period)}&basis=${encodeURIComponent(basis)}`,
     CustomerResponseSchema
   );
+
+  // This system does not ingest customer-level invoice/revenue data, so there is no honest
+  // way to compute concentration, churn, or discount-anomaly metrics for a real deal — show
+  // that plainly rather than displaying the seeded mock numbers below.
+  if (dealId) {
+    return (
+      <div className="space-y-5">
+        <h2 className="text-xl font-semibold">Customer Analytics</h2>
+        <Card className="border-dashed">
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            Customer analytics require customer-level invoice/revenue data, which is not part of this
+            deal&apos;s uploaded data room. Upload a customer revenue schedule to enable concentration,
+            NRR, and discount-anomaly analysis.
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (query.isLoading || !query.data) return <div className="h-80 animate-pulse rounded-lg bg-muted" />;
   if (query.data.metrics.length === 0) {

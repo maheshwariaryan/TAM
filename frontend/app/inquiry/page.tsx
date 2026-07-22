@@ -21,7 +21,7 @@ export default function InquiryPage() {
 function InquiryPageContent() {
   const router = useRouter();
   const params = useSearchParams();
-  const { deal, period, basis } = useGlobalStore();
+  const { deal, dealId, period, basis } = useGlobalStore();
   const query = useApiQuery(
     ["inquiry", deal, period, basis],
     `/api/deal/inquiry?deal=${encodeURIComponent(deal)}&period=${encodeURIComponent(period)}&basis=${encodeURIComponent(basis)}`,
@@ -102,6 +102,12 @@ function InquiryPageContent() {
   return (
     <div className="space-y-5">
       <h2 className="text-xl font-semibold">Inquiry</h2>
+      {dealId && (
+        <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300">
+          The inquiry tracker and decision queue below are a local demo workflow — this system does not yet
+          persist inquiries per deal in the backend. Rows are illustrative, not derived from {deal}&apos;s data.
+        </div>
+      )}
       <DataTable
         rows={rows}
         onRowClick={(row) => setSelected(row)}

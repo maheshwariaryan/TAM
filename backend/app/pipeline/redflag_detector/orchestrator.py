@@ -12,6 +12,7 @@ from app.pipeline.financial_builder.orchestrator import load_mapped_gl
 from app.pipeline.qoe_engine.orchestrator import load_qoe_report
 from app.pipeline.redflag_detector import rules
 from app.schemas.financials import BalanceSheet, CashFlowStatement, PnLStatement
+from app.schemas.nwc import NWCReport
 from app.schemas.redflags import RedFlagReport, RedFlagSummary
 from app.storage import file_store
 
@@ -39,6 +40,7 @@ async def _run_async(deal_id: str) -> RedFlagReport:
     pnl: PnLStatement = _try_load(deal_id, "financials_pnl.json", PnLStatement)
     bs: BalanceSheet | None = _try_load(deal_id, "financials_bs.json", BalanceSheet)
     cf: CashFlowStatement | None = _try_load(deal_id, "financials_cf.json", CashFlowStatement)
+    nwc: NWCReport | None = _try_load(deal_id, "nwc_report.json", NWCReport)
     qoe = load_qoe_report(deal_id)
 
     if pnl is None:
@@ -52,6 +54,7 @@ async def _run_async(deal_id: str) -> RedFlagReport:
         qoe=qoe,
         balance_sheet=bs,
         cash_flow=cf,
+        nwc_report=nwc,
     )
 
     # Step 2: LLM enrichment — only High and Medium (cost control)

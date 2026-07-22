@@ -54,6 +54,7 @@ ProcessingStage = Literal[
     "nwc_analyzer",
     "dcf_engine",
     "net_debt_bridge",
+    "narrative_drafter",
 ]
 
 

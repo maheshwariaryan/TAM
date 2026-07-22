@@ -9,6 +9,7 @@ FILES = [
     "sample_ar_aging.csv",
     "sample_ap_aging.csv",
     "sample_projections.csv",
+    "Credit_Agreement_FNB.pdf",
 ]
 
 out = FIXTURES / "data_room.zip"

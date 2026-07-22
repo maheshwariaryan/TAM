@@ -16,6 +16,8 @@ import { formatCurrency, formatPct } from "@/lib/utils/format";
 import type { Severity } from "@/lib/schemas/types";
 import { useGlobalStore } from "@/lib/store/use-global-store";
 import { RedFlagCenter } from "@/components/fdd/redflag-center";
+import { TieOutsPanel } from "@/components/fdd/tie-outs-panel";
+import { NetDebtPanel } from "@/components/fdd/net-debt-panel";
 
 export default function RiskAssessmentPage() {
   return (
@@ -126,21 +128,39 @@ function RiskAssessmentPageContent() {
     },
   ];
 
-  return (
-    <div className="space-y-5">
-      {/* ── Real Red Flag Command Center (FDD backend) ── */}
-      {dealId ? (
+  // A processed deal is selected — show real red flags, tie-outs, and net debt only.
+  // The gauge/risk-register/anomaly-monitor sections below are seeded mock data and would
+  // misrepresent a real deal, so they're replaced entirely rather than shown alongside real numbers.
+  if (dealId) {
+    return (
+      <div className="space-y-5">
         <div>
           <h2 className="mb-4 text-xl font-semibold">Red Flag Command Center</h2>
           <RedFlagCenter dealId={dealId} />
         </div>
-      ) : (
-        <Card>
-          <CardContent className="py-6 text-center text-sm text-muted-foreground">
-            No deal selected. Upload data via <strong>Upload Deal Data</strong> first.
+        <TieOutsPanel dealId={dealId} />
+        <div>
+          <h2 className="mb-4 text-xl font-semibold">Net Debt</h2>
+          <NetDebtPanel dealId={dealId} />
+        </div>
+        <Card className="border-dashed">
+          <CardContent className="py-4 text-center text-xs text-muted-foreground">
+            Benchmark comparisons and the anomaly detection monitor (discount rate variance, payroll
+            spikes, manual JE volume) require bank statement and payroll-detail ingestion not yet
+            implemented — intentionally left unavailable rather than approximated.
           </CardContent>
         </Card>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      <Card>
+        <CardContent className="py-6 text-center text-sm text-muted-foreground">
+          No deal selected. Upload data via <strong>Upload Deal Data</strong> first.
+        </CardContent>
+      </Card>
 
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Risk Assessment</h2>

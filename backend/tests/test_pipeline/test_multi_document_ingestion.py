@@ -64,11 +64,16 @@ class TestProjectionsParser:
 class TestMultiDocumentOrchestrator:
     def test_full_data_room_ingestion(self):
         deal_id = "multi-doc-full"
+        pdf_name = "Credit_Agreement_FNB.pdf"
+        if not (FIXTURES / pdf_name).exists():
+            pytest.skip(f"{pdf_name} missing — run generate_credit_agreement_pdf.py")
+
         _setup_deal_uploads(deal_id, [
             "sample_gl.csv",
             "sample_ar_aging.csv",
             "sample_ap_aging.csv",
             "sample_projections.csv",
+            pdf_name,
         ])
         result = orch.run(deal_id)
         assert len(result.gl_lines) == 1514
@@ -76,7 +81,10 @@ class TestMultiDocumentOrchestrator:
         assert result.ap_aging is not None
         assert result.projections is not None
         assert result.cross_validation is not None
-        assert len(result.inventory.documents) == 4
+        assert result.debt_schedule is not None
+        assert len(result.debt_schedule.instruments) == 1
+        assert result.debt_schedule.instruments[0].lender == "Horizon Commercial Bank"
+        assert len(result.inventory.documents) == 5
 
     def test_gl_only_still_works(self):
         deal_id = "multi-doc-gl-only"
