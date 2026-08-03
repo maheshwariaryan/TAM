@@ -22,6 +22,7 @@ from pathlib import Path
 
 from app.agents.contract_parser import parse_debt_from_text
 from app.pipeline.contracts.pdf_extractor import PdfExtractorError, extract_text_from_bytes
+from app.pipeline.ingestion.debt_schedule_parser import parse_debt_schedule_bytes
 from app.pipeline.ingestion.orchestrator import load_document_inventory
 from app.schemas.contracts import ContractAnalysisReport, ContractClause, DebtInstrument, DebtSchedule
 from app.schemas.documents import DocumentType
@@ -55,14 +56,16 @@ def run(deal_id: str) -> ContractAnalysisReport:
 async def _run_async(deal_id: str) -> ContractAnalysisReport:
     inventory = load_document_inventory(deal_id)
     contract_docs = [d for d in inventory.documents if d.document_type in _CONTRACT_DOC_TYPES]
+    debt_schedule_docs = [d for d in inventory.documents if d.document_type == DocumentType.DEBT_SCHEDULE]
+    total_docs = len(contract_docs) + len(debt_schedule_docs)
 
-    if not contract_docs:
+    if total_docs == 0:
         report = ContractAnalysisReport(
             deal_id=deal_id,
             status="skipped",
             message=(
-                "No debt agreements or contracts uploaded — upload a PDF credit agreement to "
-                "enable contract analysis."
+                "No debt agreements or contracts uploaded — upload a PDF credit agreement or "
+                "debt_schedule.csv to enable contract analysis."
             ),
         )
         _persist(deal_id, report)
@@ -71,6 +74,21 @@ async def _run_async(deal_id: str) -> ContractAnalysisReport:
     instruments: list[DebtInstrument] = []
     failures: list[str] = []
     processed_count = 0
+
+    # Debt schedule CSVs are parsed deterministically (no LLM call) — same shared parser
+    # ingestion/orchestrator.py uses at initial ingest, so a re-run here doesn't silently
+    # drop CSV-sourced instruments in favor of only PDF-derived ones.
+    for doc in debt_schedule_docs:
+        path = Path(doc.stored_path)
+        try:
+            csv_instruments = parse_debt_schedule_bytes(
+                file_store.read_upload_decrypted(path), path.name, deal_id
+            )
+            instruments.extend(csv_instruments)
+            processed_count += 1
+        except Exception as exc:
+            failures.append(f"{doc.filename}: {exc}")
+            logger.warning("Contract analyze: failed to parse debt schedule %s: %s", doc.filename, exc)
 
     for doc in contract_docs:
         path = Path(doc.stored_path)
@@ -101,7 +119,7 @@ async def _run_async(deal_id: str) -> ContractAnalysisReport:
     if instruments:
         status = "complete"
         message = (
-            f"Analyzed {processed_count} of {len(contract_docs)} contract document(s); "
+            f"Analyzed {processed_count} of {total_docs} contract document(s); "
             f"extracted {len(instruments)} instrument(s) and {len(clauses)} clause(s)."
         )
         if failures:
@@ -120,9 +138,9 @@ async def _run_async(deal_id: str) -> ContractAnalysisReport:
     if failures:
         logger.warning(
             "Contract analyze: %d of %d document(s) failed for deal %s: %s",
-            len(failures), len(contract_docs), deal_id, "; ".join(failures),
+            len(failures), total_docs, deal_id, "; ".join(failures),
             extra={"event": "contract_analysis_partial_failure", "deal_id": deal_id,
-                   "failure_count": len(failures), "total_documents": len(contract_docs)},
+                   "failure_count": len(failures), "total_documents": total_docs},
         )
 
     report = ContractAnalysisReport(
