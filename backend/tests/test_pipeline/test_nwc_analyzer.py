@@ -39,6 +39,9 @@ FIXTURE_GL = FIXTURES / "sample_gl.csv"
 DEAL_ID = "test-step6-001"
 
 client = TestClient(app)
+from tests.auth_helpers import authenticate as _authenticate  # noqa: E402
+
+_authenticate(client)
 
 
 def _build_mapped_bs_pnl():

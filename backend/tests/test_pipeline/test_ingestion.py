@@ -332,16 +332,38 @@ class TestExcelParity:
 
 class TestOrchestratorFailure:
     def test_unbalanced_full_tb_raises(self, tmp_path, monkeypatch):
-        from app.config import settings
         from app.pipeline.ingestion import orchestrator as orch
         from app.pipeline.ingestion.orchestrator import IngestionError
+        from app.storage import file_store
 
         deal_id = "test-unbalanced-deal"
-        upload_dir = settings.upload_dir / deal_id
-        upload_dir.mkdir(parents=True, exist_ok=True)
         fixture = Path(__file__).parent.parent / "fixtures" / "unbalanced_trial_balance.csv"
-        dest = upload_dir / "unbalanced_trial_balance.csv"
-        dest.write_bytes(fixture.read_bytes())
+        file_store.save_upload(deal_id, "unbalanced_trial_balance.csv", fixture.read_bytes())
 
         with pytest.raises(IngestionError, match="Trial balance does not balance"):
             orch.run(deal_id)
+
+
+class TestUnclassifiedFileVisibility:
+    """A wide-format schedule file (period columns, not raw GL rows) is intentionally not
+    ingestible today — but it must be visibly skipped with a reason, not silently dropped
+    with parse_status='skipped' and no explanation."""
+
+    def test_wide_format_schedule_skipped_with_detail(self):
+        from app.pipeline.ingestion import orchestrator as orch
+        from app.storage import file_store
+
+        deal_id = "test-unclassified-schedule"
+        fixtures = Path(__file__).parent.parent / "fixtures"
+        for name in ["sample_gl.csv", "sample_payroll_schedule.csv"]:
+            file_store.save_upload(deal_id, name, (fixtures / name).read_bytes())
+
+        result = orch.run(deal_id)
+
+        schedule_record = next(
+            r for r in result.inventory.documents if r.filename == "sample_payroll_schedule.csv"
+        )
+        assert schedule_record.parse_status == "skipped"
+        assert schedule_record.detail is not None
+        assert "wide-format" in schedule_record.detail.lower()
+        assert any("sample_payroll_schedule.csv" in w for w in result.inventory.warnings)

@@ -7,16 +7,17 @@ GET /api/v1/deals/{deal_id}/financials/cash-flow
 GET /api/v1/deals/{deal_id}/financials/summary
 """
 
-import json
 from collections import defaultdict
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.api.v1.deps import require_deal_owner
 from app.schemas.financials import BalanceSheet, CashFlowStatement, PnLRow, PnLStatement
 from app.storage import file_store
+from app.storage.json_io import read_json_encrypted
 
 router = APIRouter(tags=["Financial Statements"])
 
@@ -32,8 +33,7 @@ def _load(deal_id: str, filename: str, label: str) -> dict:
             status_code=404,
             detail=f"{label} not found for deal {deal_id}. Run /process (financial_builder stage) first.",
         )
-    with open(p, encoding="utf-8") as f:
-        return json.load(f)
+    return read_json_encrypted(p)
 
 
 def _rollup_annual(pnl: PnLStatement) -> PnLStatement:
@@ -132,6 +132,7 @@ def get_pnl(
             "'2023-06' → single month."
         ),
     ),
+    _owned_deal: dict = Depends(require_deal_owner),
 ) -> PnLStatement:
     data = _load(deal_id, "financials_pnl.json", "P&L")
     pnl = PnLStatement.model_validate(data)
@@ -146,17 +147,17 @@ def get_pnl(
 
 
 @router.get("/deals/{deal_id}/financials/balance-sheet", response_model=BalanceSheet)
-def get_balance_sheet(deal_id: str) -> BalanceSheet:
+def get_balance_sheet(deal_id: str, _owned_deal: dict = Depends(require_deal_owner)) -> BalanceSheet:
     return BalanceSheet.model_validate(_load(deal_id, "financials_bs.json", "Balance Sheet"))
 
 
 @router.get("/deals/{deal_id}/financials/cash-flow", response_model=CashFlowStatement)
-def get_cash_flow(deal_id: str) -> CashFlowStatement:
+def get_cash_flow(deal_id: str, _owned_deal: dict = Depends(require_deal_owner)) -> CashFlowStatement:
     return CashFlowStatement.model_validate(_load(deal_id, "financials_cf.json", "Cash Flow"))
 
 
 @router.get("/deals/{deal_id}/financials/summary")
-def get_summary(deal_id: str) -> dict:
+def get_summary(deal_id: str, _owned_deal: dict = Depends(require_deal_owner)) -> dict:
     """Key metrics summary — revenue, EBITDA, margins for every period."""
     data = _load(deal_id, "financials_pnl.json", "P&L")
     pnl = PnLStatement.model_validate(data)

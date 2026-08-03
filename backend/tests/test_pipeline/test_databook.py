@@ -1,6 +1,5 @@
 """Databook generator tests."""
 
-import json
 from pathlib import Path
 
 import pytest
@@ -9,6 +8,7 @@ from openpyxl import load_workbook
 from app.config import settings
 from app.pipeline.databook.generator import DatabookError, generate
 from app.storage import deal_store, file_store
+from app.storage.json_io import write_json_encrypted
 
 FIXTURES = Path(__file__).parent.parent / "fixtures"
 
@@ -37,8 +37,7 @@ def deal_with_qoe(tmp_path):
             }
         ],
     }
-    with open(processed / "qoe_report.json", "w", encoding="utf-8") as f:
-        json.dump(qoe_report, f)
+    write_json_encrypted(processed / "qoe_report.json", qoe_report)
 
     return deal_id
 
@@ -64,7 +63,15 @@ class TestDatabookGenerator:
         from fastapi.testclient import TestClient
 
         from app.main import app
+        from tests.auth_helpers import authenticate
+
         client = TestClient(app)
+        user = authenticate(client)
+        # deal_with_qoe was created directly via deal_store (not through the API),
+        # so it has no owner — stamp it to the authenticated test user so the
+        # ownership check in require_deal_owner passes.
+        deal_store.update_deal(deal_with_qoe, {"owner_user_id": user["id"]})
+
         resp = client.post(f"/api/v1/deals/{deal_with_qoe}/databook/export")
         assert resp.status_code == 200
         assert "spreadsheetml" in resp.headers["content-type"]

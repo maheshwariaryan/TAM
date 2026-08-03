@@ -142,7 +142,17 @@ class BaseAgent:
                 last_exc = exc
 
             except APIStatusError as exc:
-                # 4xx errors are not retryable
+                # 5xx (server error) and 529 (overloaded) are transient — retry with backoff,
+                # same as rate limits. Only 4xx client errors are treated as non-retryable.
+                if exc.status_code >= 500:
+                    wait = 2 ** attempt * 5  # 5s, 10s, 20s
+                    logger.warning(
+                        "[%s] server error %d — retrying in %ds (attempt %d)",
+                        self.name, exc.status_code, wait, attempt + 1,
+                    )
+                    await asyncio.sleep(wait)
+                    last_exc = exc
+                    continue
                 raise AgentError(f"[{self.name}] API error {exc.status_code}: {exc.message}") from exc
 
         raise AgentError(

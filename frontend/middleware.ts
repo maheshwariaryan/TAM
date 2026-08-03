@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_ROUTES = ["/login", "/signup", "/welcome"];
+const PUBLIC_ROUTES = ["/login", "/signup", "/welcome", "/forgot-password", "/reset-password"];
 
 const PROTECTED_ROUTES = [
   "/dashboard",
@@ -20,7 +20,12 @@ const PROTECTED_ROUTES = [
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isAuthenticated = request.cookies.has("tam_auth");
+  // Presence-only check — the cookie is httpOnly (readable server-side here,
+  // just not from browser JS) and its actual validity is verified by FastAPI
+  // on every API call via app/api/v1/deps.py::get_current_user. This is only
+  // a routing convenience so an obviously logged-out visitor is redirected
+  // before the page even renders.
+  const isAuthenticated = request.cookies.has("tam_session");
 
   if (pathname === "/") {
     return NextResponse.redirect(new URL("/login", request.url));

@@ -55,3 +55,11 @@ class ContractAnalysisReport(BaseModel):
     message: str
     instruments: list[DebtInstrument] = Field(default_factory=list)
     clauses: list[ContractClause] = Field(default_factory=list)
+    extraction_warnings: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Per-document issues that did not stop the run — e.g. a PDF that failed text "
+            "extraction, or a non-PDF file that was recognized as a contract but skipped. "
+            "Populated even when status='complete', so partial coverage is never silent."
+        ),
+    )

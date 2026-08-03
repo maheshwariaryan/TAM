@@ -7,7 +7,7 @@ from decimal import Decimal
 import pandas as pd
 from dateutil import parser as dateutil_parser
 
-from app.pipeline.ingestion.loader import LoaderError, load_file
+from app.pipeline.ingestion.loader import LoaderError, load_bytes, load_file
 from app.pipeline.ingestion.normalizer import DATE_FORMATS, NormalizerError, _parse_decimal
 from app.schemas.projections import ProjectionLine
 
@@ -72,18 +72,33 @@ def _optional_decimal(row: pd.Series, key: str) -> Decimal | None:
 
 
 def parse_projections(path, deal_id: str) -> list[ProjectionLine]:
-    """Load and normalise a management projections file."""
+    """Load and normalise a management projections file from a plaintext path
+    on disk (test fixtures and other non-encrypted callers)."""
     from pathlib import Path
     p = Path(path)
     df = load_file(p)
+    return _parse_projections_df(df, p.name, deal_id)
+
+
+def parse_projections_bytes(raw_bytes: bytes, filename: str, deal_id: str) -> list[ProjectionLine]:
+    """Load and normalise a management projections file from already-in-memory
+    bytes (e.g. decrypted upload content)."""
+    df = load_bytes(raw_bytes, filename)
+    return _parse_projections_df(df, filename, deal_id)
+
+
+def _parse_projections_df(df: pd.DataFrame, filename: str, deal_id: str) -> list[ProjectionLine]:
     col_map = infer_projection_column_map(df)
     df = df.rename(columns=col_map)
     lines: list[ProjectionLine] = []
+    blank_period_rows = 0
+    all_blank_metric_rows = 0
 
     for raw_row_idx, row in df.iterrows():
         source_row = int(raw_row_idx) + 2
         period_raw = str(row.get("period", "")).strip()
         if not period_raw:
+            blank_period_rows += 1
             continue
         try:
             period = _parse_period(period_raw)
@@ -98,6 +113,11 @@ def parse_projections(path, deal_id: str) -> list[ProjectionLine]:
                 ebitda = revenue - cogs - opex
 
             if not any(v is not None for v in (revenue, cogs, opex, ebitda, capex)):
+                all_blank_metric_rows += 1
+                logger.warning(
+                    "Projection row %d (period=%s) skipped: no metric columns had a parseable value",
+                    source_row, period_raw,
+                )
                 continue
 
             lines.append(
@@ -109,7 +129,7 @@ def parse_projections(path, deal_id: str) -> list[ProjectionLine]:
                     opex=opex,
                     ebitda=ebitda,
                     capex=capex,
-                    source_file=p.name,
+                    source_file=filename,
                     source_row=source_row,
                 )
             )
@@ -117,7 +137,17 @@ def parse_projections(path, deal_id: str) -> list[ProjectionLine]:
             logger.warning("Projection row %d skipped: %s", source_row, exc)
 
     if not lines:
-        raise NormalizerError(f"No usable projection rows in '{p.name}'")
+        raise NormalizerError(f"No usable projection rows in '{filename}'")
 
-    logger.info("Parsed %d projection lines from '%s'", len(lines), p.name)
+    if blank_period_rows:
+        logger.warning(
+            "Projections parser: %d row(s) in '%s' skipped for blank period",
+            blank_period_rows, filename,
+            extra={"event": "projection_rows_blank_period_skipped", "source_file": filename,
+                   "blank_period_rows": blank_period_rows},
+        )
+    logger.info(
+        "Parsed %d projection lines from '%s' (%d skipped for blank period, %d skipped for no parseable metrics)",
+        len(lines), filename, blank_period_rows, all_blank_metric_rows,
+    )
     return lines

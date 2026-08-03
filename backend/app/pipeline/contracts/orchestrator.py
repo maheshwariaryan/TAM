@@ -17,16 +17,16 @@ cleanly rather than silently returning nothing.
 """
 
 import asyncio
-import json
 import logging
 from pathlib import Path
 
 from app.agents.contract_parser import parse_debt_from_text
-from app.pipeline.contracts.pdf_extractor import PdfExtractorError, extract_text
+from app.pipeline.contracts.pdf_extractor import PdfExtractorError, extract_text_from_bytes
 from app.pipeline.ingestion.orchestrator import load_document_inventory
 from app.schemas.contracts import ContractAnalysisReport, ContractClause, DebtInstrument, DebtSchedule
 from app.schemas.documents import DocumentType
 from app.storage import file_store
+from app.storage.json_io import read_json_encrypted, write_json_encrypted
 
 logger = logging.getLogger(__name__)
 
@@ -70,13 +70,22 @@ async def _run_async(deal_id: str) -> ContractAnalysisReport:
 
     instruments: list[DebtInstrument] = []
     failures: list[str] = []
+    processed_count = 0
 
     for doc in contract_docs:
         path = Path(doc.stored_path)
         if path.suffix.lower() != ".pdf":
+            failures.append(f"{doc.filename}: unsupported file type '{path.suffix}' — only PDF is analyzed")
+            logger.warning(
+                "Contract analyze: skipping non-PDF contract document %s (type=%s)",
+                doc.filename, path.suffix,
+                extra={"event": "contract_doc_skipped", "deal_id": deal_id, "doc_filename": doc.filename,
+                       "reason": "unsupported_extension"},
+            )
             continue
+        processed_count += 1
         try:
-            text = extract_text(path)
+            text = extract_text_from_bytes(file_store.read_upload_decrypted(path), path.name)
         except PdfExtractorError as exc:
             failures.append(f"{doc.filename}: {exc}")
             logger.warning("Contract analyze: failed to extract text from %s: %s", doc.filename, exc)
@@ -86,12 +95,17 @@ async def _run_async(deal_id: str) -> ContractAnalysisReport:
 
     clauses = _build_clauses(instruments)
 
+    # `failures` is always surfaced via extraction_warnings, regardless of whether other
+    # documents in the same batch succeeded — a run that extracts 1 of 3 agreements must
+    # never look identical to a run that cleanly analyzed all 3.
     if instruments:
         status = "complete"
         message = (
-            f"Analyzed {len(contract_docs)} contract document(s); "
+            f"Analyzed {processed_count} of {len(contract_docs)} contract document(s); "
             f"extracted {len(instruments)} instrument(s) and {len(clauses)} clause(s)."
         )
+        if failures:
+            message += f" {len(failures)} document(s) could not be processed — see extraction_warnings."
     elif failures:
         status = "skipped"
         message = (
@@ -103,8 +117,17 @@ async def _run_async(deal_id: str) -> ContractAnalysisReport:
         status = "partial"
         message = "Contract documents found but no debt terms could be extracted from the text."
 
+    if failures:
+        logger.warning(
+            "Contract analyze: %d of %d document(s) failed for deal %s: %s",
+            len(failures), len(contract_docs), deal_id, "; ".join(failures),
+            extra={"event": "contract_analysis_partial_failure", "deal_id": deal_id,
+                   "failure_count": len(failures), "total_documents": len(contract_docs)},
+        )
+
     report = ContractAnalysisReport(
         deal_id=deal_id, status=status, message=message, instruments=instruments, clauses=clauses,
+        extraction_warnings=failures,
     )
 
     if instruments:
@@ -146,15 +169,13 @@ def _persist(deal_id: str, report: ContractAnalysisReport) -> None:
 
 
 def _save(data: dict, path: Path) -> None:
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, default=str)
+    write_json_encrypted(path, data)
 
 
 def load_contract_analysis(deal_id: str) -> ContractAnalysisReport:
     p = _path(deal_id, "contract_analysis.json")
     if p.exists():
-        with open(p, encoding="utf-8") as f:
-            return ContractAnalysisReport.model_validate(json.load(f))
+        return ContractAnalysisReport.model_validate(read_json_encrypted(p))
 
     # Fall back to whatever ingestion already produced, so GET works right after a normal
     # /process run without requiring an explicit POST /contracts/analyze call.
@@ -164,8 +185,7 @@ def load_contract_analysis(deal_id: str) -> ContractAnalysisReport:
             f"No contract analysis available for deal {deal_id}. Upload a debt agreement PDF and "
             "run ingestion, or POST /contracts/analyze."
         )
-    with open(debt_path, encoding="utf-8") as f:
-        schedule = DebtSchedule.model_validate(json.load(f))
+    schedule = DebtSchedule.model_validate(read_json_encrypted(debt_path))
     clauses = _build_clauses(schedule.instruments)
     return ContractAnalysisReport(
         deal_id=deal_id,

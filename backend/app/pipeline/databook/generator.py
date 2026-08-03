@@ -1,6 +1,5 @@
 """Automated multi-tab Excel databook generator."""
 
-import json
 import logging
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -12,6 +11,7 @@ from openpyxl.styles import Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from app.storage import deal_store, file_store
+from app.storage.json_io import try_read_json_encrypted
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +24,7 @@ class DatabookError(Exception):
 
 
 def _load_json(path: Path) -> dict | list | None:
-    if not path.exists():
-        return None
-    with open(path, encoding="utf-8") as f:
-        return json.load(f)
+    return try_read_json_encrypted(path)
 
 
 def _style_header(ws, row: int, col_count: int) -> None:
@@ -83,6 +80,12 @@ def generate(deal_id: str) -> bytes:
     if amounts:
         wf.cell(row=next_row, column=1, value="Check: Waterfall terminal")
         wf.cell(row=next_row, column=2, value=str(sum(amounts)))
+    else:
+        logger.warning(
+            "Databook: QoE Waterfall terminal check row omitted for deal %s — "
+            "no amounts present in the waterfall data",
+            deal_id,
+        )
 
     # Adjustment Ledger
     adj_sheet = wb.create_sheet("Adjustment Ledger")
@@ -104,8 +107,8 @@ def generate(deal_id: str) -> bytes:
 
     # GL Mapping
     mapped = _load_json(processed / "mapped_gl.json")
-    map_sheet = wb.create_sheet("GL Mapping")
     if mapped:
+        map_sheet = wb.create_sheet("GL Mapping")
         seen: dict[str, list] = {}
         for line in mapped:
             code = line.get("account_code", "")
@@ -121,6 +124,12 @@ def generate(deal_id: str) -> bytes:
             ["Account Code", "Description", "Category", "Statement"],
             list(seen.values()),
         )
+    else:
+        logger.warning(
+            "Databook: 'GL Mapping' sheet omitted for deal %s — mapped_gl.json not found "
+            "(run coa_mapping/financial_builder first)",
+            deal_id,
+        )
 
     # Financials tabs
     for fname, title in [
@@ -130,6 +139,11 @@ def generate(deal_id: str) -> bytes:
     ]:
         data = _load_json(processed / fname)
         if not data:
+            logger.warning(
+                "Databook: '%s' sheet omitted for deal %s — %s not found "
+                "(likely a P&L-only deal, or financial_builder hasn't run)",
+                title, deal_id, fname,
+            )
             continue
         sheet = wb.create_sheet(title)
         rows = data.get("rows", [])
@@ -142,6 +156,10 @@ def generate(deal_id: str) -> bytes:
     for fname, title in [("ar_aging.json", "AR Aging"), ("ap_aging.json", "AP Aging")]:
         data = _load_json(processed / fname)
         if not data:
+            logger.warning(
+                "Databook: '%s' sheet omitted for deal %s — %s not found (aging file not uploaded)",
+                title, deal_id, fname,
+            )
             continue
         sheet = wb.create_sheet(title)
         summaries = data.get("summaries", [])
@@ -164,6 +182,12 @@ def generate(deal_id: str) -> bytes:
 
     # Cross-doc tie-outs
     cross = _load_json(processed / "cross_document_validation.json")
+    if not cross:
+        logger.warning(
+            "Databook: 'Tie-outs' sheet omitted for deal %s — cross_document_validation.json "
+            "not found (ingestion hasn't run, or no AR/AP aging was uploaded to tie out)",
+            deal_id,
+        )
     if cross:
         tie_sheet = wb.create_sheet("Tie-outs")
         tie_rows = [

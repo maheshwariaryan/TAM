@@ -11,7 +11,7 @@ from typing import Any
 
 from dateutil import parser as dateutil_parser
 
-from app.agents.base import BaseAgent
+from app.agents.base import AgentError, BaseAgent
 
 logger = logging.getLogger(__name__)
 
@@ -280,7 +280,7 @@ class ContractParserAgent(BaseAgent):
             for block in raw.content:
                 if hasattr(block, "input"):
                     return block.input
-        return {"instruments": []}
+        raise AgentError(f"[{self.name}] no tool call in response")
 
     def _mock_response(self, payload: dict) -> dict:
         """Ground mock extraction in PDF text — never invent terms from the filename alone."""
@@ -298,16 +298,20 @@ class ContractParserAgent(BaseAgent):
         return {"instruments": [], "extraction_confidence": 0.0}
 
 
-def _coerce_decimal(raw: Any) -> Decimal | None:
-    """Parse an LLM-returned number that may still carry $, commas, or a % sign."""
+def _coerce_decimal(raw: Any, *, field: str = "value") -> Decimal | None:
+    """Parse an LLM-returned number that may still carry $, commas, or a % sign.
+    Logs a warning only when a genuinely-present value fails to parse — a missing/blank
+    field is normal and not worth flagging."""
     if raw is None or raw == "":
         return None
     cleaned = re.sub(r"[^\d.\-]", "", str(raw))
     if not cleaned or cleaned in ("-", "."):
+        logger.warning("[ContractParserAgent] could not parse %s from LLM output: %r", field, raw)
         return None
     try:
         return Decimal(cleaned)
     except InvalidOperation:
+        logger.warning("[ContractParserAgent] could not parse %s from LLM output: %r", field, raw)
         return None
 
 
@@ -316,8 +320,16 @@ _VALID_FACILITY_TYPES = {"term_loan", "revolver", "note", "lease", "other"}
 
 def _coerce_facility_type(raw: Any) -> str:
     """Fall back to 'other' if the LLM returns free text instead of the enum value."""
-    value = str(raw or "other").strip().lower().replace(" ", "_")
-    return value if value in _VALID_FACILITY_TYPES else "other"
+    if raw is None:
+        return "other"
+    value = str(raw).strip().lower().replace(" ", "_")
+    if value not in _VALID_FACILITY_TYPES:
+        logger.warning(
+            "[ContractParserAgent] facility_type %r not in %s — defaulting to 'other'",
+            raw, sorted(_VALID_FACILITY_TYPES),
+        )
+        return "other"
+    return value
 
 
 async def parse_debt_from_text(
@@ -335,15 +347,23 @@ async def parse_debt_from_text(
         if item.get("maturity_date"):
             try:
                 maturity = dateutil_parser.parse(str(item["maturity_date"])).date()
-            except (ValueError, TypeError):
+            except (ValueError, TypeError) as exc:
+                logger.warning(
+                    "[ContractParserAgent] could not parse maturity_date from LLM output: %r (%s)",
+                    item["maturity_date"], exc,
+                )
                 maturity = None
         instruments.append({
             "instrument_id": f"DEBT-{uuid.uuid4().hex[:8].upper()}",
             "deal_id": deal_id,
             "facility_type": _coerce_facility_type(item.get("facility_type")),
             "lender": item.get("lender"),
-            "principal_outstanding": _coerce_decimal(item.get("principal_outstanding")),
-            "interest_rate_pct": _coerce_decimal(item.get("interest_rate_pct")),
+            "principal_outstanding": _coerce_decimal(
+                item.get("principal_outstanding"), field="principal_outstanding"
+            ),
+            "interest_rate_pct": _coerce_decimal(
+                item.get("interest_rate_pct"), field="interest_rate_pct"
+            ),
             "maturity_date": maturity,
             "covenants_summary": item.get("covenants_summary"),
             "change_of_control_clause": item.get("change_of_control_clause"),

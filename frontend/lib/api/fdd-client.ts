@@ -9,8 +9,11 @@
 
 const BASE = `${process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000"}/api/v1`;
 
+// `credentials: "include"` sends the httpOnly session cookie set by
+// POST /auth/login|signup on every request — required because the frontend
+// (localhost:3000) and backend (localhost:8000) are different origins.
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`);
+  const res = await fetch(`${BASE}${path}`, { credentials: "include" });
   if (!res.ok) {
     const body = await res.text();
     throw new Error(`GET ${path} → ${res.status}: ${body}`);
@@ -23,6 +26,7 @@ async function post<T>(path: string, body?: unknown): Promise<T> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
+    credentials: "include",
   });
   if (!res.ok) {
     const text = await res.text();
@@ -30,6 +34,73 @@ async function post<T>(path: string, body?: unknown): Promise<T> {
   }
   return res.json();
 }
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+// These call FastAPI's /api/v1/auth/* endpoints directly (not the old Next.js
+// mock routes) and return a plain {ok, ...} shape so the calling page can show
+// `message` on failure without needing to catch a thrown Error.
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  full_name: string;
+  created_at: string;
+}
+
+async function authRequest<T extends object>(
+  path: string,
+  body: unknown
+): Promise<{ ok: true } & T | { ok: false; message: string }> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    credentials: "include",
+  });
+  let json: Record<string, unknown> = {};
+  try {
+    json = await res.json();
+  } catch {
+    // no body / not JSON — fall through with an empty object
+  }
+  if (!res.ok) {
+    const detail = json.detail;
+    const message = Array.isArray(detail)
+      ? detail.map((d) => (d as { msg?: string }).msg).filter(Boolean).join(", ")
+      : typeof detail === "string"
+        ? detail
+        : `Request failed (HTTP ${res.status})`;
+    return { ok: false, message };
+  }
+  return { ok: true, ...(json as T) };
+}
+
+// signup/login return UserPublic's fields directly on the response body (not
+// wrapped), so AuthUser's fields end up spread onto the result alongside `ok`.
+export const signup = (email: string, password: string, fullName: string) =>
+  authRequest<AuthUser>("/auth/signup", { email, password, full_name: fullName });
+
+export const login = (email: string, password: string) =>
+  authRequest<AuthUser>("/auth/login", { email, password });
+
+export async function logout(): Promise<void> {
+  await fetch(`${BASE}/auth/logout`, { method: "POST", credentials: "include" });
+}
+
+export async function getCurrentUser(): Promise<AuthUser | null> {
+  const res = await fetch(`${BASE}/auth/me`, { credentials: "include" });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export const forgotPassword = (email: string) =>
+  authRequest<{ message: string; reset_token: string; reset_url: string }>(
+    "/auth/forgot-password",
+    { email }
+  );
+
+export const resetPassword = (token: string, newPassword: string) =>
+  authRequest<Record<string, never>>("/auth/reset-password", { token, new_password: newPassword });
 
 // ─── Deal lifecycle ──────────────────────────────────────────────────────────
 
@@ -76,7 +147,11 @@ export const getDealStatus = (id: string) => get<Deal>(`/deals/${id}/status`);
 export async function uploadFiles(dealId: string, files: File[]): Promise<{ files_received: number }> {
   const form = new FormData();
   files.forEach((f) => form.append("files", f));
-  const res = await fetch(`${BASE}/deals/${dealId}/upload`, { method: "POST", body: form });
+  const res = await fetch(`${BASE}/deals/${dealId}/upload`, {
+    method: "POST",
+    body: form,
+    credentials: "include",
+  });
   if (!res.ok) throw new Error(`Upload failed: ${await res.text()}`);
   return res.json();
 }
@@ -244,7 +319,10 @@ export const getDocumentInventory = (dealId: string) =>
 // ─── Databook ─────────────────────────────────────────────────────────────────
 
 export async function exportDatabook(dealId: string, filename: string): Promise<void> {
-  const res = await fetch(`${BASE}/deals/${dealId}/databook/export`, { method: "POST" });
+  const res = await fetch(`${BASE}/deals/${dealId}/databook/export`, {
+    method: "POST",
+    credentials: "include",
+  });
   if (!res.ok) throw new Error(`Databook export failed: ${await res.text()}`);
   const blob = await res.blob();
   const url = window.URL.createObjectURL(blob);

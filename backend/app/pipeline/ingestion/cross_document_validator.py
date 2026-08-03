@@ -53,6 +53,20 @@ def _tie_out(name: str, expected: Decimal, observed: Decimal, tolerance_pct: flo
         status = "Warn"
     else:
         status = "Fail"
+
+    log_fn = logger.info if status == "Pass" else logger.warning
+    log_fn(
+        "tie_out check=%s status=%s expected=%s observed=%s difference=%s "
+        "variance_pct=%.2f%% tolerance_pct=%.2f%% sources=%s",
+        name, status, expected, observed, diff, variance_pct, tolerance_pct, sources,
+        extra={
+            "event": "tie_out", "check": name, "status": status,
+            "expected": str(expected), "observed": str(observed), "difference": str(diff),
+            "variance_pct": round(variance_pct, 2), "tolerance_pct": tolerance_pct,
+            "source_documents": sources,
+        },
+    )
+
     return TieOutResult(
         name=name,
         expected=expected,
@@ -111,5 +125,16 @@ def validate_cross_documents(
     elif ap_report is None:
         warnings.append("AP aging not uploaded — AP <-> BS tie-out skipped")
 
-    logger.info("Cross-document validation for %s: %d tie-outs", deal_id, len(tie_outs))
+    status_counts: dict[str, int] = {}
+    for t in tie_outs:
+        status_counts[t.status] = status_counts.get(t.status, 0) + 1
+    log_fn = logger.warning if status_counts.get("Fail") else logger.info
+    log_fn(
+        "cross_document_validation_complete deal_id=%s tie_outs=%d %s",
+        deal_id, len(tie_outs), status_counts,
+        extra={
+            "event": "cross_document_validation_complete", "deal_id": deal_id,
+            "tie_out_count": len(tie_outs), "status_counts": status_counts,
+        },
+    )
     return CrossDocumentValidation(deal_id=deal_id, tie_outs=tie_outs, warnings=warnings)

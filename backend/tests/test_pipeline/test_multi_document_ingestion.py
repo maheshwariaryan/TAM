@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pytest
 
-from app.config import settings
 from app.pipeline.ingestion import orchestrator as orch
 from app.pipeline.ingestion.aging_loader import infer_aging_column_map
 from app.pipeline.ingestion.aging_normalizer import normalise_aging
@@ -13,31 +12,30 @@ from app.pipeline.ingestion.document_registry import classify_by_filename
 from app.pipeline.ingestion.loader import load_file
 from app.pipeline.ingestion.projections_parser import parse_projections
 from app.schemas.documents import DocumentType
+from app.storage import file_store
 
 FIXTURES = Path(__file__).parent.parent / "fixtures"
 DEAL_ID = "multi-doc-test"
 
 
 def _setup_deal_uploads(deal_id: str, filenames: list[str]) -> None:
-    upload_dir = settings.upload_dir / deal_id
-    upload_dir.mkdir(parents=True, exist_ok=True)
     for name in filenames:
         src = FIXTURES / name
-        (upload_dir / name).write_bytes(src.read_bytes())
+        file_store.save_upload(deal_id, name, src.read_bytes())
 
 
 class TestDocumentClassification:
     def test_classify_ar_aging(self):
-        doc_type, conf = classify_by_filename("AR_Aging_Dec24.xlsx")
+        doc_type, conf, _ = classify_by_filename("AR_Aging_Dec24.xlsx")
         assert doc_type == DocumentType.AR_AGING
         assert conf >= 0.8
 
     def test_classify_projections(self):
-        doc_type, _ = classify_by_filename("Management_Forecast_2025.xlsx")
+        doc_type, _, _ = classify_by_filename("Management_Forecast_2025.xlsx")
         assert doc_type == DocumentType.MANAGEMENT_PROJECTIONS
 
     def test_classify_debt_pdf(self):
-        doc_type, _ = classify_by_filename("Credit_Agreement_FNB.pdf")
+        doc_type, _, _ = classify_by_filename("Credit_Agreement_FNB.pdf")
         assert doc_type == DocumentType.DEBT_AGREEMENT
 
 
@@ -100,3 +98,22 @@ class TestMultiDocumentOrchestrator:
         from app.pipeline.ingestion.orchestrator import IngestionError
         with pytest.raises(IngestionError, match="No GL lines"):
             orch.run(deal_id)
+
+
+class TestCrossDocumentValidationFailure:
+    """Closes the 'tests give false confidence' gap: every previously-wired multi-document
+    fixture has clean, tying-out numbers. This deliberately mismatches AR aging against the
+    GL/balance-sheet AR balance so the validator's Fail branch is actually exercised."""
+
+    def test_mismatched_ar_aging_produces_fail_tie_out(self):
+        deal_id = "multi-doc-mismatched-ar"
+        _setup_deal_uploads(deal_id, ["sample_gl.csv", "mismatched_ar_aging.csv"])
+        result = orch.run(deal_id)
+
+        assert result.cross_validation is not None
+        ar_tie_out = next(
+            t for t in result.cross_validation.tie_outs if t.name == "AR Aging <-> BS AR"
+        )
+        assert ar_tie_out.status == "Fail"
+        assert ar_tie_out.variance_pct > ar_tie_out.tolerance_pct * 2
+        assert ar_tie_out.observed == Decimal("504000")

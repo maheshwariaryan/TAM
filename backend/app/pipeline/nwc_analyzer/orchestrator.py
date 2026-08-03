@@ -16,7 +16,6 @@ Computes, purely from Python/Decimal/statistics (no LLM arithmetic):
     customer-level revenue data. See CommercialHealthReport docstring.
 """
 
-import json
 import logging
 import statistics
 from collections import defaultdict
@@ -35,6 +34,7 @@ from app.schemas.nwc import (
     WorkingCapitalRatios,
 )
 from app.storage import file_store
+from app.storage.json_io import read_json_encrypted, write_json_encrypted
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +65,7 @@ def _try_load(deal_id: str, filename: str, model_class):
     p = _path(deal_id, filename)
     if not p.exists():
         return None
-    with open(p, encoding="utf-8") as f:
-        return model_class.model_validate(json.load(f))
+    return model_class.model_validate(read_json_encrypted(p))
 
 
 def run(deal_id: str) -> dict:
@@ -89,8 +88,7 @@ def run(deal_id: str) -> dict:
 
 
 def _save(data: dict, path: Path) -> None:
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, default=str)
+    write_json_encrypted(path, data)
 
 
 # ── NWC report ───────────────────────────────────────────────────────────────
@@ -325,6 +323,18 @@ def _compute_pegs(monthly_nwc: dict[str, Decimal]) -> list[NWCPeg]:
             ),
         ))
 
+    for peg in pegs:
+        logger.info(
+            "nwc_peg method=%s amount=%s ci_low=%s ci_high=%s recommended=%s",
+            peg.method, peg.peg_amount, peg.confidence_interval_low,
+            peg.confidence_interval_high, peg.recommended,
+            extra={
+                "event": "nwc_peg", "method": peg.method, "peg_amount": str(peg.peg_amount),
+                "ci_low": str(peg.confidence_interval_low), "ci_high": str(peg.confidence_interval_high),
+                "recommended": peg.recommended,
+            },
+        )
+
     return pegs
 
 
@@ -357,6 +367,16 @@ def _compute_ratios(
 
     ar_over_60 = _latest_over_60_pct(ar_aging, latest.period)
     ap_over_60 = _latest_over_60_pct(ap_aging, latest.period)
+
+    logger.info(
+        "nwc_ratios period=%s dso=%s dpo=%s dio=%s ccc=%s ar_over_60=%s ap_over_60=%s",
+        latest_pk, dso, dpo, dio, ccc, ar_over_60, ap_over_60,
+        extra={
+            "event": "nwc_ratios", "period": latest_pk, "dso_days": dso, "dpo_days": dpo,
+            "dio_days": dio, "cash_conversion_cycle_days": ccc,
+            "ar_over_60d_pct": ar_over_60, "ap_over_60d_pct": ap_over_60,
+        },
+    )
 
     return WorkingCapitalRatios(
         period=latest_pk,
@@ -465,13 +485,11 @@ def load_nwc_report(deal_id: str) -> NWCReport:
     p = _path(deal_id, "nwc_report.json")
     if not p.exists():
         raise FileNotFoundError(f"NWC report not found for deal {deal_id}. Run nwc_analyzer stage first.")
-    with open(p, encoding="utf-8") as f:
-        return NWCReport.model_validate(json.load(f))
+    return NWCReport.model_validate(read_json_encrypted(p))
 
 
 def load_commercial_report(deal_id: str) -> CommercialHealthReport:
     p = _path(deal_id, "commercial_report.json")
     if not p.exists():
         raise FileNotFoundError(f"Commercial health report not found for deal {deal_id}. Run nwc_analyzer stage first.")
-    with open(p, encoding="utf-8") as f:
-        return CommercialHealthReport.model_validate(json.load(f))
+    return CommercialHealthReport.model_validate(read_json_encrypted(p))

@@ -7,13 +7,14 @@ GET /api/v1/deals/{deal_id}/gl/validation   Validation report
 GET /api/v1/deals/{deal_id}/gl/periods      Summary by period
 """
 
-import json
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.api.v1.deps import require_deal_owner
 from app.schemas.gl import ValidationReport
 from app.storage import file_store
+from app.storage.json_io import read_json_encrypted
 
 router = APIRouter(tags=["GL Inspection"])
 
@@ -33,8 +34,7 @@ def _load_raw_gl(deal_id: str) -> list[dict]:
             status_code=404,
             detail=f"No processed GL found for deal {deal_id}. Run /process first.",
         )
-    with open(path, encoding="utf-8") as f:
-        return json.load(f)
+    return read_json_encrypted(path)
 
 
 @router.get("/deals/{deal_id}/gl/lines")
@@ -44,6 +44,7 @@ def get_gl_lines(
     page_size: int = Query(default=100, ge=1, le=1000),
     account_code: str | None = Query(default=None),
     period: str | None = Query(default=None, description="Filter by period prefix e.g. '2023'"),
+    _owned_deal: dict = Depends(require_deal_owner),
 ) -> dict:
     data = _load_raw_gl(deal_id)
 
@@ -66,19 +67,18 @@ def get_gl_lines(
 
 
 @router.get("/deals/{deal_id}/gl/validation", response_model=ValidationReport)
-def get_validation_report(deal_id: str) -> ValidationReport:
+def get_validation_report(deal_id: str, _owned_deal: dict = Depends(require_deal_owner)) -> ValidationReport:
     path = _validation_path(deal_id)
     if not path.exists():
         raise HTTPException(
             status_code=404,
             detail=f"No validation report found for deal {deal_id}. Run /process first.",
         )
-    with open(path, encoding="utf-8") as f:
-        return ValidationReport.model_validate(json.load(f))
+    return ValidationReport.model_validate(read_json_encrypted(path))
 
 
 @router.get("/deals/{deal_id}/gl/periods")
-def get_period_summary(deal_id: str) -> dict:
+def get_period_summary(deal_id: str, _owned_deal: dict = Depends(require_deal_owner)) -> dict:
     """Summarise GL by period — useful for quickly checking data coverage."""
     data = _load_raw_gl(deal_id)
 

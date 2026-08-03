@@ -25,9 +25,11 @@ import logging
 import uuid
 from decimal import Decimal
 
+from app.schemas.aging import CrossDocumentValidation
 from app.schemas.financials import BalanceSheet, CashFlowStatement, PnLStatement
 from app.schemas.gl import ChartOfAccountsCategory as CAT
 from app.schemas.gl import MappedGLLine
+from app.schemas.net_debt import NetDebtReport
 from app.schemas.nwc import NWCReport
 from app.schemas.qoe import QoEReport
 from app.schemas.redflags import RedFlag
@@ -53,26 +55,49 @@ def detect_all(
     balance_sheet: BalanceSheet | None = None,
     cash_flow: CashFlowStatement | None = None,
     nwc_report: NWCReport | None = None,
+    cross_validation: CrossDocumentValidation | None = None,
+    net_debt_report: NetDebtReport | None = None,
 ) -> list[RedFlag]:
     """Run all rules and return the combined flag list, sorted by severity."""
     flags: list[RedFlag] = []
 
-    flags.extend(_rule_ebitda_margin_decline(deal_id, pnl))
-    flags.extend(_rule_owner_comp_high(deal_id, pnl, mapped_lines))
-    flags.extend(_rule_related_party_material(deal_id, pnl, mapped_lines))
-    flags.extend(_rule_one_time_items_present(deal_id, qoe))
-    flags.extend(_rule_ebitda_volatility(deal_id, pnl))
-    flags.extend(_rule_revenue_seasonality(deal_id, pnl))
+    def _run(rule_id: str, rule_flags: list[RedFlag]) -> list[RedFlag]:
+        logger.info(
+            "redflag_rule rule=%s fired=%s flags_produced=%d",
+            rule_id, bool(rule_flags), len(rule_flags),
+            extra={"event": "redflag_rule", "deal_id": deal_id, "rule": rule_id,
+                   "fired": bool(rule_flags), "flags_produced": len(rule_flags)},
+        )
+        return rule_flags
+
+    flags.extend(_run("EBITDA_MARGIN_DECLINE", _rule_ebitda_margin_decline(deal_id, pnl)))
+    flags.extend(_run("OWNER_COMP_HIGH", _rule_owner_comp_high(deal_id, pnl, mapped_lines)))
+    flags.extend(_run("RELATED_PARTY_MATERIAL", _rule_related_party_material(deal_id, pnl, mapped_lines)))
+    flags.extend(_run("QOE_ITEMS_PRESENT", _rule_one_time_items_present(deal_id, qoe)))
+    flags.extend(_run("EBITDA_VOLATILITY", _rule_ebitda_volatility(deal_id, pnl)))
+    flags.extend(_run("REVENUE_SEASONALITY", _rule_revenue_seasonality(deal_id, pnl)))
 
     if balance_sheet:
-        flags.extend(_rule_ar_days_high(deal_id, pnl, balance_sheet))
-        flags.extend(_rule_deferred_revenue_decline(deal_id, balance_sheet))
+        flags.extend(_run("AR_DAYS_HIGH", _rule_ar_days_high(deal_id, pnl, balance_sheet)))
+        flags.extend(_run("DEFERRED_REVENUE_DECLINE", _rule_deferred_revenue_decline(deal_id, balance_sheet)))
 
     if cash_flow:
-        flags.extend(_rule_low_cash_conversion(deal_id, cash_flow, pnl))
+        flags.extend(_run("LOW_CASH_CONVERSION", _rule_low_cash_conversion(deal_id, cash_flow, pnl)))
 
     if nwc_report and nwc_report.status != "skipped":
-        flags.extend(_rule_nwc_volatility(deal_id, nwc_report))
+        flags.extend(_run("NWC_VOLATILITY", _rule_nwc_volatility(deal_id, nwc_report)))
+
+    if cross_validation:
+        flags.extend(_run(
+            "CROSS_DOC_TIE_OUT_FAILURE",
+            _rule_cross_doc_tie_out_failures(deal_id, cross_validation),
+        ))
+
+    if net_debt_report:
+        flags.extend(_run(
+            "NET_DEBT_RECONCILIATION_MISMATCH",
+            _rule_net_debt_reconciliation_mismatch(deal_id, net_debt_report),
+        ))
 
     # Sort: High → Medium → Low → Informational
     order = {"High": 0, "Medium": 1, "Low": 2, "Informational": 3}
@@ -477,4 +502,65 @@ def _rule_revenue_seasonality(deal_id: str, pnl: PnLStatement) -> list[RedFlag]:
         ),
         rule_id="REVENUE_SEASONALITY",
         affected_periods=sorted(pk for yr in full_years for pk in annual[yr]),
+    )]
+
+
+def _rule_cross_doc_tie_out_failures(
+    deal_id: str, cross_validation: CrossDocumentValidation
+) -> list[RedFlag]:
+    """Flag any cross-document tie-out (e.g. AR/AP aging vs. balance sheet) that failed —
+    variance beyond 2x tolerance, meaning the source documents materially disagree."""
+    flags: list[RedFlag] = []
+    for tie_out in cross_validation.tie_outs:
+        if tie_out.status != "Fail":
+            continue
+        flags.append(_flag(
+            deal_id=deal_id,
+            severity="High",
+            category="Data Quality",
+            title=f"Data Mismatch: {tie_out.name} ({tie_out.variance_pct:.1f}% variance)",
+            description=(
+                f"{tie_out.name} does not tie out: expected ${float(tie_out.expected):,.0f} "
+                f"(from {', '.join(tie_out.source_documents) or 'the balance sheet'}) vs. observed "
+                f"${float(tie_out.observed):,.0f}, a difference of ${float(abs(tie_out.difference)):,.0f} "
+                f"({tie_out.variance_pct:.1f}%), exceeding the {tie_out.tolerance_pct:.1f}% tolerance. "
+                "Reconcile the source documents before relying on either figure."
+            ),
+            rule_id="CROSS_DOC_TIE_OUT_FAILURE",
+            impact_low=float(abs(tie_out.difference)),
+            impact_high=float(abs(tie_out.difference)),
+        ))
+    return flags
+
+
+def _rule_net_debt_reconciliation_mismatch(
+    deal_id: str, net_debt_report: NetDebtReport
+) -> list[RedFlag]:
+    """Flag if contract-extracted debt principal fails to reconcile against balance-sheet debt
+    beyond the 5% tolerance already computed in the net debt bridge."""
+    variance = net_debt_report.reconciliation_variance
+    if variance is None:
+        return []
+
+    tolerance = abs(net_debt_report.total_debt) * Decimal("0.05")
+    if abs(variance) <= tolerance:
+        return []
+
+    return [_flag(
+        deal_id=deal_id,
+        severity="High",
+        category="Data Quality",
+        title=f"Debt Schedule Mismatch (${float(abs(variance)):,.0f} variance)",
+        description=(
+            net_debt_report.reconciliation_note
+            or (
+                f"Contract-extracted principal (${float(net_debt_report.instrument_principal_total or 0):,.0f}) "
+                f"differs from balance sheet debt (${float(net_debt_report.total_debt):,.0f}) by "
+                f"${float(abs(variance)):,.0f}, beyond the 5% tolerance."
+            )
+        ),
+        rule_id="NET_DEBT_RECONCILIATION_MISMATCH",
+        affected_periods=[net_debt_report.period] if net_debt_report.period else [],
+        impact_low=float(abs(variance)),
+        impact_high=float(abs(variance)),
     )]

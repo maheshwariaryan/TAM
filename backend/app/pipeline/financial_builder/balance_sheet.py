@@ -80,7 +80,14 @@ def build(lines: list[MappedGLLine]) -> BalanceSheet:
     for (period, code, desc, cat), gl_amount in sorted(agg.items()):
         section = _SECTION_MAP.get(cat)
         if section is None:
-            logger.debug("Balance sheet category %s has no section mapping — skipping", cat)
+            logger.warning(
+                "Balance sheet: GL line(s) with category %s (account %s, period %s, amount %s) have "
+                "no section mapping — excluded from total_assets/liabilities/equity and the "
+                "is_balanced check. This usually means CoA mapping returned an unexpected category.",
+                cat, code, period, gl_amount,
+                extra={"event": "balance_sheet_category_unmapped", "category": str(cat),
+                       "account_code": code, "period": str(period), "amount": str(gl_amount)},
+            )
             continue
 
         # Presentation sign:

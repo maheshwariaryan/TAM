@@ -7,6 +7,9 @@ from fastapi.testclient import TestClient
 from app.main import app
 
 client = TestClient(app)
+from tests.auth_helpers import authenticate as _authenticate  # noqa: E402
+
+_authenticate(client)
 
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 

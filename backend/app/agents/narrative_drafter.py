@@ -11,7 +11,7 @@ prompt) not to introduce any figure not present in the fact sheet.
 import logging
 from typing import Any
 
-from app.agents.base import BaseAgent
+from app.agents.base import AgentError, BaseAgent
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +85,7 @@ class NarrativeDrafterAgent(BaseAgent):
         for block in getattr(raw, "content", []):
             if getattr(block, "type", None) == "tool_use":
                 return block.input
-        return {"sections": []}
+        raise AgentError(f"[{self.name}] no tool call in response")
 
     def _mock_response(self, payload: dict[str, str]) -> dict:
         """Deterministic prose built purely from the supplied fact sheet — no LLM call."""

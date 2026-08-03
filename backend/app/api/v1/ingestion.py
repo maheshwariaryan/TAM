@@ -13,9 +13,10 @@ Route handlers contain NO business logic — they delegate to storage and pipeli
 
 import logging
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, UploadFile
 
 from app import pipeline_orchestrator
+from app.api.v1.deps import get_current_user, require_deal_owner
 from app.pipeline.ingestion.zip_extractor import ZipExtractorError, extract_zip
 from app.schemas.ingestion import (
     CreateDealRequest,
@@ -52,43 +53,40 @@ def _to_deal_response(deal: dict) -> DealResponse:
 
 
 @router.post("", response_model=DealResponse, status_code=201)
-def create_deal(body: CreateDealRequest) -> DealResponse:
+def create_deal(body: CreateDealRequest, current_user: dict = Depends(get_current_user)) -> DealResponse:
     deal = deal_store.create_deal(
         company_name=body.company_name,
         deal_name=body.deal_name,
         currency=body.currency,
+        owner_user_id=current_user["id"],
     )
     logger.info(
-        "AUDIT deal_created deal_id=%s company=%r deal_name=%r currency=%s",
-        deal["deal_id"], body.company_name, body.deal_name, body.currency,
+        "AUDIT deal_created deal_id=%s owner_user_id=%s company=%r deal_name=%r currency=%s",
+        deal["deal_id"], current_user["id"], body.company_name, body.deal_name, body.currency,
     )
     return _to_deal_response(deal)
 
 
 @router.get("", response_model=list[DealResponse])
-def list_deals() -> list[DealResponse]:
-    return [_to_deal_response(d) for d in deal_store.list_deals()]
+def list_deals(current_user: dict = Depends(get_current_user)) -> list[DealResponse]:
+    return [_to_deal_response(d) for d in deal_store.list_deals(owner_user_id=current_user["id"])]
 
 
 @router.get("/{deal_id}", response_model=DealResponse)
-def get_deal(deal_id: str) -> DealResponse:
-    deal = deal_store.get_deal(deal_id)
-    if deal is None:
-        raise HTTPException(status_code=404, detail=f"Deal {deal_id} not found")
+def get_deal(deal: dict = Depends(require_deal_owner)) -> DealResponse:
     return _to_deal_response(deal)
 
 
 @router.get("/{deal_id}/status", response_model=DealResponse)
-def get_status(deal_id: str) -> DealResponse:
-    return get_deal(deal_id)
+def get_status(deal: dict = Depends(require_deal_owner)) -> DealResponse:
+    return _to_deal_response(deal)
 
 
 @router.post("/{deal_id}/upload", response_model=UploadResponse)
-async def upload_files(deal_id: str, files: list[UploadFile]) -> UploadResponse:
-    deal = deal_store.get_deal(deal_id)
-    if deal is None:
-        raise HTTPException(status_code=404, detail=f"Deal {deal_id} not found")
-
+async def upload_files(
+    files: list[UploadFile], deal: dict = Depends(require_deal_owner)
+) -> UploadResponse:
+    deal_id = deal["deal_id"]
     if not files:
         raise HTTPException(status_code=400, detail="No files provided")
 
@@ -140,6 +138,12 @@ async def upload_files(deal_id: str, files: list[UploadFile]) -> UploadResponse:
                 for ext_path in extracted:
                     ext_suffix = ext_path.suffix.lower()
                     if ext_suffix not in {".csv", ".xlsx", ".pdf"}:
+                        logger.warning(
+                            "AUDIT zip_member_dropped deal_id=%s filename=%r reason=unsupported_extension",
+                            deal_id, ext_path.name,
+                            extra={"event": "zip_member_dropped", "deal_id": deal_id,
+                                   "doc_filename": ext_path.name, "reason": "unsupported_extension"},
+                        )
                         continue
                     ext_record = deal_store.add_uploaded_file(
                         deal_id=deal_id,
@@ -160,27 +164,21 @@ async def upload_files(deal_id: str, files: list[UploadFile]) -> UploadResponse:
 
 @router.post("/{deal_id}/process", response_model=ProcessResponse)
 def process_deal(
-    deal_id: str,
     body: ProcessRequest,
     background_tasks: BackgroundTasks,
+    deal: dict = Depends(require_deal_owner),
 ) -> ProcessResponse:
-    deal = deal_store.get_deal(deal_id)
-    if deal is None:
-        raise HTTPException(status_code=404, detail=f"Deal {deal_id} not found")
-
+    deal_id = deal["deal_id"]
     if not deal.get("uploaded_files"):
         raise HTTPException(
             status_code=422,
             detail="No files uploaded. Upload GL / sales register files before processing.",
         )
 
-    # Determine which stages to run
-    all_stages = [
-        "ingestion", "coa_mapping", "financial_builder", "qoe_engine",
-        "nwc_analyzer", "redflag_detector", "dcf_engine", "net_debt_bridge",
-        "narrative_drafter",
-    ]
-    stages = body.stages if body.stages else all_stages
+    # Determine which stages to run — reuse the single source of truth for stage order
+    # so the default run order can never drift from what pipeline_orchestrator actually
+    # validates/executes.
+    stages = body.stages if body.stages else list(pipeline_orchestrator.STAGE_ORDER)
 
     # Guard: don't re-process a running job
     running = [s for s in stages if deal["stages"].get(s) == "running"]

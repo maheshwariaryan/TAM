@@ -11,7 +11,6 @@ Persists all artifacts under processed/{deal_id}/.
 """
 
 import asyncio
-import json
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -19,14 +18,14 @@ from pathlib import Path
 import pandas as pd
 
 from app.agents.contract_parser import parse_debt_from_text
-from app.pipeline.contracts.pdf_extractor import PdfExtractorError, extract_text
+from app.pipeline.contracts.pdf_extractor import extract_text_from_bytes
 from app.pipeline.ingestion.aging_loader import infer_aging_column_map
 from app.pipeline.ingestion.aging_normalizer import normalise_aging
 from app.pipeline.ingestion.cross_document_validator import validate_cross_documents
 from app.pipeline.ingestion.document_registry import build_inventory
-from app.pipeline.ingestion.loader import infer_column_map, load_file
+from app.pipeline.ingestion.loader import infer_column_map, load_bytes
 from app.pipeline.ingestion.normalizer import normalise
-from app.pipeline.ingestion.projections_parser import parse_projections
+from app.pipeline.ingestion.projections_parser import parse_projections_bytes
 from app.pipeline.ingestion.validator import validate
 from app.schemas.aging import AgingReport, CrossDocumentValidation
 from app.schemas.contracts import DebtInstrument, DebtSchedule
@@ -34,6 +33,7 @@ from app.schemas.documents import DocumentInventory, DocumentType
 from app.schemas.gl import RawGLLine, ValidationReport
 from app.schemas.projections import ProjectionLine, ProjectionSchedule
 from app.storage import file_store
+from app.storage.json_io import read_json_encrypted, write_json_encrypted
 
 logger = logging.getLogger(__name__)
 
@@ -79,26 +79,75 @@ def run(deal_id: str) -> IngestionResult:
                 lines = _parse_gl(path, deal_id)
                 all_gl_lines.extend(lines)
                 record.parse_status = "parsed"
+                logger.info(
+                    "file_parsed filename=%s document_type=%s lines=%d",
+                    record.filename, record.document_type, len(lines),
+                    extra={"event": "file_parsed", "deal_id": deal_id, "doc_filename": record.filename,
+                           "document_type": str(record.document_type), "line_count": len(lines)},
+                )
             elif record.document_type == DocumentType.AR_AGING:
-                ar_summaries.extend(_parse_aging(path, deal_id, "ar_aging"))
+                summaries = _parse_aging(path, deal_id, "ar_aging")
+                ar_summaries.extend(summaries)
                 record.parse_status = "parsed"
+                logger.info(
+                    "file_parsed filename=%s document_type=%s periods=%d",
+                    record.filename, record.document_type, len(summaries),
+                    extra={"event": "file_parsed", "deal_id": deal_id, "doc_filename": record.filename,
+                           "document_type": str(record.document_type), "period_count": len(summaries)},
+                )
             elif record.document_type == DocumentType.AP_AGING:
-                ap_summaries.extend(_parse_aging(path, deal_id, "ap_aging"))
+                summaries = _parse_aging(path, deal_id, "ap_aging")
+                ap_summaries.extend(summaries)
                 record.parse_status = "parsed"
+                logger.info(
+                    "file_parsed filename=%s document_type=%s periods=%d",
+                    record.filename, record.document_type, len(summaries),
+                    extra={"event": "file_parsed", "deal_id": deal_id, "doc_filename": record.filename,
+                           "document_type": str(record.document_type), "period_count": len(summaries)},
+                )
             elif record.document_type == DocumentType.MANAGEMENT_PROJECTIONS:
-                projection_lines.extend(parse_projections(path, deal_id))
+                lines = parse_projections_bytes(file_store.read_upload_decrypted(path), path.name, deal_id)
+                projection_lines.extend(lines)
                 record.parse_status = "parsed"
+                logger.info(
+                    "file_parsed filename=%s document_type=%s lines=%d",
+                    record.filename, record.document_type, len(lines),
+                    extra={"event": "file_parsed", "deal_id": deal_id, "doc_filename": record.filename,
+                           "document_type": str(record.document_type), "line_count": len(lines)},
+                )
             elif record.document_type in {DocumentType.DEBT_AGREEMENT, DocumentType.CONTRACT_OTHER}:
                 instruments = _parse_pdf_contract(path, deal_id)
                 debt_instruments.extend(instruments)
-                record.parse_status = "parsed" if instruments else "skipped"
+                if instruments:
+                    record.parse_status = "parsed"
+                else:
+                    record.parse_status = "skipped"
+                    record.detail = "PDF text extracted but no debt instrument terms found"
+                logger.info(
+                    "file_parsed filename=%s document_type=%s instruments=%d",
+                    record.filename, record.document_type, len(instruments),
+                    extra={"event": "file_parsed", "deal_id": deal_id, "doc_filename": record.filename,
+                           "document_type": str(record.document_type), "instrument_count": len(instruments)},
+                )
             else:
                 record.parse_status = "skipped"
-                result.warnings.append(f"Unclassified file skipped: {record.filename}")
+                msg = record.detail or f"Unclassified file skipped: {record.filename}"
+                result.warnings.append(msg)
+                logger.warning(
+                    "file_skipped filename=%s reason=%s",
+                    record.filename, msg,
+                    extra={"event": "file_skipped", "deal_id": deal_id, "doc_filename": record.filename,
+                           "reason": msg},
+                )
         except Exception as exc:
             record.parse_status = "failed"
             record.parse_error = str(exc)
-            logger.warning("Failed to parse %s: %s", record.filename, exc)
+            logger.warning(
+                "file_parse_failed filename=%s document_type=%s error=%s",
+                record.filename, record.document_type, exc,
+                extra={"event": "file_parse_failed", "deal_id": deal_id, "doc_filename": record.filename,
+                       "document_type": str(record.document_type), "error": str(exc)},
+            )
             if record.document_type in GL_TYPES:
                 raise IngestionError(f"Failed to ingest GL '{record.filename}': {exc}") from exc
 
@@ -142,23 +191,41 @@ def run(deal_id: str) -> IngestionResult:
         for missing in inventory.missing_recommended:
             result.warnings.append(f"Recommended document not uploaded: {missing}")
 
+    # Merge classification-time warnings (from build_inventory) with parse-time warnings
+    # (unclassified skips, missing recommended docs) so document_inventory.json — the
+    # only persisted record of file outcomes — carries the full picture, not just the
+    # subset known at classification time.
+    inventory.warnings = list(dict.fromkeys(inventory.warnings + result.warnings))
+
     _persist(deal_id, result)
+
+    status_counts: dict[str, int] = {}
+    for record in inventory.documents:
+        status_counts[record.parse_status] = status_counts.get(record.parse_status, 0) + 1
     logger.info(
-        "Ingestion complete for %s: %d GL lines, %d AR, %d AP, %d projections, %d debt instruments",
+        "Ingestion complete for %s: %d GL lines, %d AR, %d AP, %d projections, %d debt instruments "
+        "| files: %s",
         deal_id, len(all_gl_lines), len(ar_summaries), len(ap_summaries),
-        len(projection_lines), len(debt_instruments),
+        len(projection_lines), len(debt_instruments), status_counts,
+        extra={
+            "event": "ingestion_complete", "deal_id": deal_id,
+            "gl_line_count": len(all_gl_lines), "ar_period_count": len(ar_summaries),
+            "ap_period_count": len(ap_summaries), "projection_line_count": len(projection_lines),
+            "debt_instrument_count": len(debt_instruments), "file_status_counts": status_counts,
+            "warnings": inventory.warnings,
+        },
     )
     return result
 
 
 def _parse_gl(path: Path, deal_id: str) -> list[RawGLLine]:
-    df = load_file(path)
+    df = load_bytes(file_store.read_upload_decrypted(path), path.name)
     col_map = infer_column_map(df)
     return normalise(df, col_map, path.name, deal_id)
 
 
 def _parse_aging(path: Path, deal_id: str, doc_type: str) -> list:
-    df = load_file(path)
+    df = load_bytes(file_store.read_upload_decrypted(path), path.name)
     # Detect row-per-invoice (detailed) format and aggregate to summary before normalising
     if "aging bucket" in {c.lower().strip() for c in df.columns}:
         df = _aggregate_detailed_aging(df, path.name)
@@ -227,11 +294,10 @@ def _aggregate_detailed_aging(df: pd.DataFrame, filename: str) -> pd.DataFrame:
 def _parse_pdf_contract(path: Path, deal_id: str) -> list[DebtInstrument]:
     if path.suffix.lower() != ".pdf":
         return []
-    try:
-        text = extract_text(path)
-    except PdfExtractorError as exc:
-        logger.warning("PDF extraction failed for %s: %s", path.name, exc)
-        return []
+    # PdfExtractorError propagates to the caller's per-file try/except, which correctly
+    # records parse_status="failed" + parse_error — do not swallow it here, or a genuine
+    # extraction failure becomes indistinguishable from an intentional classification skip.
+    text = extract_text_from_bytes(file_store.read_upload_decrypted(path), path.name)
     raw_instruments = asyncio.run(parse_debt_from_text(deal_id, text, path.name))
     return [DebtInstrument.model_validate(item) for item in raw_instruments]
 
@@ -261,9 +327,7 @@ def _persist(deal_id: str, result: IngestionResult) -> None:
 
 
 def _save_json(data, path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, default=str)
+    write_json_encrypted(path, data)
 
 
 def load_raw_gl(deal_id: str) -> list[RawGLLine]:
@@ -271,8 +335,7 @@ def load_raw_gl(deal_id: str) -> list[RawGLLine]:
     path = file_store.get_processed_dir(deal_id) / "raw_gl.json"
     if not path.exists():
         raise IngestionError(f"No processed GL found for deal {deal_id}. Run ingestion stage first.")
-    with open(path, encoding="utf-8") as f:
-        data = json.load(f)
+    data = read_json_encrypted(path)
     return [RawGLLine.model_validate(item) for item in data]
 
 
@@ -281,5 +344,4 @@ def load_document_inventory(deal_id: str) -> DocumentInventory:
     if not path.exists():
         uploaded = [p for p in file_store.list_uploads(deal_id) if p.is_file() and p.suffix.lower() != ".zip"]
         return build_inventory(deal_id, uploaded)
-    with open(path, encoding="utf-8") as f:
-        return DocumentInventory.model_validate(json.load(f))
+    return DocumentInventory.model_validate(read_json_encrypted(path))

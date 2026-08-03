@@ -134,6 +134,17 @@ def _rule_full_addback(
             rule_triggered=rule_id,
         ))
 
+    matched_lines = sum(len(g) for g in groups.values())
+    logger.info(
+        "qoe_rule rule=%s category=%s gl_lines_matched=%d adjustments=%d total_amount=%s",
+        rule_id, category, matched_lines, len(adjustments),
+        sum((a.adjustment_amount for a in adjustments), Decimal("0")),
+        extra={
+            "event": "qoe_rule", "deal_id": deal_id, "rule": rule_id, "category": str(category),
+            "gl_lines_matched": matched_lines, "adjustments_produced": len(adjustments),
+            "total_amount": str(sum((a.adjustment_amount for a in adjustments), Decimal("0"))),
+        },
+    )
     return adjustments
 
 
@@ -176,4 +187,13 @@ def _rule_owner_comp_excess(
                 rule_triggered="OWNER_COMP_EXCESS",
             ))
 
+    logger.info(
+        "qoe_rule rule=OWNER_COMP_EXCESS periods_checked=%d benchmark=%s adjustments=%d",
+        len(period_groups), OWNER_COMP_MONTHLY_BENCHMARK, len(adjustments),
+        extra={
+            "event": "qoe_rule", "deal_id": deal_id, "rule": "OWNER_COMP_EXCESS",
+            "periods_checked": len(period_groups), "benchmark": str(OWNER_COMP_MONTHLY_BENCHMARK),
+            "adjustments_produced": len(adjustments),
+        },
+    )
     return adjustments

@@ -19,6 +19,9 @@ from fastapi.testclient import TestClient
 from app.main import app
 
 client = TestClient(app)
+from tests.auth_helpers import authenticate as _authenticate  # noqa: E402
+
+_authenticate(client)
 FIXTURES = Path(__file__).parent.parent / "fixtures"
 
 STAGE_ORDER = ["ingestion", "financial_builder", "qoe_engine", "redflag_detector"]

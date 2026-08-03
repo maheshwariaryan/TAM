@@ -10,7 +10,6 @@ in `limitations` — see schemas/dcf.py for why. Prefer the net debt bridge and
 NWC peg for headline deal metrics; this is a directional cross-check only.
 """
 
-import json
 import logging
 from decimal import Decimal
 from pathlib import Path
@@ -18,6 +17,7 @@ from pathlib import Path
 from app.schemas.dcf import DCFAssumptions, DCFReport
 from app.schemas.projections import ProjectionSchedule
 from app.storage import file_store
+from app.storage.json_io import read_json_encrypted, write_json_encrypted
 
 logger = logging.getLogger(__name__)
 
@@ -51,13 +51,20 @@ def run(deal_id: str) -> dict:
             message="Management projections not uploaded — DCF skipped. Upload projections to enable.",
         )
     else:
-        with open(proj_path, encoding="utf-8") as f:
-            schedule = ProjectionSchedule.model_validate(json.load(f))
-        report = _build_report(deal_id, schedule)
+        try:
+            schedule = ProjectionSchedule.model_validate(read_json_encrypted(proj_path))
+        except Exception as exc:
+            logger.exception("DCF engine: management_projections.json is corrupted for deal %s", deal_id)
+            report = DCFReport(
+                deal_id=deal_id,
+                status="failed",
+                message=f"Could not read management_projections.json: {exc}",
+            )
+        else:
+            report = _build_report(deal_id, schedule)
 
     out = _path(deal_id, "dcf_report.json")
-    with open(out, "w", encoding="utf-8") as f:
-        json.dump(report.model_dump(mode="json"), f, indent=2, default=str)
+    write_json_encrypted(out, report.model_dump(mode="json"))
 
     logger.info("DCF engine complete for %s (status=%s)", deal_id, report.status)
     return report.model_dump(mode="json")
@@ -77,7 +84,9 @@ def _build_report(deal_id: str, schedule: ProjectionSchedule) -> DCFReport:
         pk = line.period.strftime("%Y-%m")
         ebitda = line.ebitda
         if ebitda is None and line.revenue is not None and line.cogs is not None and line.opex is not None:
-            ebitda = line.revenue + line.cogs + line.opex
+            # cogs/opex are stored as positive expense magnitudes (see projections_parser.py's
+            # identical fallback) — must subtract, not add.
+            ebitda = line.revenue - line.cogs - line.opex
         if ebitda is None:
             continue
         capex = line.capex or Decimal("0")
@@ -135,5 +144,4 @@ def load_dcf_report(deal_id: str) -> DCFReport:
     p = _path(deal_id, "dcf_report.json")
     if not p.exists():
         raise FileNotFoundError(f"DCF report not found for deal {deal_id}. Run dcf_engine stage first.")
-    with open(p, encoding="utf-8") as f:
-        return DCFReport.model_validate(json.load(f))
+    return DCFReport.model_validate(read_json_encrypted(p))

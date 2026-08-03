@@ -16,35 +16,66 @@ STAGE_ORDER = [
     "financial_builder",
     "qoe_engine",
     "nwc_analyzer",
+    "net_debt_bridge",
     "redflag_detector",
     "dcf_engine",
-    "net_debt_bridge",
     "narrative_drafter",
 ]
 
 
 def run(deal_id: str, stages: list[str]) -> None:
-    """Entry point called as a FastAPI BackgroundTask."""
+    """
+    Entry point called as a FastAPI BackgroundTask.
+
+    This runs after the triggering HTTP response has already been sent (BackgroundTasks
+    execute post-response), so nothing here can ever change that response — the only way
+    the caller learns what happened is via deal_store (polled through /status). That makes
+    this function the last line of defense: every branch below is deliberately paranoid
+    about recording *something* readable, even if the recording itself fails, because a
+    silent hang here is invisible to both the terminal and the client.
+    """
     logger.info("Pipeline started for deal %s | stages: %s", deal_id, stages)
 
-    for stage in stages:
-        if stage not in STAGE_ORDER:
-            logger.warning("Unknown stage '%s' — skipping", stage)
-            continue
+    try:
+        for stage in stages:
+            if stage not in STAGE_ORDER:
+                logger.warning("Unknown stage '%s' — skipping", stage)
+                continue
 
-        try:
-            deal_store.set_stage_status(deal_id, stage, "running")
-            logger.info("Stage '%s' started for deal %s", stage, deal_id)
-            _run_stage(deal_id, stage)
-            deal_store.set_stage_status(deal_id, stage, "complete")
-            logger.info("Stage '%s' complete for deal %s", stage, deal_id)
-        except Exception as exc:
-            logger.exception("Stage '%s' failed for deal %s: %s", stage, deal_id, exc)
-            deal_store.set_stage_status(deal_id, stage, "failed")
-            deal_store.update_deal(deal_id, {"error": str(exc)})
-            return
+            try:
+                deal_store.set_stage_status(deal_id, stage, "running")
+                logger.info("Stage '%s' started for deal %s", stage, deal_id)
+                _run_stage(deal_id, stage)
+                deal_store.set_stage_status(deal_id, stage, "complete")
+                logger.info("Stage '%s' complete for deal %s", stage, deal_id)
+            except Exception as exc:
+                logger.exception("Stage '%s' failed for deal %s: %s", stage, deal_id, exc)
+                _record_failure(deal_id, stage, str(exc))
+                return
+    except Exception as exc:
+        # Anything not already caught above (e.g. a bug in this loop itself) — this is
+        # the absolute last resort before the deal would otherwise sit at "running"
+        # forever with no error ever recorded and no way for the client to find out.
+        logger.exception("Pipeline crashed unexpectedly for deal %s: %s", deal_id, exc)
+        _record_failure(deal_id, "unknown", str(exc))
+        return
 
     logger.info("Pipeline complete for deal %s", deal_id)
+
+
+def _record_failure(deal_id: str, stage: str, error: str) -> None:
+    """Best-effort failure recording. If deal_store itself is the thing that's broken
+    (corrupted deal file, disk issue), log loudly rather than let a secondary exception
+    here mask the original failure and leave the deal silently stuck at 'running'."""
+    try:
+        deal_store.set_stage_status(deal_id, stage, "failed")
+        deal_store.update_deal(deal_id, {"error": error})
+    except Exception as exc:
+        logger.exception(
+            "Failed to record pipeline failure for deal %s (stage=%s, original_error=%r): %s — "
+            "this deal may now be stuck showing an incomplete status; check the deal file directly.",
+            deal_id, stage, error, exc,
+        )
 
 
 def _run_stage(deal_id: str, stage: str) -> None:

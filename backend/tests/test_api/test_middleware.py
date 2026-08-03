@@ -12,6 +12,9 @@ from fastapi.testclient import TestClient
 from app.main import app
 
 client = TestClient(app, raise_server_exceptions=False)
+from tests.auth_helpers import authenticate as _authenticate  # noqa: E402
+
+_authenticate(client)
 
 
 class TestRequestIdHeader:

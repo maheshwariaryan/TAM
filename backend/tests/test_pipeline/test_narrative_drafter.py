@@ -27,6 +27,9 @@ FIXTURES = Path(__file__).parent.parent / "fixtures"
 DEAL_ID = "test-narrative-001"
 
 client = TestClient(app)
+from tests.auth_helpers import authenticate as _authenticate  # noqa: E402
+
+_authenticate(client)
 
 
 def _make_pnl() -> PnLStatement:
@@ -75,6 +78,37 @@ class TestFactSheetBuilder:
         assert figures["reported_ebitda_ltm"] == "$6,000,000"
         assert figures["adjusted_ebitda_ltm"] == "$6,600,000"
         assert figures["qoe_adjustment_count"] == "3"
+
+
+class TestParseResponseRaisesOnMissingToolCall:
+    """A real API response with no tool-use block (refusal, prose-only reply, content
+    filter) must raise AgentError — not silently return an empty result that looks
+    identical to 'nothing to report'."""
+
+    def test_no_tool_use_block_raises_agent_error(self):
+        from app.agents.base import AgentError
+        from app.agents.narrative_drafter import NarrativeDrafterAgent
+
+        class _FakeBlock:
+            type = "text"
+
+        class _FakeResponse:
+            content = [_FakeBlock()]
+
+        agent = NarrativeDrafterAgent()
+        with pytest.raises(AgentError):
+            agent._parse_response(_FakeResponse())
+
+    def test_empty_content_raises_agent_error(self):
+        from app.agents.base import AgentError
+        from app.agents.narrative_drafter import NarrativeDrafterAgent
+
+        class _FakeResponse:
+            content = []
+
+        agent = NarrativeDrafterAgent()
+        with pytest.raises(AgentError):
+            agent._parse_response(_FakeResponse())
 
 
 class TestMockNarrativeGrounding:

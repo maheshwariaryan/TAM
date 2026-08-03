@@ -28,7 +28,7 @@ class DCFAssumptions(BaseModel):
 
 class DCFReport(BaseModel):
     deal_id: str
-    status: Literal["complete", "skipped"]
+    status: Literal["complete", "skipped", "failed"]
     message: str
     projection_periods: int = 0
     assumptions: DCFAssumptions | None = None

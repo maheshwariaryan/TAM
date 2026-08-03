@@ -37,11 +37,13 @@ def normalise_aging(
     """Convert aging DataFrame to AgingSummary list."""
     df = df.rename(columns=column_map)
     summaries: list[AgingSummary] = []
+    blank_period_rows = 0
 
     for raw_row_idx, row in df.iterrows():
         source_row = int(raw_row_idx) + 2
         period_raw = str(row.get("period", "")).strip()
         if not period_raw:
+            blank_period_rows += 1
             continue
 
         try:
@@ -75,5 +77,15 @@ def normalise_aging(
     if not summaries:
         raise NormalizerError(f"No usable aging rows in '{source_file}'")
 
-    logger.info("Normalised %d aging rows from '%s'", len(summaries), source_file)
+    if blank_period_rows:
+        logger.warning(
+            "Aging normalizer: %d row(s) in '%s' skipped for blank period",
+            blank_period_rows, source_file,
+            extra={"event": "aging_rows_blank_period_skipped", "source_file": source_file,
+                   "blank_period_rows": blank_period_rows},
+        )
+    logger.info(
+        "Normalised %d aging rows from '%s' (%d row(s) skipped for blank period)",
+        len(summaries), source_file, blank_period_rows,
+    )
     return summaries

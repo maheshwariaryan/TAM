@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Check, AlertTriangle } from "lucide-react";
+import { signup } from "@/lib/api/fdd-client";
 
 // ─── Manager list ───────────────────────────────────────────────────────────
 // TODO: Replace with a real GET /api/managers?company={companyName} call
@@ -84,9 +85,6 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Debug field — shows raw server response in development
-  const [debugDetail, setDebugDetail] = useState<string | null>(null);
-
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
@@ -109,7 +107,6 @@ export default function SignupPage() {
   const handleStepOne = (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    setDebugDetail(null);
 
     dbg("step1", "Validating fields", { fullName, email, companyName });
 
@@ -136,7 +133,6 @@ export default function SignupPage() {
   const handleStepTwo = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    setDebugDetail(null);
 
     if (!selectedManager) {
       dbgErr("step2", "No manager selected");
@@ -144,51 +140,23 @@ export default function SignupPage() {
       return;
     }
 
-    const payload = {
-      fullName: fullName.trim(),
-      companyName: companyName.trim(),
-      email: email.trim().toLowerCase(),
-      contactNumber: contactNumber.trim(),
-      password,
-      manager: selectedManager,
-    };
-
+    // companyName/contactNumber/manager are collected for the workspace-setup
+    // UX but the backend user model only has email/password/full_name today —
+    // there's no field to persist them to yet, so only those three are sent.
     dbg("api", "Sending signup payload", {
-      ...payload,
+      email: email.trim().toLowerCase(),
+      fullName: fullName.trim(),
       password: "***", // never log the real password
     });
 
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const result = await signup(email.trim().toLowerCase(), password, fullName.trim());
 
-      dbg("api", `Response status: ${res.status} ${res.statusText}`);
-
-      // Always parse the body — even on error the server sends JSON
-      let json: { ok?: boolean; message?: string; debug?: unknown } = {};
-      try {
-        json = await res.json();
-        dbg("api", "Response body", json);
-      } catch (parseErr) {
-        dbgErr("api", "Could not parse response as JSON", parseErr);
-        setError("Server returned an unexpected response. Check the console for details.");
-        return;
-      }
-
-      if (!res.ok || !json.ok) {
-        dbgErr("api", `Signup failed (HTTP ${res.status})`, json);
-
-        // Show field-level debug info in development
-        if (process.env.NODE_ENV !== "production" && json.debug) {
-          setDebugDetail(JSON.stringify(json.debug, null, 2));
-        }
-
-        setError(json.message ?? `Signup failed (HTTP ${res.status}). Check the console for details.`);
+      if (!result.ok) {
+        dbgErr("api", "Signup failed", result.message);
+        setError(result.message);
         return;
       }
 
@@ -440,15 +408,7 @@ export default function SignupPage() {
                 {error && (
                   <div className="flex items-start gap-2 rounded-md border border-rose-400/30 bg-rose-500/10 px-3 py-2">
                     <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" />
-                    <div>
-                      <p className="text-sm text-rose-300">{error}</p>
-                      {/* Dev-only detail box */}
-                      {debugDetail && (
-                        <pre className="mt-2 max-h-32 overflow-auto rounded bg-black/40 p-2 text-[10px] text-rose-200">
-                          {debugDetail}
-                        </pre>
-                      )}
-                    </div>
+                    <p className="text-sm text-rose-300">{error}</p>
                   </div>
                 )}
 
@@ -457,7 +417,7 @@ export default function SignupPage() {
                     type="button"
                     variant="outline"
                     className="flex-1 border-white/25 text-white hover:bg-white/10"
-                    onClick={() => { setStep(1); setError(null); setDebugDetail(null); }}
+                    onClick={() => { setStep(1); setError(null); }}
                   >
                     ← Back
                   </Button>

@@ -1,5 +1,6 @@
 """PDF debt extraction — proves terms are grounded in document text."""
 
+import json
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -7,7 +8,6 @@ from pathlib import Path
 import pytest
 
 from app.agents.contract_parser import extract_debt_heuristics, parse_debt_from_text
-from app.config import settings
 from app.pipeline.contracts.pdf_extractor import extract_text
 from app.pipeline.ingestion import orchestrator as orch
 from app.storage import file_store
@@ -84,12 +84,9 @@ class TestParseDebtFromText:
 class TestPdfDebtIngestion:
     def test_gl_plus_pdf_persists_debt_instruments(self):
         deal_id = "pdf-debt-ingest"
-        upload_dir = settings.upload_dir / deal_id
-        upload_dir.mkdir(parents=True, exist_ok=True)
-
         gl_src = FIXTURES / "sample_gl.csv"
-        (upload_dir / "sample_gl.csv").write_bytes(gl_src.read_bytes())
-        (upload_dir / PDF_NAME).write_bytes(PDF_PATH.read_bytes())
+        file_store.save_upload(deal_id, "sample_gl.csv", gl_src.read_bytes())
+        file_store.save_upload(deal_id, PDF_NAME, PDF_PATH.read_bytes())
 
         result = orch.run(deal_id)
 
@@ -104,9 +101,11 @@ class TestPdfDebtIngestion:
         assert "3.25x" in (inst.covenants_summary or "")
 
         # Persisted artifact must match — this is what downstream stages read.
+        from app.storage.json_io import read_json_encrypted
+
         debt_path = file_store.get_processed_dir(deal_id) / "debt_instruments.json"
         assert debt_path.exists()
-        raw = debt_path.read_text(encoding="utf-8")
+        raw = json.dumps(read_json_encrypted(debt_path))
         assert EXPECTED_LENDER in raw
         assert "7500000" in raw
         assert LEGACY_MOCK_LENDER not in raw

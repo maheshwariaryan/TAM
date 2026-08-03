@@ -35,6 +35,9 @@ FIXTURE_GL = FIXTURES / "sample_gl.csv"
 DEAL_ID = "test-netdebt-001"
 
 client = TestClient(app)
+from tests.auth_helpers import authenticate as _authenticate  # noqa: E402
+
+_authenticate(client)
 
 
 def _build_mapped_bs_pnl():
@@ -133,12 +136,15 @@ class TestSimpleDCF:
         assert report.status == "skipped"
 
     def test_complete_dcf_reconciles(self):
+        # cogs/opex are stored as positive expense magnitudes — matching real ingested data
+        # (see projections_parser.py and tests/fixtures/sample_projections.csv), not negative
+        # GL-style signed amounts.
         lines = [
             ProjectionLine(
                 period=f"2025-{m:02d}-01",
                 revenue=Decimal("1000000"),
-                cogs=Decimal("-600000"),
-                opex=Decimal("-250000"),
+                cogs=Decimal("600000"),
+                opex=Decimal("250000"),
                 capex=Decimal("20000"),
                 source_file="proj.csv",
                 source_row=m,
@@ -154,13 +160,27 @@ class TestSimpleDCF:
         assert len(report.limitations) >= 3
         assert report.assumptions.discount_rate_annual == dcf_orch.DEFAULT_DISCOUNT_RATE_ANNUAL
 
+    def test_corrupt_projections_file_reports_failed_not_uncaught_crash(self, tmp_path, monkeypatch):
+        from app.config import settings
+
+        deal_id = "test-dcf-corrupt-projections"
+        processed_dir = settings.processed_dir / deal_id
+        processed_dir.mkdir(parents=True, exist_ok=True)
+        (processed_dir / "management_projections.json").write_text("{not valid json", encoding="utf-8")
+
+        result = dcf_orch.run(deal_id)
+        assert result["status"] == "failed"
+        assert "management_projections.json" in result["message"] or "projections" in result["message"].lower()
+
     def test_derives_ebitda_when_not_provided_directly(self):
+        # cogs/opex are positive expense magnitudes here too (see note above) — the fallback
+        # must compute revenue - cogs - opex, not revenue + cogs + opex.
         lines = [
             ProjectionLine(
                 period="2025-01-01",
                 revenue=Decimal("1000000"),
-                cogs=Decimal("-600000"),
-                opex=Decimal("-250000"),
+                cogs=Decimal("600000"),
+                opex=Decimal("250000"),
                 source_file="proj.csv",
                 source_row=1,
             )

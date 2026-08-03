@@ -16,7 +16,6 @@ Writes to:   data/processed/{deal_id}/mapped_gl.json
 """
 
 import asyncio
-import json
 import logging
 from pathlib import Path
 
@@ -33,6 +32,7 @@ from app.schemas.gl import (
     RawGLLine,
 )
 from app.storage import file_store
+from app.storage.json_io import read_json_encrypted, write_json_encrypted
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +46,7 @@ def _processed_path(deal_id: str, filename: str) -> Path:
 
 
 def _save_json(path: Path, data: object) -> None:
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, default=str)
+    write_json_encrypted(path, data)
 
 
 def run(deal_id: str) -> None:
@@ -137,8 +136,10 @@ def _apply_classifications(
             is_ebitda_component=category in EBITDA_COMPONENTS,
             is_nwc_component=category in NWC_COMPONENTS,
             mapping_confidence=confidence,
-            mapping_source="rule" if reasoning.startswith("Mock") else
-                           "llm" if confidence < 1.0 else "manual",
+            # "manual" is reserved for a future human-review workflow — nothing in this
+            # codebase currently sets it, so every non-mock classification here came from
+            # the LLM regardless of its confidence score.
+            mapping_source="rule" if reasoning.startswith("Mock") else "llm",
             mapping_reasoning=reasoning,
         ))
 
@@ -151,5 +152,4 @@ def load_mapped_gl(deal_id: str) -> list[MappedGLLine]:
         raise FinancialBuilderError(
             f"No mapped GL found for deal {deal_id}. Run coa_mapping + financial_builder stages first."
         )
-    with open(path, encoding="utf-8") as f:
-        return [MappedGLLine.model_validate(item) for item in json.load(f)]
+    return [MappedGLLine.model_validate(item) for item in read_json_encrypted(path)]

@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { login } from "@/lib/api/fdd-client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,14 +18,9 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-      const json = (await res.json()) as { ok?: boolean; message?: string; firstLogin?: boolean };
-      if (!res.ok || !json.ok) {
-        setError(json.message ?? "Unable to sign in");
+      const result = await login(username.trim().toLowerCase(), password);
+      if (!result.ok) {
+        setError(result.message);
         return;
       }
       router.push("/upload");
@@ -71,7 +67,7 @@ export default function LoginPage() {
               <Button type="submit" className="w-full" disabled={loading}>{loading ? "Signing in..." : "Continue"}</Button>
             </form>
             <p className="mt-4 text-xs text-slate-300">
-              Demo access is enabled for now. Use the credentials shared by the implementation note.
+              <button type="button" className="underline" onClick={() => router.push("/forgot-password")}>Forgot password?</button>
             </p>
             <p className="mt-2 text-xs text-slate-300">
               New analyst? <button type="button" className="underline" onClick={() => router.push("/signup")}>Sign up with company domain</button>

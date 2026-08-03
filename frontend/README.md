@@ -39,20 +39,32 @@ OPENAI_MODEL=gpt-4.1-mini
 
 ## Auth and Entry Flow
 
+Authentication is real — it's backed by the FastAPI backend's `/api/v1/auth/*`
+endpoints (Argon2id password hashing, JWT session cookie), not a client-side
+mock. See the repo-root `README.md`'s Security section for the backend-side
+design (password hashing, at-rest encryption, per-deal authorization, TLS,
+access logging).
+
 - First page: `/welcome`
-- New analyst sign-up: `/signup` (company-domain email required)
+- New analyst sign-up: `/signup` (company-domain email required, 2-step wizard)
 - Sign in page: `/login`
+- Forgot/reset password: `/forgot-password` -> `/reset-password?token=...`
 - First-time post-login intake + walkthrough: `/onboarding`
 - Final destination after analysis load: `/dashboard`
 
 Behavior:
-- First-time user: sign in/sign up -> `/onboarding` -> Generate Analysis -> `/dashboard`
+- First-time user: sign up/sign in -> `/onboarding` -> Generate Analysis -> `/dashboard`
 - Returning user: sign in -> directly to `/dashboard`
 - Existing analysts can launch a new company intake anytime via `Start New Company Analysis` in the top bar.
 
-Demo login credentials:
+There is no seeded demo account — sign up to create one. `middleware.ts` only
+checks for the presence of the session cookie (`tam_session`) to decide
+whether to redirect between `/login` and the protected routes; the backend is
+the actual source of truth and re-verifies the JWT on every API call, so a
+forged or expired cookie still gets rejected with 401 there.
 
-```bash
-username: analyst@tam.com
-password: TAM2026!
-```
+The frontend (`localhost:3000`) and backend (`localhost:8000`) are different
+origins, so every backend call in `lib/api/fdd-client.ts` sends
+`credentials: "include"` to carry the httpOnly session cookie cross-origin;
+the backend's CORS config allows credentialed requests from the frontend's
+origin explicitly (see `CORS_ORIGINS` in the backend `.env`).

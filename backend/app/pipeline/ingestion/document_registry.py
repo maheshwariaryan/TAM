@@ -3,8 +3,9 @@
 import logging
 from pathlib import Path
 
-from app.pipeline.ingestion.loader import load_file
+from app.pipeline.ingestion.loader import load_bytes
 from app.schemas.documents import DocumentInventory, DocumentRecord, DocumentType
+from app.storage import file_store
 
 logger = logging.getLogger(__name__)
 
@@ -12,38 +13,45 @@ GL_EXTENSIONS = {".csv", ".xlsx"}
 PDF_EXTENSIONS = {".pdf"}
 
 
-def classify_by_filename(filename: str) -> tuple[DocumentType, float]:
-    """Classify a document from its filename heuristics."""
+_WIDE_FORMAT_SCHEDULE_KEYWORDS = (
+    "balance_sheet", "income_statement", "cash_flow",
+    "cogs_schedule", "opex_schedule", "revenue_schedule",
+    "payroll", "debt_schedule", "lease_schedule",
+    "fixed_asset", "inventory_rollforward", "working_capital",
+    "equity_rollforward", "bank_statement",
+)
+
+
+def classify_by_filename(filename: str) -> tuple[DocumentType, float, str | None]:
+    """Classify a document from its filename heuristics. Returns (type, confidence, detail)."""
     name = filename.lower()
 
     if any(k in name for k in ("ar_aging", "ar aging", "araging", "_ar_", "receivable")):
-        return DocumentType.AR_AGING, 0.85
+        return DocumentType.AR_AGING, 0.85, None
     if any(k in name for k in ("ap_aging", "ap aging", "apaging", "_ap_", "payable")):
-        return DocumentType.AP_AGING, 0.85
+        return DocumentType.AP_AGING, 0.85, None
     if any(k in name for k in ("projection", "forecast", "budget", "mgmt_plan", "management plan")):
-        return DocumentType.MANAGEMENT_PROJECTIONS, 0.8
+        return DocumentType.MANAGEMENT_PROJECTIONS, 0.8, None
     if any(k in name for k in ("credit_agreement", "loan", "debt", "term_sheet", "revolver", "note")):
-        return DocumentType.DEBT_AGREEMENT, 0.8
+        return DocumentType.DEBT_AGREEMENT, 0.8, None
     if any(k in name for k in ("trial_balance", "trial balance", "_tb_", "tb_")):
-        return DocumentType.TRIAL_BALANCE, 0.8
+        return DocumentType.TRIAL_BALANCE, 0.8, None
     if any(k in name for k in ("gl_", "_gl", "general_ledger", "general ledger", "ledger")):
-        return DocumentType.GENERAL_LEDGER, 0.75
+        return DocumentType.GENERAL_LEDGER, 0.75, None
     # Wide-format financial schedule files — NOT GL rows; must not be routed to the GL loader.
     # These have periods as column headers (e.g. "2022-01", "2022-02"…) rather than a period column.
-    if any(k in name for k in (
-        "balance_sheet", "income_statement", "cash_flow",
-        "cogs_schedule", "opex_schedule", "revenue_schedule",
-        "payroll", "debt_schedule", "lease_schedule",
-        "fixed_asset", "inventory_rollforward", "working_capital",
-        "equity_rollforward", "bank_statement",
-    )):
-        return DocumentType.UNCLASSIFIED, 0.7
+    if any(k in name for k in _WIDE_FORMAT_SCHEDULE_KEYWORDS):
+        return (
+            DocumentType.UNCLASSIFIED, 0.7,
+            "Recognized as a wide-format financial schedule (periods as column headers, not raw "
+            "GL rows) — not yet ingestible by this pipeline.",
+        )
     if name.endswith(".pdf"):
-        return DocumentType.CONTRACT_OTHER, 0.5
+        return DocumentType.CONTRACT_OTHER, 0.5, None
     if name.endswith((".csv", ".xlsx")):
-        return DocumentType.GENERAL_LEDGER, 0.4
+        return DocumentType.GENERAL_LEDGER, 0.4, None
 
-    return DocumentType.UNCLASSIFIED, 0.0
+    return DocumentType.UNCLASSIFIED, 0.0, "Unrecognized file type — filename did not match any known document pattern."
 
 
 def _sniff_columns(path: Path) -> tuple[DocumentType, float]:
@@ -53,7 +61,7 @@ def _sniff_columns(path: Path) -> tuple[DocumentType, float]:
         return DocumentType.UNCLASSIFIED, 0.0
 
     try:
-        df = load_file(path)
+        df = load_bytes(file_store.read_upload_decrypted(path), path.name)
     except Exception:
         return DocumentType.UNCLASSIFIED, 0.0
 
@@ -78,25 +86,26 @@ def _sniff_columns(path: Path) -> tuple[DocumentType, float]:
     return DocumentType.UNCLASSIFIED, 0.0
 
 
-def classify_document(path: Path) -> tuple[DocumentType, float]:
+def classify_document(path: Path) -> tuple[DocumentType, float, str | None]:
     """Combine filename and column heuristics."""
-    by_name, name_conf = classify_by_filename(path.name)
+    by_name, name_conf, name_detail = classify_by_filename(path.name)
     by_cols, col_conf = _sniff_columns(path)
 
     if col_conf > name_conf:
-        return by_cols, col_conf
-    return by_name, name_conf
+        return by_cols, col_conf, None
+    return by_name, name_conf, name_detail
 
 
 def build_inventory(deal_id: str, file_paths: list[Path]) -> DocumentInventory:
     """Build a document inventory from uploaded file paths."""
     records: list[DocumentRecord] = []
     types_seen: set[DocumentType] = set()
+    warnings: list[str] = []
 
     for path in sorted(file_paths):
         if path.suffix.lower() == ".zip":
             continue
-        doc_type, confidence = classify_document(path)
+        doc_type, confidence, detail = classify_document(path)
         types_seen.add(doc_type)
         records.append(
             DocumentRecord(
@@ -106,8 +115,30 @@ def build_inventory(deal_id: str, file_paths: list[Path]) -> DocumentInventory:
                 document_type=doc_type,
                 parse_status="pending",
                 confidence=confidence,
+                detail=detail,
             )
         )
+
+        if doc_type == DocumentType.UNCLASSIFIED:
+            msg = detail or "Unrecognized file — will not be parsed."
+            warnings.append(f"{path.name}: {msg}")
+            logger.warning(
+                "file_classified filename=%s document_type=%s confidence=%.2f detail=%s",
+                path.name, doc_type, confidence, msg,
+                extra={
+                    "event": "file_classified", "deal_id": deal_id, "doc_filename": path.name,
+                    "document_type": str(doc_type), "confidence": confidence, "detail": msg,
+                },
+            )
+        else:
+            logger.info(
+                "file_classified filename=%s document_type=%s confidence=%.2f",
+                path.name, doc_type, confidence,
+                extra={
+                    "event": "file_classified", "deal_id": deal_id, "doc_filename": path.name,
+                    "document_type": str(doc_type), "confidence": confidence,
+                },
+            )
 
     missing: list[str] = []
     has_gl = DocumentType.GENERAL_LEDGER in types_seen or DocumentType.TRIAL_BALANCE in types_seen
@@ -118,4 +149,16 @@ def build_inventory(deal_id: str, file_paths: list[Path]) -> DocumentInventory:
     if DocumentType.AP_AGING not in types_seen:
         missing.append(DocumentType.AP_AGING.value)
 
-    return DocumentInventory(deal_id=deal_id, documents=records, missing_recommended=missing)
+    logger.info(
+        "document_classification_complete deal_id=%s total_files=%d unclassified=%d",
+        deal_id, len(records), sum(1 for r in records if r.document_type == DocumentType.UNCLASSIFIED),
+        extra={
+            "event": "document_classification_complete", "deal_id": deal_id,
+            "total_files": len(records),
+            "unclassified": sum(1 for r in records if r.document_type == DocumentType.UNCLASSIFIED),
+        },
+    )
+
+    return DocumentInventory(
+        deal_id=deal_id, documents=records, missing_recommended=missing, warnings=warnings,
+    )

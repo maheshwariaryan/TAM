@@ -203,6 +203,92 @@ class TestRedFlagRules:
                 f"Flag '{flag.title}' has no affected_periods"
 
 
+class TestRedFlagDataQualityRules:
+    """A Fail-severity cross-document mismatch (AR/AP aging vs. balance sheet, or
+    contract-extracted debt vs. balance-sheet debt) must surface as a visible red flag,
+    not just a JSON file nobody looks at."""
+
+    def setup_method(self):
+        self.mapped, self.pnl = _build_mapped_and_pnl()
+        candidates = qoe_rules.detect_all(self.mapped, DEAL_ID)
+        approved = [a.model_copy(update={"llm_reviewed": True}) for a in candidates]
+        self.qoe = qoe_normalizer.build_report(self.pnl, approved, DEAL_ID)
+
+    def test_cross_doc_tie_out_failure_becomes_high_flag(self):
+        from app.schemas.aging import CrossDocumentValidation, TieOutResult
+
+        cross_validation = CrossDocumentValidation(
+            deal_id=DEAL_ID,
+            tie_outs=[
+                TieOutResult(
+                    name="AR Aging <-> BS AR",
+                    expected=Decimal("262000"),
+                    observed=Decimal("504000"),
+                    difference=Decimal("242000"),
+                    variance_pct=92.4,
+                    tolerance_pct=0.5,
+                    status="Fail",
+                    source_documents=["mismatched_ar_aging.csv"],
+                )
+            ],
+        )
+        flags = rf_rules.detect_all(
+            deal_id=DEAL_ID, pnl=self.pnl, mapped_lines=self.mapped, qoe=self.qoe,
+            cross_validation=cross_validation,
+        )
+        dq_flags = [f for f in flags if f.rule_id == "CROSS_DOC_TIE_OUT_FAILURE"]
+        assert len(dq_flags) == 1
+        assert dq_flags[0].severity == "High"
+        assert dq_flags[0].category == "Data Quality"
+        assert "504,000" in dq_flags[0].description or "504000" in dq_flags[0].description
+
+    def test_net_debt_reconciliation_mismatch_becomes_high_flag(self):
+        from app.schemas.net_debt import NetDebtReport
+
+        net_debt_report = NetDebtReport(
+            deal_id=DEAL_ID,
+            status="complete",
+            message="test",
+            period="2024-12",
+            total_debt=Decimal("1000000"),
+            instrument_principal_total=Decimal("1500000"),
+            reconciliation_variance=Decimal("-500000"),
+            reconciliation_note="Contract-extracted principal differs from balance sheet debt by $500,000.",
+        )
+        flags = rf_rules.detect_all(
+            deal_id=DEAL_ID, pnl=self.pnl, mapped_lines=self.mapped, qoe=self.qoe,
+            net_debt_report=net_debt_report,
+        )
+        dq_flags = [f for f in flags if f.rule_id == "NET_DEBT_RECONCILIATION_MISMATCH"]
+        assert len(dq_flags) == 1
+        assert dq_flags[0].severity == "High"
+        assert dq_flags[0].category == "Data Quality"
+
+    def test_no_flag_when_tie_out_passes(self):
+        from app.schemas.aging import CrossDocumentValidation, TieOutResult
+
+        cross_validation = CrossDocumentValidation(
+            deal_id=DEAL_ID,
+            tie_outs=[
+                TieOutResult(
+                    name="AR Aging <-> BS AR",
+                    expected=Decimal("262000"),
+                    observed=Decimal("262500"),
+                    difference=Decimal("500"),
+                    variance_pct=0.19,
+                    tolerance_pct=0.5,
+                    status="Pass",
+                    source_documents=["sample_ar_aging.csv"],
+                )
+            ],
+        )
+        flags = rf_rules.detect_all(
+            deal_id=DEAL_ID, pnl=self.pnl, mapped_lines=self.mapped, qoe=self.qoe,
+            cross_validation=cross_validation,
+        )
+        assert not [f for f in flags if f.rule_id == "CROSS_DOC_TIE_OUT_FAILURE"]
+
+
 # ─── Agent mock tests ─────────────────────────────────────────────────────────
 
 class TestAgentMocks:
@@ -323,16 +409,13 @@ def _setup_orch_pipeline() -> None:
     Write sample_gl.csv to the uploads folder and run all four pipeline stages
     to disk: ingestion → financial_builder → qoe_engine → redflag_detector.
     """
-    from app.config import settings
     from app.pipeline.financial_builder import orchestrator as fb_orch
     from app.pipeline.ingestion import orchestrator as ing_orch
     from app.pipeline.qoe_engine import orchestrator as qoe_orch
     from app.pipeline.redflag_detector import orchestrator as rf_orch
+    from app.storage import file_store
 
-    upload_dir = settings.upload_dir / _ORCH_DEAL_ID
-    upload_dir.mkdir(parents=True, exist_ok=True)
-    dest = upload_dir / "sample_gl.csv"
-    dest.write_bytes(FIXTURE_GL.read_bytes())
+    file_store.save_upload(_ORCH_DEAL_ID, "sample_gl.csv", FIXTURE_GL.read_bytes())
 
     ing_orch.run(_ORCH_DEAL_ID)
     fb_orch.run(_ORCH_DEAL_ID)

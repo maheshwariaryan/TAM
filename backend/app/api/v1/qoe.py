@@ -6,9 +6,10 @@ GET /api/v1/deals/{deal_id}/qoe/adjustments/{adj_id}/source  GL line drill-throu
 """
 
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
-from app.pipeline.financial_builder.orchestrator import load_mapped_gl
+from app.api.v1.deps import require_deal_owner
+from app.pipeline.financial_builder.orchestrator import FinancialBuilderError, load_mapped_gl
 from app.pipeline.qoe_engine.orchestrator import load_qoe_report
 from app.schemas.qoe import QoEReport
 
@@ -16,7 +17,7 @@ router = APIRouter(tags=["Quality of Earnings"])
 
 
 @router.get("/deals/{deal_id}/qoe", response_model=QoEReport)
-def get_qoe(deal_id: str) -> QoEReport:
+def get_qoe(deal_id: str, _owned_deal: dict = Depends(require_deal_owner)) -> QoEReport:
     try:
         return load_qoe_report(deal_id)
     except FileNotFoundError as exc:
@@ -24,7 +25,9 @@ def get_qoe(deal_id: str) -> QoEReport:
 
 
 @router.get("/deals/{deal_id}/qoe/adjustments/{adjustment_id}/source")
-def get_adjustment_source(deal_id: str, adjustment_id: str) -> dict:
+def get_adjustment_source(
+    deal_id: str, adjustment_id: str, _owned_deal: dict = Depends(require_deal_owner)
+) -> dict:
     """Return the source GL lines for a specific adjustment — the audit drill-through."""
     try:
         report = load_qoe_report(deal_id)
@@ -37,7 +40,7 @@ def get_adjustment_source(deal_id: str, adjustment_id: str) -> dict:
 
     try:
         mapped = load_mapped_gl(deal_id)
-    except Exception as exc:
+    except FinancialBuilderError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
 
     source_ids = set(adj.source_gl_line_ids)

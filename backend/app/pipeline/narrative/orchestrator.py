@@ -12,7 +12,6 @@ adjustment or a new document is uploaded.
 """
 
 import asyncio
-import json
 import logging
 from decimal import Decimal
 from pathlib import Path
@@ -25,6 +24,7 @@ from app.schemas.nwc import NWCReport
 from app.schemas.qoe import QoEReport
 from app.schemas.redflags import RedFlagReport
 from app.storage import file_store
+from app.storage.json_io import read_json_encrypted, write_json_encrypted
 
 logger = logging.getLogger(__name__)
 
@@ -41,8 +41,7 @@ def _try_load(deal_id: str, filename: str, model_class):
     p = _path(deal_id, filename)
     if not p.exists():
         return None
-    with open(p, encoding="utf-8") as f:
-        return model_class.model_validate(json.load(f))
+    return model_class.model_validate(read_json_encrypted(p))
 
 
 def _money(amount: Decimal) -> str:
@@ -159,8 +158,7 @@ def _build_fact_sheet(
 
 def _persist(deal_id: str, report: NarrativeReport) -> None:
     out = _path(deal_id, "narrative_report.json")
-    with open(out, "w", encoding="utf-8") as f:
-        json.dump(report.model_dump(mode="json"), f, indent=2, default=str)
+    write_json_encrypted(out, report.model_dump(mode="json"))
 
 
 def load_narrative_report(deal_id: str) -> NarrativeReport:
@@ -169,5 +167,4 @@ def load_narrative_report(deal_id: str) -> NarrativeReport:
         raise FileNotFoundError(
             f"No narrative report found for deal {deal_id}. POST /narrative/generate first."
         )
-    with open(p, encoding="utf-8") as f:
-        return NarrativeReport.model_validate(json.load(f))
+    return NarrativeReport.model_validate(read_json_encrypted(p))

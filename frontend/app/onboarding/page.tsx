@@ -99,9 +99,8 @@ export default function OnboardingPage() {
     const stageTimer = setInterval(() => {
       setStageIndex((prev) => (prev + 1) % loadingStages.length);
     }, 1400);
-    const completeTimer = setTimeout(async () => {
+    const completeTimer = setTimeout(() => {
       try {
-        await fetch("/api/auth/complete-onboarding", { method: "POST" });
         const profile = {
           id: `cmp-${Date.now()}`,
           companyName: companyName.trim(),

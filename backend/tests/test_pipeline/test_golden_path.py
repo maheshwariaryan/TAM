@@ -23,6 +23,9 @@ FIXTURES = Path(__file__).parent.parent / "fixtures"
 DATA_ROOM_ZIP = FIXTURES / "data_room.zip"
 
 client = TestClient(app)
+from tests.auth_helpers import authenticate as _authenticate  # noqa: E402
+
+_authenticate(client)
 
 
 @pytest.fixture(scope="module", autouse=True)

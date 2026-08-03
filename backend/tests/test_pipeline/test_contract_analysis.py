@@ -29,6 +29,9 @@ PDF_PATH = FIXTURES / PDF_NAME
 DEAL_ID = "test-contracts-001"
 
 client = TestClient(app)
+from tests.auth_helpers import authenticate as _authenticate  # noqa: E402
+
+_authenticate(client)
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -72,6 +75,34 @@ class TestClauseHeuristics:
         inst = result["instruments"][0]
         assert "change_of_control_clause" not in inst
         assert "material_obligations" not in inst
+
+
+class TestParseResponseRaisesOnMissingToolCall:
+    """A real API response with no tool-use block must raise AgentError — not silently
+    return {'instruments': []}, which is indistinguishable from 'this contract genuinely
+    has no debt terms'."""
+
+    def test_no_tool_use_block_raises_agent_error(self):
+        from app.agents.base import AgentError
+        from app.agents.contract_parser import ContractParserAgent
+
+        class _FakeBlock:
+            pass  # no .input attribute
+
+        class _FakeResponse:
+            content = [_FakeBlock()]
+
+        agent = ContractParserAgent()
+        with pytest.raises(AgentError):
+            agent._parse_response(_FakeResponse())
+
+    def test_no_content_attribute_raises_agent_error(self):
+        from app.agents.base import AgentError
+        from app.agents.contract_parser import ContractParserAgent
+
+        agent = ContractParserAgent()
+        with pytest.raises(AgentError):
+            agent._parse_response(object())
 
 
 class TestBuildClauses:
@@ -173,3 +204,24 @@ class TestContractsApi:
         deal_id = _create_deal("Contracts 404 Test Co")
         resp = client.get(f"/api/v1/deals/{deal_id}/contracts")
         assert resp.status_code == 404
+
+    def test_partial_extraction_failure_is_surfaced_not_silently_dropped(self):
+        """One good PDF + one corrupt PDF must still report the failure, even though the
+        good PDF's instrument makes the overall status 'complete'."""
+        corrupt_name = "corrupt_agreement.pdf"
+        if not (FIXTURES / corrupt_name).exists():
+            pytest.skip(f"{corrupt_name} fixture missing")
+
+        deal_id = _create_deal("Partial Contract Failure Test Co")
+        _upload(deal_id, ["sample_gl.csv", PDF_NAME, corrupt_name])
+        _run_stages(deal_id, ["ingestion"])
+
+        resp = client.post(f"/api/v1/deals/{deal_id}/contracts/analyze")
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert data["status"] == "complete"
+        assert len(data["instruments"]) == 1
+        assert len(data["extraction_warnings"]) == 1
+        assert corrupt_name in data["extraction_warnings"][0]
+        assert "could not be processed" in data["message"]
