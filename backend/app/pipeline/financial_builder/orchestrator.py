@@ -23,7 +23,9 @@ from app.agents.coa_mapper import CoAMapperAgent
 from app.pipeline.financial_builder import balance_sheet as bs_builder
 from app.pipeline.financial_builder import cash_flow as cf_builder
 from app.pipeline.financial_builder import pnl as pnl_builder
+from app.pipeline.ingestion.cross_document_validator import reconcile_schedules
 from app.pipeline.ingestion.orchestrator import IngestionError, load_raw_gl
+from app.schemas.aging import CrossDocumentValidation
 from app.schemas.gl import (
     EBITDA_COMPONENTS,
     NWC_COMPONENTS,
@@ -89,6 +91,8 @@ async def _run_async(deal_id: str) -> None:
     logger.info("P&L built: %d periods", len(pnl.periods))
 
     # Balance sheet (only if BS lines exist)
+    bs = None
+    cf = None
     bs_lines = [gl for gl in mapped_lines if gl.financial_statement == "BalanceSheet"]
     if bs_lines:
         bs = bs_builder.build(mapped_lines)
@@ -99,6 +103,23 @@ async def _run_async(deal_id: str) -> None:
         logger.info("Balance sheet and cash flow built")
     else:
         logger.warning("No balance sheet accounts mapped — skipping BS and CF statements")
+
+    # ── Step 5: Reconcile Group A supporting schedules (if any were uploaded) against
+    # the GL-derived statements just built. Never used to recompute those statements —
+    # see cross_document_validator.reconcile_schedules docstring.
+    schedule_path = _processed_path(deal_id, "schedule_reconciliation.json")
+    if schedule_path.exists():
+        schedule_data = read_json_encrypted(schedule_path)
+        new_tie_outs = reconcile_schedules(schedule_data, pnl, bs, cf)
+        if new_tie_outs:
+            validation_path = _processed_path(deal_id, "cross_document_validation.json")
+            if validation_path.exists():
+                validation = CrossDocumentValidation.model_validate(read_json_encrypted(validation_path))
+                validation.tie_outs.extend(new_tie_outs)
+            else:
+                validation = CrossDocumentValidation(deal_id=deal_id, tie_outs=new_tie_outs)
+            _save_json(validation_path, validation.model_dump(mode="json"))
+            logger.info("Merged %d schedule reconciliation tie-out(s) for deal %s", len(new_tie_outs), deal_id)
 
 
 def _apply_classifications(

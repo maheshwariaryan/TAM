@@ -345,12 +345,19 @@ class TestOrchestratorFailure:
 
 
 class TestUnclassifiedFileVisibility:
-    """A wide-format schedule file (period columns, not raw GL rows) is intentionally not
-    ingestible today — but it must be visibly skipped with a reason, not silently dropped
-    with parse_status='skipped' and no explanation."""
+    """A genuinely unrecognizable file must be visibly skipped with a reason, not
+    silently dropped with parse_status='skipped' and no explanation. Wide-format
+    schedule files (payroll, balance sheet, debt schedule, etc.) are no longer in this
+    category — see test_schedule_ingestion.py for their (now supported) handling."""
 
-    def test_wide_format_schedule_skipped_with_detail(self):
+    def test_payroll_schedule_is_now_parsed_not_skipped(self):
+        """Regression test for the fix: this file used to hit the blanket
+        "wide-format schedule, not yet ingestible" branch and get skipped. It's
+        content-ambiguous (generic department+period columns, no employee-level
+        signature), so it falls back to the filename hint and is recognized as
+        PAYROLL_SCHEDULE — parsed and stored, not skipped."""
         from app.pipeline.ingestion import orchestrator as orch
+        from app.schemas.documents import DocumentType
         from app.storage import file_store
 
         deal_id = "test-unclassified-schedule"
@@ -363,7 +370,24 @@ class TestUnclassifiedFileVisibility:
         schedule_record = next(
             r for r in result.inventory.documents if r.filename == "sample_payroll_schedule.csv"
         )
-        assert schedule_record.parse_status == "skipped"
-        assert schedule_record.detail is not None
-        assert "wide-format" in schedule_record.detail.lower()
-        assert any("sample_payroll_schedule.csv" in w for w in result.inventory.warnings)
+        assert schedule_record.parse_status == "parsed"
+        assert schedule_record.document_type == DocumentType.PAYROLL_SCHEDULE
+        assert result.supporting_schedules is not None
+        assert "sample_payroll_schedule.csv" in result.supporting_schedules
+
+    def test_genuinely_unrecognizable_file_is_skipped_with_detail(self):
+        from app.pipeline.ingestion import orchestrator as orch
+        from app.storage import file_store
+
+        deal_id = "test-unclassified-file"
+        fixtures = Path(__file__).parent.parent / "fixtures"
+        file_store.save_upload(deal_id, "sample_gl.csv", (fixtures / "sample_gl.csv").read_bytes())
+        file_store.save_upload(deal_id, "mystery_export.docx", b"not a real document")
+
+        result = orch.run(deal_id)
+
+        mystery_record = next(
+            r for r in result.inventory.documents if r.filename == "mystery_export.docx"
+        )
+        assert mystery_record.parse_status == "skipped"
+        assert mystery_record.detail is not None

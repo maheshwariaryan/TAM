@@ -22,10 +22,16 @@ from app.pipeline.contracts.pdf_extractor import extract_text_from_bytes
 from app.pipeline.ingestion.aging_loader import infer_aging_column_map
 from app.pipeline.ingestion.aging_normalizer import normalise_aging
 from app.pipeline.ingestion.cross_document_validator import validate_cross_documents
+from app.pipeline.ingestion.debt_schedule_parser import parse_debt_schedule_bytes
 from app.pipeline.ingestion.document_registry import build_inventory
 from app.pipeline.ingestion.loader import infer_column_map, load_bytes
 from app.pipeline.ingestion.normalizer import normalise
 from app.pipeline.ingestion.projections_parser import parse_projections_bytes
+from app.pipeline.ingestion.schedule_parser import (
+    parse_period_row_schedule_bytes,
+    parse_wide_schedule_bytes,
+)
+from app.pipeline.ingestion.supporting_schedule_parser import parse_supporting_schedule_bytes
 from app.pipeline.ingestion.validator import validate
 from app.schemas.aging import AgingReport, CrossDocumentValidation
 from app.schemas.contracts import DebtInstrument, DebtSchedule
@@ -39,6 +45,30 @@ logger = logging.getLogger(__name__)
 
 GL_TYPES = {DocumentType.GENERAL_LEDGER, DocumentType.TRIAL_BALANCE}
 AGING_TYPES = {DocumentType.AR_AGING, DocumentType.AP_AGING}
+
+# Group A schedule types — parsed and reconciled against the GL-derived statements at
+# the end of the financial_builder stage (see cross_document_validator.reconcile_schedules),
+# never used to recompute them. Canonical key -> DocumentType.
+_WIDE_SCHEDULE_TYPES: dict[DocumentType, str] = {
+    DocumentType.BALANCE_SHEET_SCHEDULE: "balance_sheet",
+    DocumentType.INCOME_STATEMENT_SCHEDULE: "income_statement",
+    DocumentType.CASH_FLOW_SCHEDULE: "cash_flow",
+    DocumentType.REVENUE_SCHEDULE: "revenue",
+    DocumentType.COGS_SCHEDULE: "cogs",
+    DocumentType.OPEX_SCHEDULE: "opex",
+}
+_PERIOD_ROW_SCHEDULE_TYPES: dict[DocumentType, str] = {
+    DocumentType.WORKING_CAPITAL_SCHEDULE: "working_capital",
+    DocumentType.INVENTORY_ROLLFORWARD: "inventory",
+}
+# Group C — recognized, parsed, and persisted for viewing; no analysis module exists yet.
+_SUPPORTING_SCHEDULE_TYPES = {
+    DocumentType.LEASE_SCHEDULE,
+    DocumentType.FIXED_ASSET_REGISTER,
+    DocumentType.EQUITY_ROLLFORWARD,
+    DocumentType.PAYROLL_SCHEDULE,
+    DocumentType.BANK_STATEMENT,
+}
 
 
 class IngestionError(Exception):
@@ -55,6 +85,8 @@ class IngestionResult:
     projections: ProjectionSchedule | None = None
     debt_schedule: DebtSchedule | None = None
     cross_validation: CrossDocumentValidation | None = None
+    schedule_reconciliation: dict[str, dict] | None = None
+    supporting_schedules: dict[str, list[dict]] | None = None
     warnings: list[str] = field(default_factory=list)
 
 
@@ -71,6 +103,8 @@ def run(deal_id: str) -> IngestionResult:
     ap_summaries = []
     projection_lines: list[ProjectionLine] = []
     debt_instruments: list[DebtInstrument] = []
+    schedule_reconciliation: dict[str, dict] = {}
+    supporting_schedules: dict[str, list[dict]] = {}
 
     for record in inventory.documents:
         path = Path(record.stored_path)
@@ -129,6 +163,52 @@ def run(deal_id: str) -> IngestionResult:
                     extra={"event": "file_parsed", "deal_id": deal_id, "doc_filename": record.filename,
                            "document_type": str(record.document_type), "instrument_count": len(instruments)},
                 )
+            elif record.document_type in _WIDE_SCHEDULE_TYPES:
+                key = _WIDE_SCHEDULE_TYPES[record.document_type]
+                schedule_reconciliation[key] = parse_wide_schedule_bytes(
+                    file_store.read_upload_decrypted(path), path.name
+                )
+                record.parse_status = "parsed"
+                logger.info(
+                    "file_parsed filename=%s document_type=%s labels=%d",
+                    record.filename, record.document_type, len(schedule_reconciliation[key]),
+                    extra={"event": "file_parsed", "deal_id": deal_id, "doc_filename": record.filename,
+                           "document_type": str(record.document_type)},
+                )
+            elif record.document_type in _PERIOD_ROW_SCHEDULE_TYPES:
+                key = _PERIOD_ROW_SCHEDULE_TYPES[record.document_type]
+                schedule_reconciliation[key] = parse_period_row_schedule_bytes(
+                    file_store.read_upload_decrypted(path), path.name
+                )
+                record.parse_status = "parsed"
+                logger.info(
+                    "file_parsed filename=%s document_type=%s metrics=%d",
+                    record.filename, record.document_type, len(schedule_reconciliation[key]),
+                    extra={"event": "file_parsed", "deal_id": deal_id, "doc_filename": record.filename,
+                           "document_type": str(record.document_type)},
+                )
+            elif record.document_type == DocumentType.DEBT_SCHEDULE:
+                instruments = parse_debt_schedule_bytes(
+                    file_store.read_upload_decrypted(path), path.name, deal_id
+                )
+                debt_instruments.extend(instruments)
+                record.parse_status = "parsed"
+                logger.info(
+                    "file_parsed filename=%s document_type=%s instruments=%d",
+                    record.filename, record.document_type, len(instruments),
+                    extra={"event": "file_parsed", "deal_id": deal_id, "doc_filename": record.filename,
+                           "document_type": str(record.document_type), "instrument_count": len(instruments)},
+                )
+            elif record.document_type in _SUPPORTING_SCHEDULE_TYPES:
+                rows = parse_supporting_schedule_bytes(file_store.read_upload_decrypted(path), path.name)
+                supporting_schedules[record.filename] = rows
+                record.parse_status = "parsed"
+                logger.info(
+                    "file_parsed filename=%s document_type=%s rows=%d",
+                    record.filename, record.document_type, len(rows),
+                    extra={"event": "file_parsed", "deal_id": deal_id, "doc_filename": record.filename,
+                           "document_type": str(record.document_type), "row_count": len(rows)},
+                )
             else:
                 record.parse_status = "skipped"
                 msg = record.detail or f"Unclassified file skipped: {record.filename}"
@@ -182,6 +262,10 @@ def run(deal_id: str) -> IngestionResult:
         result.projections = ProjectionSchedule(deal_id=deal_id, lines=projection_lines)
     if debt_instruments:
         result.debt_schedule = DebtSchedule(deal_id=deal_id, instruments=debt_instruments)
+    if schedule_reconciliation:
+        result.schedule_reconciliation = schedule_reconciliation
+    if supporting_schedules:
+        result.supporting_schedules = supporting_schedules
 
     result.cross_validation = validate_cross_documents(
         deal_id, all_gl_lines, result.ar_aging, result.ap_aging
@@ -324,6 +408,10 @@ def _persist(deal_id: str, result: IngestionResult) -> None:
         _save_json(result.debt_schedule.model_dump(mode="json"), processed_dir / "debt_instruments.json")
     if result.cross_validation:
         _save_json(result.cross_validation.model_dump(mode="json"), processed_dir / "cross_document_validation.json")
+    if result.schedule_reconciliation:
+        _save_json(result.schedule_reconciliation, processed_dir / "schedule_reconciliation.json")
+    if result.supporting_schedules:
+        _save_json(result.supporting_schedules, processed_dir / "supporting_schedules.json")
 
 
 def _save_json(data, path: Path) -> None:
@@ -337,6 +425,16 @@ def load_raw_gl(deal_id: str) -> list[RawGLLine]:
         raise IngestionError(f"No processed GL found for deal {deal_id}. Run ingestion stage first.")
     data = read_json_encrypted(path)
     return [RawGLLine.model_validate(item) for item in data]
+
+
+def load_supporting_schedules(deal_id: str) -> dict[str, list[dict]]:
+    """Load Group C's raw parsed schedule tables (lease, fixed asset, equity/cap table,
+    payroll, bank statement) — keyed by filename. Raises IngestionError if none were
+    ingested for this deal."""
+    path = file_store.get_processed_dir(deal_id) / "supporting_schedules.json"
+    if not path.exists():
+        raise IngestionError(f"No supporting schedules found for deal {deal_id}.")
+    return read_json_encrypted(path)
 
 
 def load_document_inventory(deal_id: str) -> DocumentInventory:
