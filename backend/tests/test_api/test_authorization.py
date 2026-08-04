@@ -42,6 +42,8 @@ _DEAL_SCOPED_GET_ENDPOINTS = [
     "/api/v1/deals/{deal_id}/tie-outs",
     "/api/v1/deals/{deal_id}/notes",
     "/api/v1/deals/{deal_id}/settings",
+    "/api/v1/deals/{deal_id}/inquiries",
+    "/api/v1/deals/{deal_id}/decision-queue",
 ]
 
 
@@ -211,3 +213,37 @@ class TestDealScopedMutatingEndpointsBlockNonOwner:
             f"/api/v1/deals/{deal_id}/settings", json={"materiality_threshold": 1}
         )
         assert resp.status_code == 404
+
+    def test_inquiry_create_blocked_for_non_owner(self):
+        owner_client = TestClient(app)
+        authenticate(owner_client)
+        deal_id = _create_deal(owner_client)
+
+        attacker_client = TestClient(app)
+        authenticate(attacker_client)
+
+        resp = attacker_client.post(
+            f"/api/v1/deals/{deal_id}/inquiries",
+            json={"request": "attacker inquiry", "due_date": "2026-03-01"},
+        )
+        assert resp.status_code == 404
+
+    def test_inquiry_patch_and_delete_blocked_for_non_owner(self):
+        owner_client = TestClient(app)
+        authenticate(owner_client)
+        deal_id = _create_deal(owner_client)
+        created = owner_client.post(
+            f"/api/v1/deals/{deal_id}/inquiries",
+            json={"request": "owner inquiry", "due_date": "2026-03-01"},
+        ).json()
+
+        attacker_client = TestClient(app)
+        authenticate(attacker_client)
+
+        patch_resp = attacker_client.patch(
+            f"/api/v1/deals/{deal_id}/inquiries/{created['id']}", json={"status": "Resolved"}
+        )
+        assert patch_resp.status_code == 404
+
+        delete_resp = attacker_client.delete(f"/api/v1/deals/{deal_id}/inquiries/{created['id']}")
+        assert delete_resp.status_code == 404
