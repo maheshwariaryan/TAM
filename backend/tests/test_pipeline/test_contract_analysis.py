@@ -179,11 +179,12 @@ class TestContractsApi:
 
     @pytest.mark.flaky(reruns=2, reruns_delay=3)
     def test_analyze_endpoint_reruns_and_is_idempotent(self):
-        # Known, accepted source of flakiness: two real calls to the contract-parsing
-        # LLM can phrase free-text clause summaries slightly differently even though the
-        # extracted terms are substantively the same — not a bug, just non-determinism
-        # inherent to the real model. Retried a bounded number of times rather than
-        # blocking merges on it or silently ignoring it outright.
+        # Idempotency here means the *structured* extraction is stable across two
+        # real calls to the contract-parsing LLM — facility terms, not prose. The
+        # free-text narrative fields (covenants_summary, change_of_control_clause,
+        # prepayment_terms, events_of_default, material_obligations) can legitimately
+        # be phrased differently each call even when the underlying terms are the
+        # same, so those are checked for presence only, not byte-for-byte equality.
         deal_id = _create_deal("Contracts Analyze Test Co")
         _upload(deal_id, ["sample_gl.csv", PDF_NAME])
         _run_stages(deal_id, ["ingestion"])
@@ -193,11 +194,27 @@ class TestContractsApi:
         second = client.post(f"/api/v1/deals/{deal_id}/contracts/analyze")
         assert second.status_code == 200
 
-        # instrument_id is freshly generated per run — compare content, not identity.
-        def _without_id(instruments):
-            return [{k: v for k, v in i.items() if k != "instrument_id"} for i in instruments]
+        first_instruments = first.json()["instruments"]
+        second_instruments = second.json()["instruments"]
+        assert len(first_instruments) == len(second_instruments)
 
-        assert _without_id(first.json()["instruments"]) == _without_id(second.json()["instruments"])
+        structured_fields = (
+            "deal_id", "facility_type", "lender", "principal_outstanding",
+            "interest_rate_pct", "maturity_date", "source_document",
+        )
+        free_text_fields = (
+            "covenants_summary", "change_of_control_clause", "prepayment_terms",
+            "events_of_default", "material_obligations",
+        )
+        for first_item, second_item in zip(first_instruments, second_instruments):
+            for field in structured_fields:
+                assert first_item[field] == second_item[field], (
+                    f"structured field {field!r} was not idempotent: "
+                    f"{first_item[field]!r} != {second_item[field]!r}"
+                )
+            for field in free_text_fields:
+                assert first_item[field], f"{field!r} was empty on first call"
+                assert second_item[field], f"{field!r} was empty on second call"
 
     def test_skipped_when_no_contract_uploaded(self):
         deal_id = _create_deal("No Contracts Test Co")
