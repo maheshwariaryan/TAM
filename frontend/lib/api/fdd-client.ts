@@ -63,6 +63,14 @@ async function patch<T>(path: string, body: unknown): Promise<T> {
   return res.json();
 }
 
+async function del(path: string): Promise<void> {
+  const res = await fetch(`${BASE}${path}`, { method: "DELETE", credentials: "include" });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`DELETE ${path} → ${res.status}: ${text}`);
+  }
+}
+
 // ─── Auth ────────────────────────────────────────────────────────────────────
 // These call FastAPI's /api/v1/auth/* endpoints directly (not the old Next.js
 // mock routes) and return a plain {ok, ...} shape so the calling page can show
@@ -595,3 +603,68 @@ export interface DealSettings {
 export const getDealSettings = (dealId: string) => get<DealSettings>(`/deals/${dealId}/settings`);
 export const updateDealSettings = (dealId: string, updates: Partial<DealSettings>) =>
   patch<DealSettings>(`/deals/${dealId}/settings`, updates);
+
+// ─── Inquiry (PBC tracker) + Decision Queue ────────────────────────────────────
+
+export type InquiryStatus = "Open" | "In Progress" | "Resolved" | "Deferred";
+
+export interface InquiryItem {
+  id: string;
+  deal_id: string;
+  request: string;
+  owner: string;
+  due_date: string;
+  status: InquiryStatus;
+  blocking: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InquiryCreateInput {
+  request: string;
+  owner?: string;
+  due_date: string;
+  status?: InquiryStatus;
+  blocking?: boolean;
+}
+
+export interface InquiryUpdateInput {
+  request?: string;
+  owner?: string;
+  due_date?: string;
+  status?: InquiryStatus;
+  blocking?: boolean;
+}
+
+export const getInquiries = (dealId: string) => get<InquiryItem[]>(`/deals/${dealId}/inquiries`);
+export const createInquiry = (dealId: string, body: InquiryCreateInput) =>
+  post<InquiryItem>(`/deals/${dealId}/inquiries`, body);
+export const updateInquiry = (dealId: string, inquiryId: string, body: InquiryUpdateInput) =>
+  patch<InquiryItem>(`/deals/${dealId}/inquiries/${inquiryId}`, body);
+export const deleteInquiry = (dealId: string, inquiryId: string) =>
+  del(`/deals/${dealId}/inquiries/${inquiryId}`);
+
+export interface DecisionQueueItem {
+  id: string;
+  title: string;
+  impact_area: string;
+  impact_score: number;
+  owner: string;
+  due_date: string;
+  status: InquiryStatus;
+  blocking: boolean;
+  rationale: string;
+  source_tab: "risk-assessment" | "inquiry" | "documents" | "financial-analysis";
+  source_id: string;
+  source_label: string;
+  source_url: string;
+}
+
+export interface DecisionQueueResponse {
+  deal_id: string;
+  last_updated: string;
+  readiness: "Ready" | "Draft" | "Blocked";
+  items: DecisionQueueItem[];
+}
+
+export const getDecisionQueue = (dealId: string) => get<DecisionQueueResponse>(`/deals/${dealId}/decision-queue`);

@@ -9,6 +9,7 @@ from app.api.v1 import (
     financial,
     gl,
     ingestion,
+    inquiry,
     narrative,
     net_debt,
     notes,
@@ -22,6 +23,7 @@ from app.api.v1 import (
 router = APIRouter(prefix="/api/v1")
 router.include_router(auth.router)
 router.include_router(ingestion.router)
+router.include_router(inquiry.router)
 router.include_router(documents.router)
 router.include_router(gl.router)
 router.include_router(financial.router)
