@@ -104,6 +104,12 @@ _DEFAULT_QUESTIONS = [
 
 class RedFlagAnalystAgent(BaseAgent):
     name = "RedFlagAnalyst"
+    # Pinned above the global default: recurring real-API runs showed the same
+    # flag categories (Related-Party Payments, Owner Compensation) repeatedly
+    # coming back as malformed (non-object) enrichment items — a systematic
+    # tool-schema-adherence gap for this task, not one-off noise. Same reasoning
+    # as ContractParserAgent's pin.
+    model = "claude-opus-5"
     _tools = _TOOLS
 
     async def enrich(self, flags: list[RedFlag]) -> list[RedFlag]:
