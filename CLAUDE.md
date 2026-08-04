@@ -28,8 +28,11 @@ For every new feature:
    on the `feat/` branch (don't patch bugs inside the test branch), then rebase
    `test/` on top.
 5. Once tests pass cleanly, merge `test/<feature-name>` back into `feat/<feature-name>`.
-6. Open the `feat/` branch for merge into `main` only when the full test suite
-   (unit + integration, see §3) passes.
+6. Open a **pull request** from `feat/<feature-name>` into `main` — do not merge
+   directly. See §3a for what happens next.
+7. Only start the next feature/slice once that PR has been merged (i.e. CI is
+   green and the merge has actually happened) — not as soon as local testing looks
+   done.
 
 ### Bugfix / check workflow
 - A bug found during manual use or review → `fix/<short-bug-description>`.
@@ -54,6 +57,25 @@ For every new feature:
   unrelated refactor into a feature commit.
 - Before merging any `feat/` or `fix/` branch into `main`, squash-check the
   history for stray WIP commits and clean it up if needed.
+
+## 3a. CI Gate — No Self-Reported "Done"
+
+A PR into `main` is not considered mergeable based on a self-reported summary
+(e.g. "lint/build clean, verified manually"). It is only mergeable once GitHub
+Actions CI has independently run and passed on that PR. Concretely:
+
+- On every push and every PR targeting `main`, CI runs:
+  - Backend: Ruff lint + `pytest -m "unit or integration"` (mocked LLM via
+    `USE_MOCK_LLM=1`) — this must stay fast; never run the full `e2e` pipeline
+    here.
+  - Frontend: `next lint` and `next build`.
+- Do not merge a `feat/` branch into `main` until that PR shows a green CI
+  check. If CI is red, fix the branch and push again — don't merge around it.
+- When a slice/feature is implementation-complete, the correct status update is
+  "PR open, waiting on CI" — not "done and merged" — until the merge has
+  actually happened post-green-CI.
+- The full `e2e` pipeline (real Claude API calls, ~40 min) runs separately —
+  nightly on `main` or via manual trigger — not as a merge gate.
 
 ## 3. Testing Strategy — Staged, Not Monolithic
 
