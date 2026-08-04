@@ -35,6 +35,20 @@ async function post<T>(path: string, body?: unknown): Promise<T> {
   return res.json();
 }
 
+async function put<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`PUT ${path} → ${res.status}: ${text}`);
+  }
+  return res.json();
+}
+
 // ─── Auth ────────────────────────────────────────────────────────────────────
 // These call FastAPI's /api/v1/auth/* endpoints directly (not the old Next.js
 // mock routes) and return a plain {ok, ...} shape so the calling page can show
@@ -540,3 +554,16 @@ export interface CrossDocumentValidation {
 }
 
 export const getTieOuts = (dealId: string) => get<CrossDocumentValidation>(`/deals/${dealId}/tie-outs`);
+
+// ─── Notes ─────────────────────────────────────────────────────────────────────
+
+export interface DealNotes {
+  deal_id: string;
+  notes: string;
+  report_draft: string[];
+  updated_at: string;
+}
+
+export const getNotes = (dealId: string) => get<DealNotes>(`/deals/${dealId}/notes`);
+export const saveNotes = (dealId: string, notes: string, reportDraft: string[]) =>
+  put<DealNotes>(`/deals/${dealId}/notes`, { notes, report_draft: reportDraft });

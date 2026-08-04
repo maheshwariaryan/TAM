@@ -66,6 +66,12 @@ _TOOLS = [
 
 class NarrativeDrafterAgent(BaseAgent):
     name = "NarrativeDrafter"
+    # Pinned above the global default: real-API runs showed "sections" coming
+    # back as plain prose (not even a JSON-encoded array) instead of the tool's
+    # declared object array — a systematic tool-schema-adherence gap for this
+    # task with claude-sonnet-5. Same reasoning as ContractParserAgent's and
+    # RedFlagAnalystAgent's pins.
+    model = "claude-opus-5"
     _tools = _TOOLS
 
     def _build_messages(self, payload: dict[str, str]) -> list[dict]:

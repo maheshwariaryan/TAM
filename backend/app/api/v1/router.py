@@ -11,6 +11,7 @@ from app.api.v1 import (
     ingestion,
     narrative,
     net_debt,
+    notes,
     nwc,
     qoe,
     redflags,
@@ -30,5 +31,6 @@ router.include_router(net_debt.router)
 router.include_router(dcf.router)
 router.include_router(contracts.router)
 router.include_router(narrative.router)
+router.include_router(notes.router)
 router.include_router(tieouts.router)
 router.include_router(databook.router)

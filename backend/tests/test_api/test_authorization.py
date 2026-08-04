@@ -40,6 +40,7 @@ _DEAL_SCOPED_GET_ENDPOINTS = [
     "/api/v1/deals/{deal_id}/contracts",
     "/api/v1/deals/{deal_id}/narrative",
     "/api/v1/deals/{deal_id}/tie-outs",
+    "/api/v1/deals/{deal_id}/notes",
 ]
 
 
@@ -182,4 +183,17 @@ class TestDealScopedMutatingEndpointsBlockNonOwner:
         authenticate(attacker_client)
 
         resp = attacker_client.post(f"/api/v1/deals/{deal_id}/databook/export")
+        assert resp.status_code == 404
+
+    def test_notes_save_blocked_for_non_owner(self):
+        owner_client = TestClient(app)
+        authenticate(owner_client)
+        deal_id = _create_deal(owner_client)
+
+        attacker_client = TestClient(app)
+        authenticate(attacker_client)
+
+        resp = attacker_client.put(
+            f"/api/v1/deals/{deal_id}/notes", json={"notes": "attacker note", "report_draft": []}
+        )
         assert resp.status_code == 404

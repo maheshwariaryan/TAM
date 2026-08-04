@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     upload_dir: Path = Path("data/uploads")
     processed_dir: Path = Path("data/processed")
     user_store_dir: Path = Path("data/users")
+    notes_dir: Path = Path("data/notes")
 
     # Security — at-rest file encryption + JWT session tokens.
     #
@@ -105,3 +106,4 @@ settings.deal_store_dir.mkdir(parents=True, exist_ok=True)
 settings.upload_dir.mkdir(parents=True, exist_ok=True)
 settings.processed_dir.mkdir(parents=True, exist_ok=True)
 settings.user_store_dir.mkdir(parents=True, exist_ok=True)
+settings.notes_dir.mkdir(parents=True, exist_ok=True)
