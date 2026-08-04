@@ -21,6 +21,7 @@ type GlobalState = {
   setBasis: (basis: Basis) => void;
   setSelectedMetricId: (id: string | null) => void;
   addReportDraft: (snippet: string) => void;
+  setReportDraft: (snippets: string[]) => void;
   setNotes: (value: string) => void;
 };
 
@@ -44,6 +45,7 @@ export const useGlobalStore = create<GlobalState>()(
         const current = get().reportDraft;
         set({ reportDraft: [...current, snippet] });
       },
+      setReportDraft: (snippets) => set({ reportDraft: snippets }),
       setNotes: (value) => set({ notes: value }),
     }),
     { name: "tam-global-state" }
