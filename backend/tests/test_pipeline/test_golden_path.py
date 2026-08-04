@@ -34,6 +34,7 @@ def require_fixture():
         pytest.skip(f"{DATA_ROOM_ZIP.name} missing")
 
 
+@pytest.mark.e2e
 def test_golden_path_full_pipeline_and_all_endpoints():
     # 1. Create deal
     resp = client.post("/api/v1/deals", json={

@@ -11,7 +11,6 @@ Key assertions:
   - Full HTTP flow: /process → GET /net-debt and /dcf return real numbers
 """
 
-import asyncio
 import time
 from decimal import Decimal
 from pathlib import Path
@@ -19,13 +18,10 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from app.agents.coa_mapper import CoAMapperAgent
 from app.main import app
 from app.pipeline.dcf_engine import orchestrator as dcf_orch
 from app.pipeline.financial_builder import balance_sheet as bs_builder
-from app.pipeline.financial_builder.orchestrator import _apply_classifications
-from app.pipeline.ingestion.loader import infer_column_map, load_file
-from app.pipeline.ingestion.normalizer import normalise
+from app.pipeline.financial_builder import pnl as pnl_builder
 from app.pipeline.net_debt_bridge import orchestrator as nd_orch
 from app.schemas.contracts import DebtInstrument, DebtSchedule
 from app.schemas.projections import ProjectionLine, ProjectionSchedule
@@ -40,25 +36,12 @@ from tests.auth_helpers import authenticate as _authenticate  # noqa: E402
 _authenticate(client)
 
 
-def _build_mapped_bs_pnl():
-    df = load_file(FIXTURE_GL)
-    col_map = infer_column_map(df)
-    raw = normalise(df, col_map, "sample_gl.csv", DEAL_ID)
-    unique_pairs = list({(gl.account_code, gl.account_description) for gl in raw})
-    agent = CoAMapperAgent()
-    cls_map = asyncio.run(agent.map_accounts(unique_pairs))
-    mapped = _apply_classifications(raw, cls_map)
-
-    from app.pipeline.financial_builder import pnl as pnl_builder
-    pnl = pnl_builder.build(mapped)
-    bs = bs_builder.build(mapped)
-    return mapped, pnl, bs
-
-
 class TestNetDebtBridge:
-    @classmethod
-    def setup_class(cls):
-        cls.mapped, cls.pnl, cls.bs = _build_mapped_bs_pnl()
+    @pytest.fixture(scope="class", autouse=True)
+    def _setup(self, request, shared_mapped_gl):
+        request.cls.mapped = shared_mapped_gl
+        request.cls.pnl = pnl_builder.build(shared_mapped_gl)
+        request.cls.bs = bs_builder.build(shared_mapped_gl)
 
     def test_skipped_without_balance_sheet(self):
         report = nd_orch._build_report(DEAL_ID, None, self.pnl, None)
@@ -125,6 +108,7 @@ class TestNetDebtBridge:
 
 
 class TestSimpleDCF:
+    @pytest.mark.unit
     def test_skipped_without_ebitda(self):
         schedule = ProjectionSchedule(
             deal_id=DEAL_ID,
@@ -135,6 +119,7 @@ class TestSimpleDCF:
         report = dcf_orch._build_report(DEAL_ID, schedule)
         assert report.status == "skipped"
 
+    @pytest.mark.unit
     def test_complete_dcf_reconciles(self):
         # cogs/opex are stored as positive expense magnitudes — matching real ingested data
         # (see projections_parser.py and tests/fixtures/sample_projections.csv), not negative
@@ -172,6 +157,7 @@ class TestSimpleDCF:
         assert result["status"] == "failed"
         assert "management_projections.json" in result["message"] or "projections" in result["message"].lower()
 
+    @pytest.mark.unit
     def test_derives_ebitda_when_not_provided_directly(self):
         # cogs/opex are positive expense magnitudes here too (see note above) — the fallback
         # must compute revenue - cogs - opex, not revenue + cogs + opex.

@@ -64,6 +64,7 @@ def _make_qoe() -> QoEReport:
     )
 
 
+@pytest.mark.unit
 class TestFactSheetBuilder:
     def test_gaps_listed_when_optional_reports_missing(self):
         figures, gaps = narrative_orch._build_fact_sheet(_make_pnl(), _make_qoe(), None, None, None)
@@ -80,6 +81,7 @@ class TestFactSheetBuilder:
         assert figures["qoe_adjustment_count"] == "3"
 
 
+@pytest.mark.unit
 class TestParseResponseRaisesOnMissingToolCall:
     """A real API response with no tool-use block (refusal, prose-only reply, content
     filter) must raise AgentError — not silently return an empty result that looks
@@ -111,6 +113,7 @@ class TestParseResponseRaisesOnMissingToolCall:
             agent._parse_response(_FakeResponse())
 
 
+@pytest.mark.unit
 class TestMockNarrativeGrounding:
     def test_mock_sections_only_reference_provided_figures(self):
         from app.agents.narrative_drafter import NarrativeDrafterAgent

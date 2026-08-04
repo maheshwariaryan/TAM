@@ -35,6 +35,7 @@ def require_pdf_fixture():
         )
 
 
+@pytest.mark.unit
 class TestExtractDebtHeuristics:
     def test_extracts_terms_from_pdf_text(self):
         text = extract_text(PDF_PATH)

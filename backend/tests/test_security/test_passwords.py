@@ -1,6 +1,10 @@
 """Password hashing tests — Argon2id round-trip and rejection cases."""
 
+import pytest
+
 from app.security.passwords import hash_password, verify_password
+
+pytestmark = pytest.mark.unit
 
 
 class TestHashPassword:

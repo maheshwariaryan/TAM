@@ -13,7 +13,6 @@ Key assertions:
   - Full HTTP flow: /process → GET /nwc and /commercial return real numbers
 """
 
-import asyncio
 import time
 from datetime import date
 from decimal import Decimal
@@ -22,12 +21,9 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from app.agents.coa_mapper import CoAMapperAgent
 from app.main import app
 from app.pipeline.financial_builder import balance_sheet as bs_builder
-from app.pipeline.financial_builder.orchestrator import _apply_classifications
-from app.pipeline.ingestion.loader import infer_column_map, load_file
-from app.pipeline.ingestion.normalizer import normalise
+from app.pipeline.financial_builder import pnl as pnl_builder
 from app.pipeline.nwc_analyzer import orchestrator as nwc_orch
 from app.pipeline.redflag_detector import rules as rf_rules
 from app.schemas.aging import AgingReport, AgingSummary
@@ -42,21 +38,6 @@ client = TestClient(app)
 from tests.auth_helpers import authenticate as _authenticate  # noqa: E402
 
 _authenticate(client)
-
-
-def _build_mapped_bs_pnl():
-    df = load_file(FIXTURE_GL)
-    col_map = infer_column_map(df)
-    raw = normalise(df, col_map, "sample_gl.csv", DEAL_ID)
-    unique_pairs = list({(gl.account_code, gl.account_description) for gl in raw})
-    agent = CoAMapperAgent()
-    cls_map = asyncio.run(agent.map_accounts(unique_pairs))
-    mapped = _apply_classifications(raw, cls_map)
-
-    from app.pipeline.financial_builder import pnl as pnl_builder
-    pnl = pnl_builder.build(mapped)
-    bs = bs_builder.build(mapped)
-    return mapped, pnl, bs
 
 
 def _make_aging(deal_id: str, doc_type: str, period: date, total: Decimal) -> AgingReport:
@@ -81,9 +62,11 @@ def _make_aging(deal_id: str, doc_type: str, period: date, total: Decimal) -> Ag
 
 
 class TestNWCDataPoints:
-    @classmethod
-    def setup_class(cls):
-        cls.mapped, cls.pnl, cls.bs = _build_mapped_bs_pnl()
+    @pytest.fixture(scope="class", autouse=True)
+    def _setup(self, request, shared_mapped_gl):
+        request.cls.mapped = shared_mapped_gl
+        request.cls.pnl = pnl_builder.build(shared_mapped_gl)
+        request.cls.bs = bs_builder.build(shared_mapped_gl)
 
     def test_36_data_points(self):
         points = nwc_orch._build_data_points(self.bs, self.pnl)
@@ -106,11 +89,15 @@ class TestNWCDataPoints:
 
 
 class TestNWCPegs:
-    @classmethod
-    def setup_class(cls):
-        cls.mapped, cls.pnl, cls.bs = _build_mapped_bs_pnl()
-        cls.points = nwc_orch._build_data_points(cls.bs, cls.pnl)
-        cls.monthly_nwc = {dp.period.strftime("%Y-%m"): dp.net_working_capital for dp in cls.points}
+    @pytest.fixture(scope="class", autouse=True)
+    def _setup(self, request, shared_mapped_gl):
+        request.cls.mapped = shared_mapped_gl
+        request.cls.pnl = pnl_builder.build(shared_mapped_gl)
+        request.cls.bs = bs_builder.build(shared_mapped_gl)
+        request.cls.points = nwc_orch._build_data_points(request.cls.bs, request.cls.pnl)
+        request.cls.monthly_nwc = {
+            dp.period.strftime("%Y-%m"): dp.net_working_capital for dp in request.cls.points
+        }
 
     def test_at_least_two_pegs_computed(self):
         pegs = nwc_orch._compute_pegs(self.monthly_nwc)
@@ -135,9 +122,11 @@ class TestNWCPegs:
 
 
 class TestNWCReportDegradation:
-    @classmethod
-    def setup_class(cls):
-        cls.mapped, cls.pnl, cls.bs = _build_mapped_bs_pnl()
+    @pytest.fixture(scope="class", autouse=True)
+    def _setup(self, request, shared_mapped_gl):
+        request.cls.mapped = shared_mapped_gl
+        request.cls.pnl = pnl_builder.build(shared_mapped_gl)
+        request.cls.bs = bs_builder.build(shared_mapped_gl)
 
     def test_skipped_without_balance_sheet(self):
         report = nwc_orch._build_nwc_report("deal-x", None, self.pnl, None, None)
@@ -172,9 +161,11 @@ class TestNWCReportDegradation:
 
 
 class TestCommercialHealthReport:
-    @classmethod
-    def setup_class(cls):
-        cls.mapped, cls.pnl, cls.bs = _build_mapped_bs_pnl()
+    @pytest.fixture(scope="class", autouse=True)
+    def _setup(self, request, shared_mapped_gl):
+        request.cls.mapped = shared_mapped_gl
+        request.cls.pnl = pnl_builder.build(shared_mapped_gl)
+        request.cls.bs = bs_builder.build(shared_mapped_gl)
 
     def test_skipped_without_pnl(self):
         report = nwc_orch._build_commercial_report("deal-x", None)
@@ -217,8 +208,8 @@ class TestNWCVolatilityRedFlag:
 
 
 class TestRevenueSeasonalityRedFlag:
-    def test_silent_on_flat_fixture(self):
-        _, pnl, _ = _build_mapped_bs_pnl()
+    def test_silent_on_flat_fixture(self, shared_mapped_gl):
+        pnl = pnl_builder.build(shared_mapped_gl)
         # The Acme fixture has no planted seasonality — rule should stay quiet
         assert rf_rules._rule_revenue_seasonality(DEAL_ID, pnl) == []
 
