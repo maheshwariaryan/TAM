@@ -1,14 +1,25 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DataTable } from "@/components/tables/data-table";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import type { DecisionQueueItem, Inquiry } from "@/lib/schemas/types";
 import { useGlobalStore } from "@/lib/store/use-global-store";
-import { useApiQuery } from "@/hooks/use-api-query";
-import { DecisionQueueResponseSchema, InquiryResponseSchema } from "@/lib/schemas/types";
+import {
+  createInquiry,
+  deleteInquiry,
+  getDecisionQueue,
+  getInquiries,
+  updateInquiry,
+  type DecisionQueueItem,
+  type DecisionQueueResponse,
+  type InquiryItem,
+  type InquiryStatus,
+} from "@/lib/api/fdd-client";
+
+const STATUS_OPTIONS: InquiryStatus[] = ["Open", "In Progress", "Resolved", "Deferred"];
+const PREFILL_ID = "INQ-NEW";
 
 export default function InquiryPage() {
   return (
@@ -21,48 +32,66 @@ export default function InquiryPage() {
 function InquiryPageContent() {
   const router = useRouter();
   const params = useSearchParams();
-  const { deal, dealId, period, basis } = useGlobalStore();
-  const query = useApiQuery(
-    ["inquiry", deal, period, basis],
-    `/api/deal/inquiry?deal=${encodeURIComponent(deal)}&period=${encodeURIComponent(period)}&basis=${encodeURIComponent(basis)}`,
-    InquiryResponseSchema
-  );
-  const decisionQueueQuery = useApiQuery(
-    ["decision-queue-inquiry", deal, period, basis],
-    `/api/deal/decision-queue?deal=${encodeURIComponent(deal)}&period=${encodeURIComponent(period)}&basis=${encodeURIComponent(basis)}`,
-    DecisionQueueResponseSchema
-  );
-  const [selected, setSelected] = useState<Inquiry | null>(null);
+  const { dealId } = useGlobalStore();
+
+  const [inquiries, setInquiries] = useState<InquiryItem[]>([]);
+  const [decisionQueue, setDecisionQueue] = useState<DecisionQueueResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<InquiryItem | null>(null);
   const [selectedQueueItem, setSelectedQueueItem] = useState<DecisionQueueItem | null>(null);
-  const [queueStatusOverrides, setQueueStatusOverrides] = useState<Record<string, DecisionQueueItem["status"]>>({});
+  const [queueStatusOverrides, setQueueStatusOverrides] = useState<Record<string, InquiryStatus>>({});
   const [highlightedInquiryId, setHighlightedInquiryId] = useState<string | null>(null);
-  const queueStorageKey = `tam-decision-queue-status:${deal}`;
+  const queueStorageKey = `tam-decision-queue-status:${dealId ?? "none"}`;
+
+  const refresh = useCallback(() => {
+    if (!dealId) return;
+    setLoading(true);
+    setError(null);
+    Promise.all([getInquiries(dealId), getDecisionQueue(dealId)])
+      .then(([inq, dq]) => {
+        setInquiries(inq);
+        setDecisionQueue(dq);
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load inquiry data."))
+      .finally(() => setLoading(false));
+  }, [dealId]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   const rows = useMemo(() => {
-    if (!query.data) return [];
     const prefill = params.get("prefill");
-    if (!prefill) return query.data.inquiries;
-    const exists = query.data.inquiries.some((r) => r.request.toLowerCase().includes(prefill.toLowerCase()));
-    if (exists) return query.data.inquiries;
-    return [{ id: "INQ-NEW", request: prefill, owner: "Unassigned", dueDate: "2026-02-19", status: "Open", blocking: false }, ...query.data.inquiries];
-  }, [params, query.data]);
+    if (!prefill) return inquiries;
+    const exists = inquiries.some((r) => r.request.toLowerCase().includes(prefill.toLowerCase()));
+    if (exists) return inquiries;
+    const draft: InquiryItem = {
+      id: PREFILL_ID,
+      deal_id: dealId ?? "",
+      request: prefill,
+      owner: "Unassigned",
+      due_date: "Unscheduled",
+      status: "Open",
+      blocking: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    return [draft, ...inquiries];
+  }, [params, inquiries, dealId]);
 
   const decisionQueueRows = useMemo(() => {
-    if (!decisionQueueQuery.data) return [];
-    return decisionQueueQuery.data.items.map((item) => ({
+    if (!decisionQueue) return [];
+    return decisionQueue.items.map((item) => ({
       ...item,
       status: queueStatusOverrides[item.id] ?? item.status,
     }));
-  }, [decisionQueueQuery.data, queueStatusOverrides]);
+  }, [decisionQueue, queueStatusOverrides]);
 
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(queueStorageKey);
-      if (!raw) {
-        setQueueStatusOverrides({});
-        return;
-      }
-      setQueueStatusOverrides(JSON.parse(raw) as Record<string, DecisionQueueItem["status"]>);
+      setQueueStatusOverrides(raw ? (JSON.parse(raw) as Record<string, InquiryStatus>) : {});
     } catch {
       setQueueStatusOverrides({});
     }
@@ -95,19 +124,53 @@ function InquiryPageContent() {
     };
   }, [params, rows]);
 
-  if (query.isLoading || !query.data) {
+  const handleSaveDraft = async () => {
+    if (!dealId || !selected || selected.id !== PREFILL_ID) return;
+    const created = await createInquiry(dealId, {
+      request: selected.request,
+      owner: selected.owner,
+      due_date: selected.due_date,
+      status: selected.status,
+      blocking: selected.blocking,
+    });
+    router.replace("/inquiry");
+    setSelected(created);
+    refresh();
+  };
+
+  const handleStatusChange = async (status: InquiryStatus) => {
+    if (!dealId || !selected || selected.id === PREFILL_ID) return;
+    const updated = await updateInquiry(dealId, selected.id, { status });
+    setSelected(updated);
+    refresh();
+  };
+
+  const handleDelete = async () => {
+    if (!dealId || !selected || selected.id === PREFILL_ID) return;
+    await deleteInquiry(dealId, selected.id);
+    setSelected(null);
+    refresh();
+  };
+
+  if (!dealId) {
+    return (
+      <div className="space-y-5">
+        <h2 className="text-xl font-semibold">Inquiry</h2>
+        <div className="rounded-md border px-3 py-2 text-sm text-muted-foreground">
+          Select a deal to view its inquiry tracker and decision queue.
+        </div>
+      </div>
+    );
+  }
+
+  if (loading && inquiries.length === 0) {
     return <div className="h-80 animate-pulse rounded-lg bg-muted" />;
   }
 
   return (
     <div className="space-y-5">
       <h2 className="text-xl font-semibold">Inquiry</h2>
-      {dealId && (
-        <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300">
-          The inquiry tracker and decision queue below are a local demo workflow — this system does not yet
-          persist inquiries per deal in the backend. Rows are illustrative, not derived from {deal}&apos;s data.
-        </div>
-      )}
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
       <DataTable
         rows={rows}
         onRowClick={(row) => setSelected(row)}
@@ -116,7 +179,7 @@ function InquiryPageContent() {
           { key: "id", header: "ID" },
           { key: "request", header: "Request" },
           { key: "owner", header: "Owner" },
-          { key: "dueDate", header: "Due Date" },
+          { key: "due_date", header: "Due Date" },
           { key: "status", header: "Status" },
           { key: "blocking", header: "Blocking Yes/No", render: (r) => (r.blocking ? "Yes" : "No") },
         ]}
@@ -124,15 +187,15 @@ function InquiryPageContent() {
 
       <div id="decision-queue">
         <DataTable
-          title={`Decision Queue (${decisionQueueQuery.data?.readiness ?? "Draft"})`}
+          title={`Decision Queue (${decisionQueue?.readiness ?? "Draft"})`}
           rows={decisionQueueRows}
           onRowClick={(row) => setSelectedQueueItem(row)}
           columns={[
             { key: "title", header: "Action" },
-            { key: "impactArea", header: "Impact Area" },
-            { key: "impactScore", header: "Impact Score", render: (r) => r.impactScore.toFixed(1) },
+            { key: "impact_area", header: "Impact Area" },
+            { key: "impact_score", header: "Impact Score", render: (r) => r.impact_score.toFixed(1) },
             { key: "owner", header: "Owner" },
-            { key: "dueDate", header: "Due Date" },
+            { key: "due_date", header: "Due Date" },
             {
               key: "status",
               header: "Status",
@@ -156,7 +219,7 @@ function InquiryPageContent() {
               render: (r) => (r.blocking ? "Yes" : "No"),
             },
             {
-              key: "sourceLabel",
+              key: "source_label",
               header: "Source",
             },
           ]}
@@ -167,9 +230,30 @@ function InquiryPageContent() {
         <SheetContent side="right" className="w-[460px]">
           {selected ? (
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold">{selected.id}</h3>
+              <h3 className="text-lg font-semibold">{selected.id === PREFILL_ID ? "New Inquiry" : selected.id}</h3>
               <p className="text-sm">{selected.request}</p>
               <div className="rounded border bg-muted/30 p-3 text-sm">Discussion thread placeholder: analyst comments, seller responses, attachment links.</div>
+
+              {selected.id === PREFILL_ID ? (
+                <Button size="sm" onClick={handleSaveDraft}>Save to Tracker</Button>
+              ) : (
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    {STATUS_OPTIONS.map((status) => (
+                      <Button
+                        key={status}
+                        variant={status === selected.status ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleStatusChange(status)}
+                      >
+                        Mark {status}
+                      </Button>
+                    ))}
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleDelete}>Delete Inquiry</Button>
+                </>
+              )}
+
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" size="sm" onClick={() => router.push("/documents")}>Go to Documents</Button>
                 <Button variant="outline" size="sm" onClick={() => router.push("/risk-assessment")}>Go to Risk Assessment</Button>
@@ -187,15 +271,15 @@ function InquiryPageContent() {
               <h3 className="text-lg font-semibold">{selectedQueueItem.title}</h3>
               <p className="text-sm text-muted-foreground">{selectedQueueItem.rationale}</p>
               <div className="grid gap-2 text-sm">
-                <p><span className="font-semibold">Impact Area:</span> {selectedQueueItem.impactArea}</p>
-                <p><span className="font-semibold">Impact Score:</span> {selectedQueueItem.impactScore.toFixed(1)}</p>
+                <p><span className="font-semibold">Impact Area:</span> {selectedQueueItem.impact_area}</p>
+                <p><span className="font-semibold">Impact Score:</span> {selectedQueueItem.impact_score.toFixed(1)}</p>
                 <p><span className="font-semibold">Owner:</span> {selectedQueueItem.owner}</p>
-                <p><span className="font-semibold">Due Date:</span> {selectedQueueItem.dueDate}</p>
+                <p><span className="font-semibold">Due Date:</span> {selectedQueueItem.due_date}</p>
                 <p><span className="font-semibold">Blocking:</span> {selectedQueueItem.blocking ? "Yes" : "No"}</p>
-                <p><span className="font-semibold">Source:</span> {selectedQueueItem.sourceLabel}</p>
+                <p><span className="font-semibold">Source:</span> {selectedQueueItem.source_label}</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                {(["Open", "In Progress", "Resolved", "Deferred"] as const).map((status) => (
+                {STATUS_OPTIONS.map((status) => (
                   <Button
                     key={status}
                     variant={status === (queueStatusOverrides[selectedQueueItem.id] ?? selectedQueueItem.status) ? "default" : "outline"}
@@ -211,7 +295,7 @@ function InquiryPageContent() {
                   </Button>
                 ))}
               </div>
-              <Button onClick={() => router.push(selectedQueueItem.sourceUrl)}>Open Source Context</Button>
+              <Button onClick={() => router.push(selectedQueueItem.source_url)}>Open Source Context</Button>
             </div>
           ) : null}
         </SheetContent>
