@@ -119,6 +119,16 @@ class RedFlagAnalystAgent(BaseAgent):
             if isinstance(result, Exception):
                 logger.warning("[RedFlagAnalyst] enrichment failed for flag %s: %s", flag.flag_id, result)
                 enriched.append(flag)
+            elif not isinstance(result, dict):
+                # The real model doesn't always perfectly honor the tool's declared
+                # input_schema — an enrichment item can come back as something other
+                # than an object. Degrade the same way a raised exception does (keep
+                # the original, un-enriched flag) rather than crash the whole stage.
+                logger.warning(
+                    "[RedFlagAnalyst] enrichment for flag %s had unexpected shape (%s), skipping",
+                    flag.flag_id, type(result).__name__,
+                )
+                enriched.append(flag)
             else:
                 enriched.append(flag.model_copy(update={
                     "llm_context": result.get("llm_context"),
