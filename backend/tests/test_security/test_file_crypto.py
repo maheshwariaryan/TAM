@@ -12,6 +12,8 @@ from app.security.file_crypto import (
     encrypt_bytes,
 )
 
+pytestmark = pytest.mark.unit
+
 
 def _key() -> bytes:
     return os.urandom(KEY_SIZE)

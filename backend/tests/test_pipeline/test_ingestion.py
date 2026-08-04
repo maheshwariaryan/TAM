@@ -21,6 +21,7 @@ DEAL_ID = "test-deal-001"
 
 # ─── Loader tests ─────────────────────────────────────────────────────────────
 
+@pytest.mark.unit
 class TestLoader:
     def test_loads_fixture_csv(self):
         df = load_file(FIXTURE_GL)
@@ -74,6 +75,7 @@ class TestLoader:
 
 # ─── Normalizer tests ─────────────────────────────────────────────────────────
 
+@pytest.mark.unit
 class TestNormalizer:
     def _make_df(self, rows: list[dict]) -> pd.DataFrame:
         return pd.DataFrame(rows)
@@ -167,6 +169,7 @@ class TestNormalizer:
 
 # ─── Validator tests ──────────────────────────────────────────────────────────
 
+@pytest.mark.unit
 class TestValidator:
     def _make_lines(self, entries: list[tuple]) -> list:
         """entries: list of (account_code, amount_decimal) tuples."""

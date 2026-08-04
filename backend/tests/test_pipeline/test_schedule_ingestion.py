@@ -55,6 +55,7 @@ def _classify(filename: str, content_filename: str | None = None):
     return by_name, name_conf
 
 
+@pytest.mark.unit
 class TestContentBasedClassification:
     @pytest.mark.parametrize(
         "filename,expected_type",
@@ -107,6 +108,7 @@ class TestContentBasedClassification:
         assert detail is not None
 
 
+@pytest.mark.unit
 class TestWideScheduleParser:
     def test_parses_balance_sheet_labels_and_periods(self):
         raw = (FIXTURES / "balance_sheet_monthly.csv").read_bytes()
@@ -121,6 +123,7 @@ class TestWideScheduleParser:
         assert all(len(p) == 7 for p in periods)  # "YYYY-MM", not "FY2022"
 
 
+@pytest.mark.unit
 class TestPeriodRowScheduleParser:
     def test_parses_working_capital_schedule(self):
         raw = (FIXTURES / "working_capital_schedule.csv").read_bytes()
@@ -129,6 +132,7 @@ class TestPeriodRowScheduleParser:
         assert data["NWC"]["2022-01"] == Decimal("1686285.67")
 
 
+@pytest.mark.unit
 class TestDebtScheduleParser:
     def test_groups_by_lender_and_uses_latest_period(self):
         raw = (FIXTURES / "debt_schedule.csv").read_bytes()
@@ -144,6 +148,7 @@ class TestDebtScheduleParser:
         assert inst.source_document == "debt_schedule.csv"
 
 
+@pytest.mark.unit
 class TestSupportingScheduleParser:
     def test_parses_rows_preserving_columns(self):
         raw = (FIXTURES / "fixed_asset_register.csv").read_bytes()
@@ -153,6 +158,7 @@ class TestSupportingScheduleParser:
         assert "Net Book Value" in rows[0]
 
 
+@pytest.mark.unit
 class TestReconcileSchedules:
     def _pnl(self, revenue: Decimal, pk: str = "2024-01") -> PnLStatement:
         from datetime import date

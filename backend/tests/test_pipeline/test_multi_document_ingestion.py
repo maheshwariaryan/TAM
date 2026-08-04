@@ -24,6 +24,7 @@ def _setup_deal_uploads(deal_id: str, filenames: list[str]) -> None:
         file_store.save_upload(deal_id, name, src.read_bytes())
 
 
+@pytest.mark.unit
 class TestDocumentClassification:
     def test_classify_ar_aging(self):
         doc_type, conf, _ = classify_by_filename("AR_Aging_Dec24.xlsx")
@@ -39,6 +40,7 @@ class TestDocumentClassification:
         assert doc_type == DocumentType.DEBT_AGREEMENT
 
 
+@pytest.mark.unit
 class TestAgingParser:
     def test_parse_ar_aging(self):
         path = FIXTURES / "sample_ar_aging.csv"
@@ -50,6 +52,7 @@ class TestAgingParser:
         assert summaries[0].bucket_0_30 == Decimal("180000")
 
 
+@pytest.mark.unit
 class TestProjectionsParser:
     def test_parse_projections(self):
         path = FIXTURES / "sample_projections.csv"

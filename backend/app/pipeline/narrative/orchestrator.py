@@ -12,6 +12,7 @@ adjustment or a new document is uploaded.
 """
 
 import asyncio
+import json
 import logging
 from decimal import Decimal
 from pathlib import Path
@@ -83,7 +84,18 @@ async def _run_async(deal_id: str) -> NarrativeReport:
 
     agent = NarrativeDrafterAgent()
     result = await agent.run(figures)
-    sections = [NarrativeSection.model_validate(s) for s in result.get("sections", [])]
+    raw_sections = result.get("sections", [])
+    if isinstance(raw_sections, str):
+        # The real model doesn't always perfectly honor the tool's declared
+        # input_schema — "sections" can come back as a JSON-encoded string
+        # instead of an actual array. Same class of drift handled defensively
+        # in redflag_analyst.py's enrich().
+        try:
+            raw_sections = json.loads(raw_sections)
+        except (json.JSONDecodeError, TypeError):
+            logger.warning("[NarrativeDrafter] sections field was a non-JSON string, dropping it")
+            raw_sections = []
+    sections = [NarrativeSection.model_validate(s) for s in raw_sections]
 
     status = "complete" if not data_gaps else "partial"
     message = (

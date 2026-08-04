@@ -12,6 +12,7 @@ Mock: returns templated questions per flag category.
 """
 
 import asyncio
+import json
 import logging
 from typing import Any
 
@@ -119,6 +120,25 @@ class RedFlagAnalystAgent(BaseAgent):
             if isinstance(result, Exception):
                 logger.warning("[RedFlagAnalyst] enrichment failed for flag %s: %s", flag.flag_id, result)
                 enriched.append(flag)
+                continue
+            if isinstance(result, str):
+                # Same schema drift as elsewhere — the model can return a single
+                # enrichment item as a JSON-encoded string instead of an object.
+                # Try to recover it before falling back to "unexpected shape".
+                try:
+                    result = json.loads(result)
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            if not isinstance(result, dict):
+                # The real model doesn't always perfectly honor the tool's declared
+                # input_schema — an enrichment item can come back as something other
+                # than an object. Degrade the same way a raised exception does (keep
+                # the original, un-enriched flag) rather than crash the whole stage.
+                logger.warning(
+                    "[RedFlagAnalyst] enrichment for flag %s had unexpected shape (%s), skipping",
+                    flag.flag_id, type(result).__name__,
+                )
+                enriched.append(flag)
             else:
                 enriched.append(flag.model_copy(update={
                     "llm_context": result.get("llm_context"),
@@ -154,7 +174,13 @@ class RedFlagAnalystAgent(BaseAgent):
             raise AgentError("[RedFlagAnalyst] no tool call in response")
         data = tool_use.input
         enrichments = data.get("enrichments", [])
-        return enrichments[0] if enrichments else {}
+        if not enrichments:
+            # An empty list here is the model declining/failing to enrich this flag,
+            # not a valid "enriched with nothing" result — raise so enrich() treats it
+            # as a failure and keeps the original un-enriched flag, same as any other
+            # API error, instead of silently overwriting diligence_questions with [].
+            raise AgentError("[RedFlagAnalyst] empty enrichments in response")
+        return enrichments[0]
 
     def _mock_response(self, payload: RedFlag) -> dict:
         questions = _MOCK_QUESTIONS.get(payload.category, _DEFAULT_QUESTIONS)

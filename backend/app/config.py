@@ -27,7 +27,7 @@ class Settings(BaseSettings):
 
     # Anthropic
     anthropic_api_key: str = ""
-    anthropic_model: str = "claude-3-5-sonnet-latest"
+    anthropic_model: str = "claude-sonnet-5"
     use_mock_llm: bool = True  # Default True: full pipeline works without an API key
 
     # Storage — relative to wherever the server is launched from

@@ -65,6 +65,7 @@ def run_pipeline_on_dataset(file_path: Path):
     pytest.fail("Pipeline timed out")
 
 
+@pytest.mark.e2e
 def test_synthetic_edge_case():
     file_path = FIXTURES_DIR / "synthetic_edge_case.csv"
     deal = run_pipeline_on_dataset(file_path)

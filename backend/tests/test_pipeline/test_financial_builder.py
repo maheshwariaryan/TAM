@@ -11,23 +11,18 @@ Key assertions mirror what a Big 4 reviewer would check:
 
 import asyncio
 from decimal import Decimal
-from pathlib import Path
+
+import pytest
 
 from app.agents.coa_mapper import CoAMapperAgent, _mock_classify
 from app.pipeline.financial_builder import balance_sheet as bs_builder
 from app.pipeline.financial_builder import cash_flow as cf_builder
 from app.pipeline.financial_builder import pnl as pnl_builder
-from app.pipeline.financial_builder.orchestrator import _apply_classifications
-from app.pipeline.ingestion.loader import infer_column_map, load_file
-from app.pipeline.ingestion.normalizer import normalise
 from app.schemas.gl import ChartOfAccountsCategory as CAT
-
-FIXTURE_GL = Path(__file__).parent.parent / "fixtures" / "sample_gl.csv"
-DEAL_ID = "test-step3-001"
-
 
 # ─── CoA Mapper mock tests ─────────────────────────────────────────────────────
 
+@pytest.mark.unit
 class TestCoAMapperMock:
     def test_mock_revenue_accounts(self):
         cat, stmt = _mock_classify("4001")
@@ -82,21 +77,10 @@ class TestCoAMapperMock:
 
 # ─── Financial builder integration tests ──────────────────────────────────────
 
-def _load_mapped_lines():
-    """Helper: load fixture → normalise → apply mock CoA mapping."""
-    df = load_file(FIXTURE_GL)
-    col_map = infer_column_map(df)
-    raw_lines = normalise(df, col_map, "sample_gl.csv", DEAL_ID)
-
-    unique_pairs = list({(gl.account_code, gl.account_description) for gl in raw_lines})
-    agent = CoAMapperAgent()
-    cls_map = asyncio.run(agent.map_accounts(unique_pairs))
-    return _apply_classifications(raw_lines, cls_map)
-
-
 class TestPnLBuilder:
-    def setup_method(self):
-        self.mapped = _load_mapped_lines()
+    @pytest.fixture(autouse=True)
+    def _setup(self, shared_mapped_gl):
+        self.mapped = shared_mapped_gl
         self.pnl = pnl_builder.build(self.mapped)
 
     def test_36_periods(self):
@@ -162,8 +146,9 @@ class TestPnLBuilder:
 
 
 class TestMappedGLCoverage:
-    def setup_method(self):
-        self.mapped = _load_mapped_lines()
+    @pytest.fixture(autouse=True)
+    def _setup(self, shared_mapped_gl):
+        self.mapped = shared_mapped_gl
 
     def test_no_unmapped_lines(self):
         memo_lines = [gl for gl in self.mapped if gl.standard_category == CAT.MEMO]
@@ -191,8 +176,9 @@ class TestMappedGLCoverage:
 # ─── Balance Sheet Builder tests ───────────────────────────────────────────────
 
 class TestBalanceSheetBuilder:
-    def setup_method(self):
-        self.mapped = _load_mapped_lines()
+    @pytest.fixture(autouse=True)
+    def _setup(self, shared_mapped_gl):
+        self.mapped = shared_mapped_gl
         self.pnl = pnl_builder.build(self.mapped)
         self.bs = bs_builder.build(self.mapped)
 
@@ -232,8 +218,9 @@ class TestBalanceSheetBuilder:
 # ─── Cash Flow Builder tests ────────────────────────────────────────────────────
 
 class TestCashFlowBuilder:
-    def setup_method(self):
-        mapped = _load_mapped_lines()
+    @pytest.fixture(autouse=True)
+    def _setup(self, shared_mapped_gl):
+        mapped = shared_mapped_gl
         pnl = pnl_builder.build(mapped)
         bs = bs_builder.build(mapped)
         self.cf = cf_builder.build(mapped, pnl, bs)
