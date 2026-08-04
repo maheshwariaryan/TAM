@@ -15,7 +15,8 @@ from app.schemas.financials import BalanceSheet, CashFlowStatement, PnLStatement
 from app.schemas.net_debt import NetDebtReport
 from app.schemas.nwc import NWCReport
 from app.schemas.redflags import RedFlagReport, RedFlagSummary
-from app.storage import file_store
+from app.schemas.settings import get_deal_settings
+from app.storage import deal_store, file_store
 from app.storage.json_io import read_json_encrypted, write_json_encrypted
 
 logger = logging.getLogger(__name__)
@@ -52,6 +53,7 @@ async def _run_async(deal_id: str) -> RedFlagReport:
         raise FileNotFoundError(f"P&L not found for deal {deal_id}.")
 
     # Step 1: deterministic rules
+    deal_settings = get_deal_settings(deal_store.get_deal(deal_id))
     all_flags = rules.detect_all(
         deal_id=deal_id,
         pnl=pnl,
@@ -62,6 +64,10 @@ async def _run_async(deal_id: str) -> RedFlagReport:
         nwc_report=nwc,
         cross_validation=cross_validation,
         net_debt_report=net_debt_report,
+        materiality_threshold=deal_settings.materiality_threshold,
+        cash_conversion_medium_pct=deal_settings.cash_conversion_medium_pct,
+        cash_conversion_high_pct=deal_settings.cash_conversion_high_pct,
+        cash_conversion_critical_pct=deal_settings.cash_conversion_critical_pct,
     )
 
     # Step 2: LLM enrichment — only High and Medium (cost control)

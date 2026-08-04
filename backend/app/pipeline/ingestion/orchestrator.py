@@ -38,7 +38,8 @@ from app.schemas.contracts import DebtInstrument, DebtSchedule
 from app.schemas.documents import DocumentInventory, DocumentType
 from app.schemas.gl import RawGLLine, ValidationReport
 from app.schemas.projections import ProjectionLine, ProjectionSchedule
-from app.storage import file_store
+from app.schemas.settings import get_deal_settings
+from app.storage import deal_store, file_store
 from app.storage.json_io import read_json_encrypted, write_json_encrypted
 
 logger = logging.getLogger(__name__)
@@ -267,8 +268,10 @@ def run(deal_id: str) -> IngestionResult:
     if supporting_schedules:
         result.supporting_schedules = supporting_schedules
 
+    deal_settings = get_deal_settings(deal_store.get_deal(deal_id))
     result.cross_validation = validate_cross_documents(
-        deal_id, all_gl_lines, result.ar_aging, result.ap_aging
+        deal_id, all_gl_lines, result.ar_aging, result.ap_aging,
+        tolerance_pct=deal_settings.tie_out_tolerance_pct,
     )
 
     if inventory.missing_recommended:

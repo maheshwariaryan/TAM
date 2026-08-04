@@ -15,6 +15,7 @@ from app.api.v1 import (
     nwc,
     qoe,
     redflags,
+    settings,
     tieouts,
 )
 
@@ -32,5 +33,6 @@ router.include_router(dcf.router)
 router.include_router(contracts.router)
 router.include_router(narrative.router)
 router.include_router(notes.router)
+router.include_router(settings.router)
 router.include_router(tieouts.router)
 router.include_router(databook.router)
