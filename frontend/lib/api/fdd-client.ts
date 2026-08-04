@@ -49,6 +49,20 @@ async function put<T>(path: string, body: unknown): Promise<T> {
   return res.json();
 }
 
+async function patch<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`PATCH ${path} → ${res.status}: ${text}`);
+  }
+  return res.json();
+}
+
 // ─── Auth ────────────────────────────────────────────────────────────────────
 // These call FastAPI's /api/v1/auth/* endpoints directly (not the old Next.js
 // mock routes) and return a plain {ok, ...} shape so the calling page can show
@@ -567,3 +581,17 @@ export interface DealNotes {
 export const getNotes = (dealId: string) => get<DealNotes>(`/deals/${dealId}/notes`);
 export const saveNotes = (dealId: string, notes: string, reportDraft: string[]) =>
   put<DealNotes>(`/deals/${dealId}/notes`, { notes, report_draft: reportDraft });
+
+// ─── Settings ──────────────────────────────────────────────────────────────────
+
+export interface DealSettings {
+  materiality_threshold: number;
+  tie_out_tolerance_pct: number;
+  cash_conversion_medium_pct: number;
+  cash_conversion_high_pct: number;
+  cash_conversion_critical_pct: number;
+}
+
+export const getDealSettings = (dealId: string) => get<DealSettings>(`/deals/${dealId}/settings`);
+export const updateDealSettings = (dealId: string, updates: Partial<DealSettings>) =>
+  patch<DealSettings>(`/deals/${dealId}/settings`, updates);

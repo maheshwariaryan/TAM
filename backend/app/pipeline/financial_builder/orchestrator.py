@@ -33,7 +33,8 @@ from app.schemas.gl import (
     MappedGLLine,
     RawGLLine,
 )
-from app.storage import file_store
+from app.schemas.settings import get_deal_settings
+from app.storage import deal_store, file_store
 from app.storage.json_io import read_json_encrypted, write_json_encrypted
 
 logger = logging.getLogger(__name__)
@@ -110,7 +111,10 @@ async def _run_async(deal_id: str) -> None:
     schedule_path = _processed_path(deal_id, "schedule_reconciliation.json")
     if schedule_path.exists():
         schedule_data = read_json_encrypted(schedule_path)
-        new_tie_outs = reconcile_schedules(schedule_data, pnl, bs, cf)
+        deal_settings = get_deal_settings(deal_store.get_deal(deal_id))
+        new_tie_outs = reconcile_schedules(
+            schedule_data, pnl, bs, cf, tolerance_pct=deal_settings.tie_out_tolerance_pct
+        )
         if new_tie_outs:
             validation_path = _processed_path(deal_id, "cross_document_validation.json")
             if validation_path.exists():

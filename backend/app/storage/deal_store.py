@@ -13,6 +13,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from app.config import settings
+from app.schemas.settings import DealSettings
 from app.security.file_crypto import FileCryptoError
 from app.storage.json_io import read_json_encrypted, write_json_encrypted
 
@@ -58,6 +59,7 @@ def create_deal(
         "progress_pct": 0,
         "uploaded_files": [],
         "error": None,
+        "settings": DealSettings().model_dump(mode="json"),
     }
     write_json_encrypted(_deal_path(deal_id), deal)
     return deal

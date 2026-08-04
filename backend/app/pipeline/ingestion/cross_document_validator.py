@@ -10,8 +10,7 @@ from app.schemas.gl import ChartOfAccountsCategory, MappedGLLine, RawGLLine
 
 logger = logging.getLogger(__name__)
 
-AR_TOLERANCE_PCT = 0.5
-AP_TOLERANCE_PCT = 1.0
+DEFAULT_AR_AP_TOLERANCE_PCT = 0.5
 SCHEDULE_TIE_OUT_TOLERANCE_PCT = 1.0
 
 
@@ -88,11 +87,18 @@ def validate_cross_documents(
     ar_report: AgingReport | None,
     ap_report: AgingReport | None,
     mapped_lines: list[MappedGLLine] | None = None,
+    tolerance_pct: float | None = None,
 ) -> CrossDocumentValidation:
-    """Run AR/AP aging tie-outs against GL balance sheet balances."""
+    """Run AR/AP aging tie-outs against GL balance sheet balances.
+
+    tolerance_pct is the deal's single configured tie-out tolerance (see
+    app.schemas.settings.DealSettings), applied to both AR and AP — this collapses
+    what used to be two separate constants (AR 0.5%, AP 1.0%) into one per-deal value.
+    Falls back to the prior AR default when no deal settings exist."""
     tie_outs: list[TieOutResult] = []
     warnings: list[str] = []
     bs_lines = mapped_lines or gl_lines
+    effective_tolerance = tolerance_pct if tolerance_pct is not None else DEFAULT_AR_AP_TOLERANCE_PCT
 
     if ar_report and ar_report.summaries:
         ar_total, ar_src = _latest_aging_total(ar_report.summaries)
@@ -106,7 +112,7 @@ def validate_cross_documents(
         if gl_ar == 0:
             gl_ar = _gl_bs_balance(bs_lines, "1002", None, period_key)
         tie_outs.append(
-            _tie_out("AR Aging <-> BS AR", gl_ar, ar_total, AR_TOLERANCE_PCT, [ar_src])
+            _tie_out("AR Aging <-> BS AR", gl_ar, ar_total, effective_tolerance, [ar_src])
         )
     elif ar_report is None:
         warnings.append("AR aging not uploaded — AR <-> BS tie-out skipped")
@@ -123,7 +129,7 @@ def validate_cross_documents(
         if gl_ap == 0:
             gl_ap = _gl_bs_balance(bs_lines, "2001", None, period_key)
         tie_outs.append(
-            _tie_out("AP Aging <-> BS AP", gl_ap, ap_total, AP_TOLERANCE_PCT, [ap_src])
+            _tie_out("AP Aging <-> BS AP", gl_ap, ap_total, effective_tolerance, [ap_src])
         )
     elif ap_report is None:
         warnings.append("AP aging not uploaded — AP <-> BS tie-out skipped")
@@ -199,12 +205,19 @@ def reconcile_schedules(
     pnl: PnLStatement | None,
     bs: BalanceSheet | None,
     cash_flow: CashFlowStatement | None,
+    tolerance_pct: float | None = None,
 ) -> list[TieOutResult]:
     """Reconcile Group A supporting schedules (balance sheet, income statement, cash
     flow, revenue, COGS, opex, working capital, inventory rollforward) against the
     GL-derived statements already built by financial_builder. These schedules are never
     used to recompute the GL-derived figures — only to flag when they disagree, the same
-    principle net_debt_bridge already applies to contract-extracted debt detail."""
+    principle net_debt_bridge already applies to contract-extracted debt detail.
+
+    tolerance_pct is the deal's single configured tie-out tolerance (see
+    app.schemas.settings.DealSettings) — collapses the formerly-separate schedule
+    tolerance into the same value used for AR/AP tie-outs. Falls back to the prior
+    schedule-specific default when no deal settings exist."""
+    effective_tolerance = tolerance_pct if tolerance_pct is not None else SCHEDULE_TIE_OUT_TOLERANCE_PCT
     tie_outs: list[TieOutResult] = []
 
     if bs is not None and bs.periods:
@@ -224,7 +237,7 @@ def reconcile_schedules(
                     if observed is not None and expected is not None:
                         tie_outs.append(_tie_out(
                             f"Balance Sheet Schedule <-> {label}", expected, observed,
-                            SCHEDULE_TIE_OUT_TOLERANCE_PCT, ["balance_sheet_schedule"],
+                            effective_tolerance, ["balance_sheet_schedule"],
                         ))
 
         wc_schedule = schedule_data.get("working_capital")
@@ -241,7 +254,7 @@ def reconcile_schedules(
                         expected = _bs_row_amount(bs, category, pk)
                         tie_outs.append(_tie_out(
                             f"Working Capital Schedule <-> BS {label}", expected, observed,
-                            SCHEDULE_TIE_OUT_TOLERANCE_PCT, ["working_capital_schedule"],
+                            effective_tolerance, ["working_capital_schedule"],
                         ))
 
         inv_schedule = schedule_data.get("inventory")
@@ -252,7 +265,7 @@ def reconcile_schedules(
                 expected = _bs_row_amount(bs, ChartOfAccountsCategory.INVENTORY, pk)
                 tie_outs.append(_tie_out(
                     "Inventory Rollforward <-> BS Inventory", expected, observed,
-                    SCHEDULE_TIE_OUT_TOLERANCE_PCT, ["inventory_rollforward"],
+                    effective_tolerance, ["inventory_rollforward"],
                 ))
 
     if pnl is not None and pnl.periods:
@@ -273,7 +286,7 @@ def reconcile_schedules(
                     if observed is not None and expected is not None:
                         tie_outs.append(_tie_out(
                             f"Income Statement Schedule <-> {label}", expected, observed,
-                            SCHEDULE_TIE_OUT_TOLERANCE_PCT, ["income_statement_schedule"],
+                            effective_tolerance, ["income_statement_schedule"],
                         ))
 
         revenue_schedule = schedule_data.get("revenue")
@@ -284,7 +297,7 @@ def reconcile_schedules(
             if observed is not None and expected is not None:
                 tie_outs.append(_tie_out(
                     "Revenue Schedule <-> P&L Revenue", expected, observed,
-                    SCHEDULE_TIE_OUT_TOLERANCE_PCT, ["revenue_schedule"],
+                    effective_tolerance, ["revenue_schedule"],
                 ))
 
         cogs_schedule = schedule_data.get("cogs")
@@ -295,7 +308,7 @@ def reconcile_schedules(
                 expected = abs(_pnl_rows_total(pnl, pk, is_cogs=True))
                 tie_outs.append(_tie_out(
                     "COGS Schedule <-> P&L COGS", expected, observed,
-                    SCHEDULE_TIE_OUT_TOLERANCE_PCT, ["cogs_schedule"],
+                    effective_tolerance, ["cogs_schedule"],
                 ))
 
         opex_schedule = schedule_data.get("opex")
@@ -306,7 +319,7 @@ def reconcile_schedules(
                 expected = abs(_pnl_rows_total(pnl, pk, is_opex=True))
                 tie_outs.append(_tie_out(
                     "Opex Schedule <-> P&L Opex", expected, observed,
-                    SCHEDULE_TIE_OUT_TOLERANCE_PCT, ["opex_schedule"],
+                    effective_tolerance, ["opex_schedule"],
                 ))
 
     if cash_flow is not None and cash_flow.periods:
@@ -326,7 +339,7 @@ def reconcile_schedules(
                     if observed is not None and expected is not None:
                         tie_outs.append(_tie_out(
                             f"Cash Flow Schedule <-> {label}", expected, observed,
-                            SCHEDULE_TIE_OUT_TOLERANCE_PCT, ["cash_flow_schedule"],
+                            effective_tolerance, ["cash_flow_schedule"],
                         ))
 
     return tie_outs
