@@ -58,6 +58,11 @@ class BaseAgent:
     #: Name used in logs
     name: str = "BaseAgent"
 
+    #: Override in subclass to pin this agent to a specific model instead of
+    #: settings.anthropic_model — e.g. a task that needs stricter tool-schema
+    #: adherence than the global default model reliably provides.
+    model: str | None = None
+
     async def run(self, payload: Any) -> Any:
         """
         Entry point. Dispatches to mock or real depending on USE_MOCK_LLM.
@@ -107,7 +112,7 @@ class BaseAgent:
         for attempt in range(max_retries):
             try:
                 kwargs: dict[str, Any] = {
-                    "model": settings.anthropic_model,
+                    "model": self.model or settings.anthropic_model,
                     "messages": api_messages,
                     "max_tokens": 4000,
                 }

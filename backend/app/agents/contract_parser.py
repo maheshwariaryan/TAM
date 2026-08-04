@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 import uuid
@@ -216,6 +217,12 @@ def _extract_material_obligations(text: str) -> list[str]:
 
 class ContractParserAgent(BaseAgent):
     name = "ContractParserAgent"
+    # Pinned above the global default: this task's strict tool-schema adherence
+    # (nested instrument objects) needs a higher-capability tier than
+    # settings.anthropic_model reliably provides — see contract_parser.py's
+    # instruments-as-string handling in parse_debt_from_text for the failure
+    # mode this was surfacing before the pin.
+    model = "claude-opus-5"
 
     _tools = [
         {
@@ -341,8 +348,28 @@ async def parse_debt_from_text(
     agent = ContractParserAgent()
     result = await agent.run({"text": text, "filename": source_document})
     confidence = float(result.get("extraction_confidence", 0.85))
+    raw_instruments = result.get("instruments", [])
+    if isinstance(raw_instruments, str):
+        # The real model doesn't always perfectly honor the tool's declared
+        # input_schema — "instruments" can come back as a JSON-encoded string
+        # instead of an actual array. Same class of drift handled defensively
+        # in the narrative drafter and red flag analyst.
+        try:
+            raw_instruments = json.loads(raw_instruments)
+        except (json.JSONDecodeError, TypeError):
+            logger.warning(
+                "[ContractParserAgent] instruments field was a non-JSON string for %s, dropping it",
+                source_document,
+            )
+            raw_instruments = []
     instruments = []
-    for item in result.get("instruments", []):
+    for item in raw_instruments:
+        if not isinstance(item, dict):
+            logger.warning(
+                "[ContractParserAgent] instrument entry for %s had unexpected shape (%s), skipping",
+                source_document, type(item).__name__,
+            )
+            continue
         maturity = None
         if item.get("maturity_date"):
             try:
