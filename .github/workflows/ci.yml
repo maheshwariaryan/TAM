@@ -254,6 +254,9 @@ jobs:
           cache-dependency-path: backend/pyproject.toml
       - run: pip install -e ".[dev]"
       - name: Test (unit — ms-scale, no I/O, no agent calls)
+        env:
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
         run: python -m pytest -m unit --tb=short -q
 
   # ── Backend: per-phase integration jobs, real Anthropic API, path-gated ────
@@ -278,6 +281,9 @@ jobs:
       - run: pip install -e ".[dev]"
       - env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
         run: >
           python -m pytest -m "unit or integration" --tb=short -q
           tests/test_pipeline/test_ingestion.py
@@ -303,6 +309,9 @@ jobs:
       - run: pip install -e ".[dev]"
       - env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
         run: >
           python -m pytest -m "unit or integration" --tb=short -q
           tests/test_pipeline/test_financial_builder.py
@@ -326,6 +335,9 @@ jobs:
       - run: pip install -e ".[dev]"
       - env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
         run: >
           python -m pytest -m "unit or integration" --tb=short -q
           tests/test_pipeline/test_qoe_and_redflags.py
@@ -349,6 +361,9 @@ jobs:
       - run: pip install -e ".[dev]"
       - env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
         run: python -m pytest -m "unit or integration" --tb=short -q tests/test_pipeline/test_nwc_analyzer.py
 
   backend-net-debt-dcf:
@@ -369,6 +384,9 @@ jobs:
       - run: pip install -e ".[dev]"
       - env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
         run: python -m pytest -m "unit or integration" --tb=short -q tests/test_pipeline/test_net_debt_and_dcf.py
 
   backend-contracts:
@@ -389,6 +407,9 @@ jobs:
       - run: pip install -e ".[dev]"
       - env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
         run: >
           python -m pytest -m "unit or integration" --tb=short -q
           tests/test_pipeline/test_contract_analysis.py
@@ -412,6 +433,9 @@ jobs:
       - run: pip install -e ".[dev]"
       - env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
         run: python -m pytest -m "unit or integration" --tb=short -q tests/test_pipeline/test_narrative_drafter.py
 
   backend-databook:
@@ -432,6 +456,9 @@ jobs:
       - run: pip install -e ".[dev]"
       - env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
         run: python -m pytest -m "unit or integration" --tb=short -q tests/test_pipeline/test_databook.py
 
   backend-auth-security:
@@ -452,6 +479,9 @@ jobs:
       - run: pip install -e ".[dev]"
       - env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
         run: >
           python -m pytest -m "unit or integration" --tb=short -q
           tests/test_api/test_auth.py
@@ -476,6 +506,9 @@ jobs:
       - run: pip install -e ".[dev]"
       - env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
         run: python -m pytest -m "unit or integration" --tb=short -q tests/test_api/test_middleware.py
 
   # ── Frontend ────────────────────────────────────────────────────────────────
