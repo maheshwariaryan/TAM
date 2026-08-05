@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
-import { AreaTrendChart } from "@/components/charts/common-charts";
+import { AreaTrendChart, BarCompareChart } from "@/components/charts/common-charts";
 import { getNWC, type NWCReport } from "@/lib/api/fdd-client";
 import { cn } from "@/lib/utils/cn";
 
@@ -55,6 +55,16 @@ export function NWCPanel({ dealId }: { dealId: string }) {
   }));
   const recommendedPeg = report.pegs.find((p) => p.recommended) ?? report.pegs[0];
   const ratios = report.ratios;
+  const latestPoint = report.data_points[report.data_points.length - 1];
+  const toM = (v: string) => Number((Number(v) / 1_000_000).toFixed(2));
+  const compositionData = [
+    { name: "AR", value: toM(latestPoint.accounts_receivable) },
+    { name: "Inventory", value: toM(latestPoint.inventory) },
+    { name: "Prepaid + Other CA", value: toM(String(Number(latestPoint.prepaid_expenses) + Number(latestPoint.other_current_assets))) },
+    { name: "AP", value: toM(latestPoint.accounts_payable) },
+    { name: "Accrued Liab.", value: toM(latestPoint.accrued_liabilities) },
+    { name: "Deferred Rev + Other CL", value: toM(String(Number(latestPoint.deferred_revenue) + Number(latestPoint.other_current_liabilities))) },
+  ];
 
   return (
     <div className="space-y-4">
@@ -115,6 +125,13 @@ export function NWCPanel({ dealId }: { dealId: string }) {
       <Card>
         <CardHeader><CardTitle className="text-sm font-semibold">NWC Trend</CardTitle></CardHeader>
         <CardContent><AreaTrendChart data={trendData} keyName="nwc" /></CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm font-semibold">NWC Composition ({latestPoint.period}, $M)</CardTitle></CardHeader>
+        <CardContent>
+          <BarCompareChart data={compositionData} xKey="name" bars={[{ key: "value", color: "#38bdf8" }]} />
+        </CardContent>
       </Card>
 
       {ratios && (

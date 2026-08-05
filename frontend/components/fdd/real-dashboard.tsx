@@ -4,17 +4,27 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartCard } from "@/components/charts/chart-card";
-import { TrendLineChart } from "@/components/charts/common-charts";
+import { AreaTrendChart, TrendLineChart } from "@/components/charts/common-charts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
   getFinancialSummary,
   getQoE,
   getRedFlags,
+  getNWC,
+  getCashFlow,
+  getDCF,
   type FinancialSummary,
   type QoEReport,
   type RedFlagReport,
+  type NWCReport,
+  type CashFlowStatement,
+  type DCFReport,
 } from "@/lib/api/fdd-client";
+import { lookupByPeriod } from "@/lib/utils/format";
+
+const fmtMoney = (v: string | number | null) =>
+  v === null ? "—" : `$${(Math.abs(Number(v)) / 1_000_000).toFixed(1)}M`;
 
 const SEVERITY_STYLE: Record<string, string> = {
   High: "bg-rose-100 text-rose-700",
@@ -27,18 +37,29 @@ export function RealDashboard({ dealId }: { dealId: string }) {
   const [financials, setFinancials] = useState<FinancialSummary | null>(null);
   const [qoe, setQoe] = useState<QoEReport | null>(null);
   const [redflags, setRedflags] = useState<RedFlagReport | null>(null);
+  const [nwc, setNwc] = useState<NWCReport | null>(null);
+  const [cashFlow, setCashFlow] = useState<CashFlowStatement | null>(null);
+  const [dcf, setDcf] = useState<DCFReport | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    Promise.allSettled([getFinancialSummary(dealId), getQoE(dealId), getRedFlags(dealId)]).then(
-      ([f, q, rf]) => {
-        setFinancials(f.status === "fulfilled" ? f.value : null);
-        setQoe(q.status === "fulfilled" ? q.value : null);
-        setRedflags(rf.status === "fulfilled" ? rf.value : null);
-        setLoading(false);
-      }
-    );
+    Promise.allSettled([
+      getFinancialSummary(dealId),
+      getQoE(dealId),
+      getRedFlags(dealId),
+      getNWC(dealId),
+      getCashFlow(dealId),
+      getDCF(dealId),
+    ]).then(([f, q, rf, n, cf, d]) => {
+      setFinancials(f.status === "fulfilled" ? f.value : null);
+      setQoe(q.status === "fulfilled" ? q.value : null);
+      setRedflags(rf.status === "fulfilled" ? rf.value : null);
+      setNwc(n.status === "fulfilled" ? n.value : null);
+      setCashFlow(cf.status === "fulfilled" ? cf.value : null);
+      setDcf(d.status === "fulfilled" ? d.value : null);
+      setLoading(false);
+    });
   }, [dealId]);
 
   if (loading) return <Skeleton className="h-96 w-full" />;
@@ -59,14 +80,54 @@ export function RealDashboard({ dealId }: { dealId: string }) {
     adjustedEbitda: qoe ? Number(qoe.adjusted_ebitda[pk] ?? financials.ebitda[pk] ?? 0) : Number(financials.ebitda[pk] ?? 0),
   }));
   const topFlags = (redflags?.flags ?? []).filter((f) => f.severity === "High" || f.severity === "Medium").slice(0, 3);
+  const nwcTrend = (nwc?.status === "complete" || nwc?.status === "partial")
+    ? nwc.data_points.map((dp) => ({ month: dp.period, nwc: Number((Number(dp.net_working_capital) / 1_000_000).toFixed(2)) }))
+    : [];
+  const cashConversionTrend = cashFlow
+    ? cashFlow.periods.map((p) => {
+        const c = lookupByPeriod(cashFlow.cash_conversion, p) ?? null;
+        return { month: p, conversion: c !== null ? Number((c * 100).toFixed(1)) : 0 };
+      })
+    : [];
 
   return (
     <div className="space-y-6">
-      <ChartCard
-        title="Revenue & EBITDA Trend"
-        steps={[]}
-        renderChart={(expanded) => <TrendLineChart data={trend} expanded={expanded} />}
-      />
+      {dcf && dcf.status === "complete" && dcf.enterprise_value && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-4">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Enterprise Value (DCF)</p>
+            <p className="text-3xl font-semibold leading-tight tracking-tight text-foreground">{fmtMoney(dcf.enterprise_value)}</p>
+          </div>
+          {dcf.assumptions && (
+            <p className="text-sm text-muted-foreground">
+              {(dcf.assumptions.discount_rate_annual * 100).toFixed(1)}% discount rate ·{" "}
+              {(dcf.assumptions.terminal_growth_rate_annual * 100).toFixed(1)}% terminal growth — directional cross-check only
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ChartCard
+          title="Revenue & EBITDA Trend"
+          steps={[]}
+          renderChart={(expanded) => <TrendLineChart data={trend} expanded={expanded} />}
+        />
+        {nwcTrend.length > 0 && (
+          <ChartCard
+            title="NWC Trend"
+            steps={[]}
+            renderChart={(expanded) => <AreaTrendChart data={nwcTrend} keyName="nwc" expanded={expanded} />}
+          />
+        )}
+        {cashConversionTrend.length > 0 && (
+          <ChartCard
+            title="Cash Conversion % Trend"
+            steps={[]}
+            renderChart={(expanded) => <AreaTrendChart data={cashConversionTrend} keyName="conversion" expanded={expanded} />}
+          />
+        )}
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>

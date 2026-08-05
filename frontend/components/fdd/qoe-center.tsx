@@ -1,22 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Cell,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ReferenceLine,
-} from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, ChevronDown, ChevronRight, TrendingUp } from "lucide-react";
 import { getQoE, getAdjustmentSource, type QoEReport, type QoEAdjustment } from "@/lib/api/fdd-client";
 import { cn } from "@/lib/utils/cn";
+import { BridgeChart, type BridgeItem } from "@/components/charts/common-charts";
 
 const fmt = (v: string | number) =>
   `$${Math.abs(Number(v)).toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
@@ -29,59 +20,12 @@ const fmtSigned = (v: string | number) => {
 // ─── Waterfall chart ──────────────────────────────────────────────────────────
 
 function WaterfallChart({ report }: { report: QoEReport }) {
-  const bars = report.waterfall.map((item, i) => {
-    const val = Number(item.amount);
-    const isBase = item.type === "base";
-    const isResult = item.type === "result";
-    // For bridge bars, we need start + delta for a "floating bar" effect
-    const base = report.waterfall
-      .slice(0, i)
-      .filter((w) => w.type !== "result")
-      .reduce((sum, w) => (w.type === "base" ? Number(w.amount) : sum + Number(w.amount)), 0);
-
-    return {
-      name: item.label.length > 28 ? item.label.slice(0, 26) + "…" : item.label,
-      fullLabel: item.label,
-      type: item.type,
-      value: isBase || isResult ? val : Math.abs(val),
-      base: isBase || isResult ? 0 : Math.min(base, base + val),
-      fill:
-        isBase ? "#6366f1" :
-        isResult ? "#22c55e" :
-        item.type === "addback" ? "#22c55e" : "#ef4444",
-    };
-  });
-
-  return (
-    <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={bars} margin={{ top: 10, right: 10, left: 10, bottom: 60 }}>
-        <XAxis
-          dataKey="name"
-          tick={{ fontSize: 11 }}
-          angle={-35}
-          textAnchor="end"
-          interval={0}
-        />
-        <YAxis
-          tickFormatter={(v) => `$${(v / 1_000).toFixed(0)}K`}
-          tick={{ fontSize: 11 }}
-          width={65}
-        />
-        <Tooltip
-          formatter={(v: number, _name: string, props) => [fmt(v), props.payload.fullLabel]}
-          labelFormatter={() => ""}
-        />
-        <ReferenceLine y={0} stroke="#666" />
-        {/* Transparent base bar for floating effect */}
-        <Bar dataKey="base" stackId="a" fill="transparent" />
-        <Bar dataKey="value" stackId="a" radius={[3, 3, 0, 0]}>
-          {bars.map((b, i) => (
-            <Cell key={i} fill={b.fill} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  );
+  const items: BridgeItem[] = report.waterfall.map((item) => ({
+    label: item.label,
+    amount: item.amount,
+    type: item.type === "base" ? "base" : item.type === "result" ? "result" : item.type === "addback" ? "positive" : "negative",
+  }));
+  return <BridgeChart items={items} />;
 }
 
 // ─── Adjustment ledger row ────────────────────────────────────────────────────

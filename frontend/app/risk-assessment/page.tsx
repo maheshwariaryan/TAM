@@ -18,6 +18,7 @@ import { useGlobalStore } from "@/lib/store/use-global-store";
 import { RedFlagCenter } from "@/components/fdd/redflag-center";
 import { TieOutsPanel } from "@/components/fdd/tie-outs-panel";
 import { NetDebtPanel } from "@/components/fdd/net-debt-panel";
+import { DerivedRiskGauge } from "@/components/fdd/derived-risk-gauge";
 
 export default function RiskAssessmentPage() {
   return (
@@ -134,6 +135,7 @@ function RiskAssessmentPageContent() {
   if (dealId) {
     return (
       <div className="space-y-5">
+        <DerivedRiskGauge dealId={dealId} />
         <div>
           <h2 className="mb-4 text-xl font-semibold">Red Flag Command Center</h2>
           <RedFlagCenter dealId={dealId} />
