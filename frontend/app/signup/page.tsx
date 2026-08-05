@@ -1,27 +1,11 @@
 "use client";
 
-import { FormEvent, useState, useRef, useEffect } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Check, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { signup } from "@/lib/api/fdd-client";
-
-// ─── Manager list ───────────────────────────────────────────────────────────
-// TODO: Replace with a real GET /api/managers?company={companyName} call
-// once the backend endpoint exists. The list is intentionally broad for now.
-const MOCK_MANAGERS = [
-  "Aaron Mitchell", "Aisha Patel", "Alexandra Kim", "Benjamin Foster",
-  "Caroline Hughes", "David Okafor", "Diana Reeves", "Edward Thornton",
-  "Elena Vasquez", "Felix Hartmann", "Grace Liu", "Henry Blackwood",
-  "Isabella Romano", "James Whitfield", "Jennifer Nakamura", "Jonathan Reed",
-  "Julia Schreiber", "Kevin Osei", "Laura Sinclair", "Marcus Bell",
-  "Maya Johansson", "Michael Adeyemi", "Natasha Kowalski", "Oliver Grant",
-  "Priya Sharma", "Rachel Donovan", "Robert Castillo", "Sandra Müller",
-  "Sophia Andersen", "Thomas Beaumont",
-];
-
-const COULD_NOT_FIND = "Could not find my manager";
 
 // ─── Debug helpers (visible in browser console) ────────────────────────────
 const dbg = (step: string, msg: string, data?: unknown) => {
@@ -38,7 +22,7 @@ const dbgErr = (step: string, msg: string, data?: unknown) => {
 };
 
 // ─── Client-side field validation ──────────────────────────────────────────
-function validateStepOne(fields: {
+function validateFields(fields: {
   fullName: string;
   companyName: string;
   email: string;
@@ -67,7 +51,6 @@ function validateStepOne(fields: {
 export default function SignupPage() {
   const router = useRouter();
 
-  // ── Step 1 state ──────────────────────────────────────────────────────
   const [fullName, setFullName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
@@ -75,73 +58,24 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // ── Step 2 state ──────────────────────────────────────────────────────
-  const [managerQuery, setManagerQuery] = useState("");
-  const [selectedManager, setSelectedManager] = useState<string | null>(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  // ── Shared state ──────────────────────────────────────────────────────
-  const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  // ── Manager filtering ──────────────────────────────────────────────────
-  const filteredManagers = managerQuery.trim()
-    ? MOCK_MANAGERS.filter((m) => m.toLowerCase().includes(managerQuery.toLowerCase()))
-    : MOCK_MANAGERS;
-
-  // ── Step 1 submit ──────────────────────────────────────────────────────
-  const handleStepOne = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    dbg("step1", "Validating fields", { fullName, email, companyName });
+    dbg("submit", "Validating fields", { fullName, email, companyName });
 
-    const validationError = validateStepOne({ fullName, companyName, email, password, confirmPassword });
+    const validationError = validateFields({ fullName, companyName, email, password, confirmPassword });
     if (validationError) {
-      dbgErr("step1", "Client-side validation failed", validationError);
+      dbgErr("submit", "Client-side validation failed", validationError);
       setError(validationError);
       return;
     }
 
-    dbg("step1", "Validation passed — advancing to step 2");
-    setStep(2);
-  };
-
-  // ── Manager selection ──────────────────────────────────────────────────
-  const handleSelectManager = (name: string) => {
-    dbg("step2", "Manager selected", name);
-    setSelectedManager(name);
-    setManagerQuery(name === COULD_NOT_FIND ? COULD_NOT_FIND : name);
-    setDropdownOpen(false);
-  };
-
-  // ── Step 2 submit (API call) ───────────────────────────────────────────
-  const handleStepTwo = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    if (!selectedManager) {
-      dbgErr("step2", "No manager selected");
-      setError("Please select your manager to continue.");
-      return;
-    }
-
-    // companyName/contactNumber/manager are collected for the workspace-setup
-    // UX but the backend user model only has email/password/full_name today —
+    // companyName/contactNumber are collected for the workspace-setup UX but
+    // the backend user model only has email/password/full_name today —
     // there's no field to persist them to yet, so only those three are sent.
     dbg("api", "Sending signup payload", {
       email: email.trim().toLowerCase(),
@@ -190,247 +124,107 @@ export default function SignupPage() {
           <p className="mt-1 text-sm text-slate-400">Set up your workspace in under a minute.</p>
         </div>
 
-        {/* Step indicator */}
-        <div className="mb-6 flex items-center justify-center gap-3">
-          {([1, 2] as const).map((s) => (
-            <div key={s} className="flex items-center gap-2">
-              <div
-                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-colors ${
-                  step === s
-                    ? "bg-cyan-500 text-white"
-                    : step > s
-                      ? "bg-emerald-500 text-white"
-                      : "border border-white/25 text-slate-400"
-                }`}
-              >
-                {step > s ? <Check className="h-3.5 w-3.5" /> : s}
-              </div>
-              <span className={`text-xs ${step === s ? "text-white" : "text-slate-500"}`}>
-                {s === 1 ? "Account details" : "Confirm manager"}
-              </span>
-              {s < 2 && <div className="h-px w-8 bg-white/20" />}
-            </div>
-          ))}
-        </div>
-
         <Card className="border-white/20 bg-white/10 text-white backdrop-blur-xl">
           <CardHeader>
-            <CardTitle className="text-lg">
-              {step === 1 ? "Your details" : "Who is your manager?"}
-            </CardTitle>
-            {step === 2 && (
-              <p className="text-sm text-slate-400">
-                Start typing to filter the list. Select your manager to complete sign-up.
-              </p>
-            )}
+            <CardTitle className="text-lg">Your details</CardTitle>
           </CardHeader>
 
           <CardContent>
-            {/* ── STEP 1 ─────────────────────────────────────────────── */}
-            {step === 1 && (
-              <form className="space-y-4" onSubmit={handleStepOne}>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="block text-sm">
-                    Full Name
-                    <input
-                      required
-                      className={inputClass}
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Alex Analyst"
-                    />
-                  </label>
-                  <label className="block text-sm">
-                    Company Name
-                    <input
-                      required
-                      className={inputClass}
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
-                      placeholder="Acme Capital"
-                    />
-                  </label>
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block text-sm">
+                  Full Name
+                  <input
+                    required
+                    className={inputClass}
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Alex Analyst"
+                  />
+                </label>
+                <label className="block text-sm">
+                  Company Name
+                  <input
+                    required
+                    className={inputClass}
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder="Acme Capital"
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block text-sm">
+                  Work Email
+                  <input
+                    required
+                    type="email"
+                    className={inputClass}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="alex@acmecorp.com"
+                  />
+                </label>
+                <label className="block text-sm">
+                  Contact Number
+                  <input
+                    type="tel"
+                    className={inputClass}
+                    value={contactNumber}
+                    onChange={(e) => setContactNumber(e.target.value)}
+                    placeholder="+1 555 000 0000"
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block text-sm">
+                  Password
+                  <input
+                    required
+                    type="password"
+                    className={inputClass}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Minimum 8 characters"
+                  />
+                </label>
+                <label className="block text-sm">
+                  Confirm Password
+                  <input
+                    required
+                    type="password"
+                    className={inputClass}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Repeat your password"
+                  />
+                </label>
+              </div>
+
+              {error && (
+                <div className="flex items-start gap-2 rounded-md border border-rose-400/30 bg-rose-500/10 px-3 py-2">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" />
+                  <p className="text-sm text-rose-300">{error}</p>
                 </div>
+              )}
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="block text-sm">
-                    Work Email
-                    <input
-                      required
-                      type="email"
-                      className={inputClass}
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="alex@acmecorp.com"
-                    />
-                  </label>
-                  <label className="block text-sm">
-                    Contact Number
-                    <input
-                      type="tel"
-                      className={inputClass}
-                      value={contactNumber}
-                      onChange={(e) => setContactNumber(e.target.value)}
-                      placeholder="+1 555 000 0000"
-                    />
-                  </label>
-                </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Creating account…" : "Create account"}
+              </Button>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="block text-sm">
-                    Password
-                    <input
-                      required
-                      type="password"
-                      className={inputClass}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Minimum 8 characters"
-                    />
-                  </label>
-                  <label className="block text-sm">
-                    Confirm Password
-                    <input
-                      required
-                      type="password"
-                      className={inputClass}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Repeat your password"
-                    />
-                  </label>
-                </div>
-
-                {error && (
-                  <div className="flex items-start gap-2 rounded-md border border-rose-400/30 bg-rose-500/10 px-3 py-2">
-                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" />
-                    <p className="text-sm text-rose-300">{error}</p>
-                  </div>
-                )}
-
-                <Button type="submit" className="w-full">
-                  Next →
-                </Button>
-
-                <p className="text-center text-xs text-slate-400">
-                  Already registered?{" "}
-                  <button
-                    type="button"
-                    className="underline hover:text-white"
-                    onClick={() => router.push("/login")}
-                  >
-                    Sign in
-                  </button>
-                </p>
-              </form>
-            )}
-
-            {/* ── STEP 2 ─────────────────────────────────────────────── */}
-            {step === 2 && (
-              <form className="space-y-4" onSubmit={handleStepTwo}>
-                <div ref={dropdownRef} className="relative">
-                  <label className="block text-sm">
-                    Manager&apos;s Name
-                    <div className="relative mt-1">
-                      <input
-                        autoFocus
-                        className={`${inputClass} pr-9`}
-                        value={managerQuery}
-                        onChange={(e) => {
-                          setManagerQuery(e.target.value);
-                          setSelectedManager(null);
-                          setDropdownOpen(true);
-                        }}
-                        onFocus={() => setDropdownOpen(true)}
-                        placeholder="Start typing a name…"
-                      />
-                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                    </div>
-                  </label>
-
-                  {dropdownOpen && (
-                    <div className="absolute z-50 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-white/20 bg-slate-900 shadow-xl">
-                      {filteredManagers.length === 0 ? (
-                        <p className="px-3 py-2 text-sm text-slate-400">No matches found.</p>
-                      ) : (
-                        filteredManagers.map((name) => (
-                          <button
-                            key={name}
-                            type="button"
-                            onMouseDown={() => handleSelectManager(name)}
-                            className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-white/10 ${
-                              selectedManager === name ? "bg-cyan-500/20 text-cyan-300" : "text-slate-200"
-                            }`}
-                          >
-                            {selectedManager === name
-                              ? <Check className="h-3.5 w-3.5 shrink-0 text-cyan-400" />
-                              : <span className="w-3.5 shrink-0" />
-                            }
-                            {name}
-                          </button>
-                        ))
-                      )}
-
-                      {/* Always-visible fallback */}
-                      <button
-                        type="button"
-                        onMouseDown={() => handleSelectManager(COULD_NOT_FIND)}
-                        className={`flex w-full items-center gap-2 border-t border-white/10 px-3 py-2 text-left text-sm italic hover:bg-white/10 ${
-                          selectedManager === COULD_NOT_FIND ? "bg-amber-500/20 text-amber-300" : "text-slate-400"
-                        }`}
-                      >
-                        {selectedManager === COULD_NOT_FIND
-                          ? <Check className="h-3.5 w-3.5 shrink-0 text-amber-400" />
-                          : <span className="w-3.5 shrink-0" />
-                        }
-                        {COULD_NOT_FIND}
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Confirmation pill */}
-                {selectedManager && (
-                  <p className="rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm">
-                    {selectedManager === COULD_NOT_FIND ? (
-                      <span className="text-amber-300">
-                        No manager linked — your account will be flagged for admin review.
-                      </span>
-                    ) : (
-                      <span className="text-emerald-300">
-                        Manager selected: <strong>{selectedManager}</strong>
-                      </span>
-                    )}
-                  </p>
-                )}
-
-                {/* Error */}
-                {error && (
-                  <div className="flex items-start gap-2 rounded-md border border-rose-400/30 bg-rose-500/10 px-3 py-2">
-                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" />
-                    <p className="text-sm text-rose-300">{error}</p>
-                  </div>
-                )}
-
-                <div className="flex gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1 border-white/25 text-white hover:bg-white/10"
-                    onClick={() => { setStep(1); setError(null); }}
-                  >
-                    ← Back
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="flex-1"
-                    disabled={loading || !selectedManager}
-                  >
-                    {loading ? "Creating account…" : "Complete sign-up"}
-                  </Button>
-                </div>
-              </form>
-            )}
+              <p className="text-center text-xs text-slate-400">
+                Already registered?{" "}
+                <button
+                  type="button"
+                  className="underline hover:text-white"
+                  onClick={() => router.push("/login")}
+                >
+                  Sign in
+                </button>
+              </p>
+            </form>
           </CardContent>
         </Card>
       </div>
