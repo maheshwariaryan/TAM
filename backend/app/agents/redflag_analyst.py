@@ -4,9 +4,13 @@ Red Flag Analyst Agent — enriches rule-detected red flags with:
   - Specific diligence questions for the deal team
   - Refined financial impact range estimates
 
-Runs concurrently on High-severity flags via asyncio.gather.
-Medium flags are enriched only if < 10 total (cost control).
-Low/Informational flags use mock enrichment always (not worth the API cost).
+Cost control happens by severity, not by count: the orchestrator
+(redflag_detector/orchestrator.py) only ever sends High and Medium flags to
+enrich() — there is no additional numeric cap on how many Medium flags get
+enriched, and every flag in the batch runs as its own concurrent call via
+asyncio.gather. Low/Informational flags are excluded from the enrichment
+batch entirely and pass through with only their rule-detected fields (no
+llm_context, no diligence_questions, not even mock ones).
 
 Mock: returns templated questions per flag category.
 """
@@ -104,6 +108,12 @@ _DEFAULT_QUESTIONS = [
 
 class RedFlagAnalystAgent(BaseAgent):
     name = "RedFlagAnalyst"
+    # Pinned above the global default: recurring real-API runs showed the same
+    # flag categories (Related-Party Payments, Owner Compensation) repeatedly
+    # coming back as malformed (non-object) enrichment items — a systematic
+    # tool-schema-adherence gap for this task, not one-off noise. Same reasoning
+    # as ContractParserAgent's pin.
+    model = "claude-opus-5"
     _tools = _TOOLS
 
     async def enrich(self, flags: list[RedFlag]) -> list[RedFlag]:
@@ -119,6 +129,25 @@ class RedFlagAnalystAgent(BaseAgent):
         for flag, result in zip(flags, enrichments):
             if isinstance(result, Exception):
                 logger.warning("[RedFlagAnalyst] enrichment failed for flag %s: %s", flag.flag_id, result)
+                enriched.append(flag)
+                continue
+            if isinstance(result, str):
+                # Same schema drift as elsewhere — the model can return a single
+                # enrichment item as a JSON-encoded string instead of an object.
+                # Try to recover it before falling back to "unexpected shape".
+                try:
+                    result = json.loads(result)
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            if not isinstance(result, dict):
+                # The real model doesn't always perfectly honor the tool's declared
+                # input_schema — an enrichment item can come back as something other
+                # than an object. Degrade the same way a raised exception does (keep
+                # the original, un-enriched flag) rather than crash the whole stage.
+                logger.warning(
+                    "[RedFlagAnalyst] enrichment for flag %s had unexpected shape (%s), skipping",
+                    flag.flag_id, type(result).__name__,
+                )
                 enriched.append(flag)
             else:
                 enriched.append(flag.model_copy(update={
@@ -155,7 +184,13 @@ class RedFlagAnalystAgent(BaseAgent):
             raise AgentError("[RedFlagAnalyst] no tool call in response")
         data = tool_use.input
         enrichments = data.get("enrichments", [])
-        return enrichments[0] if enrichments else {}
+        if not enrichments:
+            # An empty list here is the model declining/failing to enrich this flag,
+            # not a valid "enriched with nothing" result — raise so enrich() treats it
+            # as a failure and keeps the original un-enriched flag, same as any other
+            # API error, instead of silently overwriting diligence_questions with [].
+            raise AgentError("[RedFlagAnalyst] empty enrichments in response")
+        return enrichments[0]
 
     def _mock_response(self, payload: RedFlag) -> dict:
         questions = _MOCK_QUESTIONS.get(payload.category, _DEFAULT_QUESTIONS)

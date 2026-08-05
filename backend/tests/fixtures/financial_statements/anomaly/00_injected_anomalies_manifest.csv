@@ -1,0 +1,8 @@
+Injected Issue,File,Period / Row,Expected Detection
+Income statement gross profit does not equal revenue minus COGS,01_income_statement.csv,2024-12 Gross Profit,Subtotal recomputation failure
+Balance sheet no longer balances when equity components are recomputed,02_balance_sheet.csv,2024-12 APIC,BS component recomputation failure
+CapEx sign is reversed,03_cash_flow_statement.csv,2024-09 CapEx,Cash flow sign / rollforward failure
+AR aging total is high and 90+ bucket spikes,06_ar_aging.csv,Latest 90+ AR invoice,AR tie-out and aging threshold failure
+Inventory rollforward purchases changed without ending inventory update,08_inventory_rollforward.csv,2024-10 Purchases,Inventory rollforward failure
+IT equipment under-depreciated and FAR NBV no longer ties,09_fixed_asset_register.csv,IT Equipment,FAR tie-out / depreciation reasonableness failure
+Debt interest does not match GL/IS interest,15_debt_schedule.csv,2024-12 Interest Expense,Debt to IS interest tie-out failure

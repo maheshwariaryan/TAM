@@ -187,3 +187,12 @@ GETTING AN OPENAI API KEY
 4. Add to .env: OPENAI_API_KEY=sk-...
 5. Set USE_MOCK_LLM=false
 6. Optionally set OPENAI_MODEL=gpt-4o for higher quality (default: gpt-4o-mini)
+
+
+
+________________________
+Yash recs
+
+1. use tavily api for web serarch to cross check prices with real time data to avoid ghafla
+2. find out if shit can be made deterministic instead of probabalistic bs
+3. how many metrics are being calculated manually and how many be the LLM and if so then what is the accuracy of those calculations

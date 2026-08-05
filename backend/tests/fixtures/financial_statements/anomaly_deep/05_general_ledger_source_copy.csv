@@ -1,0 +1,903 @@
+line_id,period,account_code,account_description,statement,debit,credit,entity,cost_center,note,Period,Balance Signed Amount
+GL-00001,2022-01-01,4001,Product Sales - Domestic,PnL,0.0,830516.06,Acme Manufacturing Co.,CORP,,2022-01,-830516.06
+GL-00002,2022-01-01,4002,Product Sales - Export,PnL,0.0,119049.46,Acme Manufacturing Co.,CORP,,2022-01,-119049.46
+GL-00003,2022-01-01,4003,Service Revenue,PnL,0.0,44503.64,Acme Manufacturing Co.,CORP,,2022-01,-44503.64
+GL-00004,2022-01-01,4004,Shipping & Handling Income,PnL,0.0,12237.18,Acme Manufacturing Co.,CORP,,2022-01,-12237.18
+GL-00005,2022-01-01,5001,Raw Materials - Steel,PnL,284530.13,0.0,Acme Manufacturing Co.,CORP,,2022-01,284530.13
+GL-00006,2022-01-01,5002,Raw Materials - Plastics,PnL,56600.93,0.0,Acme Manufacturing Co.,CORP,,2022-01,56600.93
+GL-00007,2022-01-01,5003,Direct Labour,PnL,205966.61,0.0,Acme Manufacturing Co.,CORP,,2022-01,205966.61
+GL-00008,2022-01-01,5004,Manufacturing Overhead,PnL,95084.78,0.0,Acme Manufacturing Co.,CORP,,2022-01,95084.78
+GL-00009,2022-01-01,5005,Freight In,PnL,17592.57,0.0,Acme Manufacturing Co.,CORP,,2022-01,17592.57
+GL-00010,2022-01-01,6001,Management Salaries,PnL,118643.44,0.0,Acme Manufacturing Co.,CORP,,2022-01,118643.44
+GL-00011,2022-01-01,6002,Sales Team Salaries,PnL,65383.4,0.0,Acme Manufacturing Co.,CORP,,2022-01,65383.4
+GL-00012,2022-01-01,6003,Office Rent,PnL,21497.72,0.0,Acme Manufacturing Co.,CORP,,2022-01,21497.72
+GL-00013,2022-01-01,6004,Utilities,PnL,8393.81,0.0,Acme Manufacturing Co.,CORP,,2022-01,8393.81
+GL-00014,2022-01-01,6005,Insurance,PnL,4261.19,0.0,Acme Manufacturing Co.,CORP,,2022-01,4261.19
+GL-00015,2022-01-01,6006,Marketing & Advertising,PnL,18148.92,0.0,Acme Manufacturing Co.,CORP,,2022-01,18148.92
+GL-00016,2022-01-01,6007,Professional Fees,PnL,11865.64,0.0,Acme Manufacturing Co.,CORP,,2022-01,11865.64
+GL-00017,2022-01-01,6008,IT & Software,PnL,6571.06,0.0,Acme Manufacturing Co.,CORP,,2022-01,6571.06
+GL-00018,2022-01-01,6009,Travel & Entertainment,PnL,5120.71,0.0,Acme Manufacturing Co.,CORP,,2022-01,5120.71
+GL-00019,2022-01-01,6010,Office Supplies,PnL,1756.74,0.0,Acme Manufacturing Co.,CORP,,2022-01,1756.74
+GL-00020,2022-01-01,6011,Telephone & Internet,PnL,2252.64,0.0,Acme Manufacturing Co.,CORP,,2022-01,2252.64
+GL-00021,2022-01-01,7001,Depreciation - Equipment,PnL,28489.03,0.0,Acme Manufacturing Co.,CORP,,2022-01,28489.03
+GL-00022,2022-01-01,7002,Amortisation - IP,PnL,5975.95,0.0,Acme Manufacturing Co.,CORP,,2022-01,5975.95
+GL-00023,2022-01-01,8001,Interest Expense,PnL,13788.68,0.0,Acme Manufacturing Co.,CORP,,2022-01,13788.68
+GL-00024,2022-01-01,8002,Income Tax Provision,PnL,36155.34,0.0,Acme Manufacturing Co.,CORP,,2022-01,36155.34
+GL-00025,2022-01-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2022-01,22000.0
+GL-00026,2022-02-01,4001,Product Sales - Domestic,PnL,0.0,823674.25,Acme Manufacturing Co.,CORP,,2022-02,-823674.25
+GL-00027,2022-02-01,4002,Product Sales - Export,PnL,0.0,116312.01,Acme Manufacturing Co.,CORP,,2022-02,-116312.01
+GL-00028,2022-02-01,4003,Service Revenue,PnL,0.0,45644.1,Acme Manufacturing Co.,CORP,,2022-02,-45644.1
+GL-00029,2022-02-01,4004,Shipping & Handling Income,PnL,0.0,11996.25,Acme Manufacturing Co.,CORP,,2022-02,-11996.25
+GL-00030,2022-02-01,5001,Raw Materials - Steel,PnL,283329.61,0.0,Acme Manufacturing Co.,CORP,,2022-02,283329.61
+GL-00031,2022-02-01,5002,Raw Materials - Plastics,PnL,55398.62,0.0,Acme Manufacturing Co.,CORP,,2022-02,55398.62
+GL-00032,2022-02-01,5003,Direct Labour,PnL,209083.87,0.0,Acme Manufacturing Co.,CORP,,2022-02,209083.87
+GL-00033,2022-02-01,5004,Manufacturing Overhead,PnL,97075.82,0.0,Acme Manufacturing Co.,CORP,,2022-02,97075.82
+GL-00034,2022-02-01,5005,Freight In,PnL,17751.17,0.0,Acme Manufacturing Co.,CORP,,2022-02,17751.17
+GL-00035,2022-02-01,6001,Management Salaries,PnL,119590.35,0.0,Acme Manufacturing Co.,CORP,,2022-02,119590.35
+GL-00036,2022-02-01,6002,Sales Team Salaries,PnL,65859.82,0.0,Acme Manufacturing Co.,CORP,,2022-02,65859.82
+GL-00037,2022-02-01,6003,Office Rent,PnL,22012.65,0.0,Acme Manufacturing Co.,CORP,,2022-02,22012.65
+GL-00038,2022-02-01,6004,Utilities,PnL,8628.91,0.0,Acme Manufacturing Co.,CORP,,2022-02,8628.91
+GL-00039,2022-02-01,6005,Insurance,PnL,4192.04,0.0,Acme Manufacturing Co.,CORP,,2022-02,4192.04
+GL-00040,2022-02-01,6006,Marketing & Advertising,PnL,18103.29,0.0,Acme Manufacturing Co.,CORP,,2022-02,18103.29
+GL-00041,2022-02-01,6007,Professional Fees,PnL,11594.56,0.0,Acme Manufacturing Co.,CORP,,2022-02,11594.56
+GL-00042,2022-02-01,6008,IT & Software,PnL,6351.39,0.0,Acme Manufacturing Co.,CORP,,2022-02,6351.39
+GL-00043,2022-02-01,6009,Travel & Entertainment,PnL,4904.14,0.0,Acme Manufacturing Co.,CORP,,2022-02,4904.14
+GL-00044,2022-02-01,6010,Office Supplies,PnL,1742.85,0.0,Acme Manufacturing Co.,CORP,,2022-02,1742.85
+GL-00045,2022-02-01,6011,Telephone & Internet,PnL,2150.35,0.0,Acme Manufacturing Co.,CORP,,2022-02,2150.35
+GL-00046,2022-02-01,7001,Depreciation - Equipment,PnL,27146.67,0.0,Acme Manufacturing Co.,CORP,,2022-02,27146.67
+GL-00047,2022-02-01,7002,Amortisation - IP,PnL,5880.85,0.0,Acme Manufacturing Co.,CORP,,2022-02,5880.85
+GL-00048,2022-02-01,8001,Interest Expense,PnL,14022.47,0.0,Acme Manufacturing Co.,CORP,,2022-02,14022.47
+GL-00049,2022-02-01,8002,Income Tax Provision,PnL,34487.38,0.0,Acme Manufacturing Co.,CORP,,2022-02,34487.38
+GL-00050,2022-02-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2022-02,22000.0
+GL-00051,2022-03-01,4001,Product Sales - Domestic,PnL,0.0,830771.01,Acme Manufacturing Co.,CORP,,2022-03,-830771.01
+GL-00052,2022-03-01,4002,Product Sales - Export,PnL,0.0,117699.11,Acme Manufacturing Co.,CORP,,2022-03,-117699.11
+GL-00053,2022-03-01,4003,Service Revenue,PnL,0.0,45945.29,Acme Manufacturing Co.,CORP,,2022-03,-45945.29
+GL-00054,2022-03-01,4004,Shipping & Handling Income,PnL,0.0,12044.27,Acme Manufacturing Co.,CORP,,2022-03,-12044.27
+GL-00055,2022-03-01,5001,Raw Materials - Steel,PnL,280379.43,0.0,Acme Manufacturing Co.,CORP,,2022-03,280379.43
+GL-00056,2022-03-01,5002,Raw Materials - Plastics,PnL,53629.16,0.0,Acme Manufacturing Co.,CORP,,2022-03,53629.16
+GL-00057,2022-03-01,5003,Direct Labour,PnL,211796.52,0.0,Acme Manufacturing Co.,CORP,,2022-03,211796.52
+GL-00058,2022-03-01,5004,Manufacturing Overhead,PnL,92588.08,0.0,Acme Manufacturing Co.,CORP,,2022-03,92588.08
+GL-00059,2022-03-01,5005,Freight In,PnL,17776.34,0.0,Acme Manufacturing Co.,CORP,,2022-03,17776.34
+GL-00060,2022-03-01,6001,Management Salaries,PnL,122901.44,0.0,Acme Manufacturing Co.,CORP,,2022-03,122901.44
+GL-00061,2022-03-01,6002,Sales Team Salaries,PnL,65208.47,0.0,Acme Manufacturing Co.,CORP,,2022-03,65208.47
+GL-00062,2022-03-01,6003,Office Rent,PnL,21960.93,0.0,Acme Manufacturing Co.,CORP,,2022-03,21960.93
+GL-00063,2022-03-01,6004,Utilities,PnL,8550.01,0.0,Acme Manufacturing Co.,CORP,,2022-03,8550.01
+GL-00064,2022-03-01,6005,Insurance,PnL,4264.59,0.0,Acme Manufacturing Co.,CORP,,2022-03,4264.59
+GL-00065,2022-03-01,6006,Marketing & Advertising,PnL,18204.61,0.0,Acme Manufacturing Co.,CORP,,2022-03,18204.61
+GL-00066,2022-03-01,6007,Professional Fees,PnL,11742.6,0.0,Acme Manufacturing Co.,CORP,,2022-03,11742.6
+GL-00067,2022-03-01,6008,IT & Software,PnL,6283.77,0.0,Acme Manufacturing Co.,CORP,,2022-03,6283.77
+GL-00068,2022-03-01,6009,Travel & Entertainment,PnL,4918.67,0.0,Acme Manufacturing Co.,CORP,,2022-03,4918.67
+GL-00069,2022-03-01,6010,Office Supplies,PnL,1765.57,0.0,Acme Manufacturing Co.,CORP,,2022-03,1765.57
+GL-00070,2022-03-01,6011,Telephone & Internet,PnL,2150.43,0.0,Acme Manufacturing Co.,CORP,,2022-03,2150.43
+GL-00071,2022-03-01,7001,Depreciation - Equipment,PnL,28598.69,0.0,Acme Manufacturing Co.,CORP,,2022-03,28598.69
+GL-00072,2022-03-01,7002,Amortisation - IP,PnL,6104.34,0.0,Acme Manufacturing Co.,CORP,,2022-03,6104.34
+GL-00073,2022-03-01,8001,Interest Expense,PnL,13771.63,0.0,Acme Manufacturing Co.,CORP,,2022-03,13771.63
+GL-00074,2022-03-01,8002,Income Tax Provision,PnL,35144.67,0.0,Acme Manufacturing Co.,CORP,,2022-03,35144.67
+GL-00075,2022-03-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2022-03,22000.0
+GL-00076,2022-04-01,4001,Product Sales - Domestic,PnL,0.0,867593.41,Acme Manufacturing Co.,CORP,,2022-04,-867593.41
+GL-00077,2022-04-01,4002,Product Sales - Export,PnL,0.0,119202.77,Acme Manufacturing Co.,CORP,,2022-04,-119202.77
+GL-00078,2022-04-01,4003,Service Revenue,PnL,0.0,44177.31,Acme Manufacturing Co.,CORP,,2022-04,-44177.31
+GL-00079,2022-04-01,4004,Shipping & Handling Income,PnL,0.0,11767.48,Acme Manufacturing Co.,CORP,,2022-04,-11767.48
+GL-00080,2022-04-01,5001,Raw Materials - Steel,PnL,279862.06,0.0,Acme Manufacturing Co.,CORP,,2022-04,279862.06
+GL-00081,2022-04-01,5002,Raw Materials - Plastics,PnL,53987.44,0.0,Acme Manufacturing Co.,CORP,,2022-04,53987.44
+GL-00082,2022-04-01,5003,Direct Labour,PnL,210189.09,0.0,Acme Manufacturing Co.,CORP,,2022-04,210189.09
+GL-00083,2022-04-01,5004,Manufacturing Overhead,PnL,96870.99,0.0,Acme Manufacturing Co.,CORP,,2022-04,96870.99
+GL-00084,2022-04-01,5005,Freight In,PnL,17816.21,0.0,Acme Manufacturing Co.,CORP,,2022-04,17816.21
+GL-00085,2022-04-01,6001,Management Salaries,PnL,117478.14,0.0,Acme Manufacturing Co.,CORP,,2022-04,117478.14
+GL-00086,2022-04-01,6002,Sales Team Salaries,PnL,66669.04,0.0,Acme Manufacturing Co.,CORP,,2022-04,66669.04
+GL-00087,2022-04-01,6003,Office Rent,PnL,21920.73,0.0,Acme Manufacturing Co.,CORP,,2022-04,21920.73
+GL-00088,2022-04-01,6004,Utilities,PnL,8255.88,0.0,Acme Manufacturing Co.,CORP,,2022-04,8255.88
+GL-00089,2022-04-01,6005,Insurance,PnL,4068.34,0.0,Acme Manufacturing Co.,CORP,,2022-04,4068.34
+GL-00090,2022-04-01,6006,Marketing & Advertising,PnL,17503.28,0.0,Acme Manufacturing Co.,CORP,,2022-04,17503.28
+GL-00091,2022-04-01,6007,Professional Fees,PnL,12041.66,0.0,Acme Manufacturing Co.,CORP,,2022-04,12041.66
+GL-00092,2022-04-01,6008,IT & Software,PnL,6586.78,0.0,Acme Manufacturing Co.,CORP,,2022-04,6586.78
+GL-00093,2022-04-01,6009,Travel & Entertainment,PnL,4955.77,0.0,Acme Manufacturing Co.,CORP,,2022-04,4955.77
+GL-00094,2022-04-01,6010,Office Supplies,PnL,1745.35,0.0,Acme Manufacturing Co.,CORP,,2022-04,1745.35
+GL-00095,2022-04-01,6011,Telephone & Internet,PnL,2175.19,0.0,Acme Manufacturing Co.,CORP,,2022-04,2175.19
+GL-00096,2022-04-01,7001,Depreciation - Equipment,PnL,28716.59,0.0,Acme Manufacturing Co.,CORP,,2022-04,28716.59
+GL-00097,2022-04-01,7002,Amortisation - IP,PnL,5985.43,0.0,Acme Manufacturing Co.,CORP,,2022-04,5985.43
+GL-00098,2022-04-01,8001,Interest Expense,PnL,14337.26,0.0,Acme Manufacturing Co.,CORP,,2022-04,14337.26
+GL-00099,2022-04-01,8002,Income Tax Provision,PnL,35611.52,0.0,Acme Manufacturing Co.,CORP,,2022-04,35611.52
+GL-00100,2022-04-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2022-04,22000.0
+GL-00101,2022-05-01,4001,Product Sales - Domestic,PnL,0.0,844647.17,Acme Manufacturing Co.,CORP,,2022-05,-844647.17
+GL-00102,2022-05-01,4002,Product Sales - Export,PnL,0.0,118963.42,Acme Manufacturing Co.,CORP,,2022-05,-118963.42
+GL-00103,2022-05-01,4003,Service Revenue,PnL,0.0,44220.49,Acme Manufacturing Co.,CORP,,2022-05,-44220.49
+GL-00104,2022-05-01,4004,Shipping & Handling Income,PnL,0.0,11597.63,Acme Manufacturing Co.,CORP,,2022-05,-11597.63
+GL-00105,2022-05-01,5001,Raw Materials - Steel,PnL,276896.75,0.0,Acme Manufacturing Co.,CORP,,2022-05,276896.75
+GL-00106,2022-05-01,5002,Raw Materials - Plastics,PnL,52643.38,0.0,Acme Manufacturing Co.,CORP,,2022-05,52643.38
+GL-00107,2022-05-01,5003,Direct Labour,PnL,205074.48,0.0,Acme Manufacturing Co.,CORP,,2022-05,205074.48
+GL-00108,2022-05-01,5004,Manufacturing Overhead,PnL,92879.85,0.0,Acme Manufacturing Co.,CORP,,2022-05,92879.85
+GL-00109,2022-05-01,5005,Freight In,PnL,18138.39,0.0,Acme Manufacturing Co.,CORP,,2022-05,18138.39
+GL-00110,2022-05-01,6001,Management Salaries,PnL,120361.25,0.0,Acme Manufacturing Co.,CORP,,2022-05,120361.25
+GL-00111,2022-05-01,6002,Sales Team Salaries,PnL,62807.07,0.0,Acme Manufacturing Co.,CORP,,2022-05,62807.07
+GL-00112,2022-05-01,6003,Office Rent,PnL,21570.88,0.0,Acme Manufacturing Co.,CORP,,2022-05,21570.88
+GL-00113,2022-05-01,6004,Utilities,PnL,8170.02,0.0,Acme Manufacturing Co.,CORP,,2022-05,8170.02
+GL-00114,2022-05-01,6005,Insurance,PnL,4221.91,0.0,Acme Manufacturing Co.,CORP,,2022-05,4221.91
+GL-00115,2022-05-01,6006,Marketing & Advertising,PnL,18048.43,0.0,Acme Manufacturing Co.,CORP,,2022-05,18048.43
+GL-00116,2022-05-01,6007,Professional Fees,PnL,11620.39,0.0,Acme Manufacturing Co.,CORP,,2022-05,11620.39
+GL-00117,2022-05-01,6008,IT & Software,PnL,6427.18,0.0,Acme Manufacturing Co.,CORP,,2022-05,6427.18
+GL-00118,2022-05-01,6009,Travel & Entertainment,PnL,4934.99,0.0,Acme Manufacturing Co.,CORP,,2022-05,4934.99
+GL-00119,2022-05-01,6010,Office Supplies,PnL,1727.33,0.0,Acme Manufacturing Co.,CORP,,2022-05,1727.33
+GL-00120,2022-05-01,6011,Telephone & Internet,PnL,2191.66,0.0,Acme Manufacturing Co.,CORP,,2022-05,2191.66
+GL-00121,2022-05-01,7001,Depreciation - Equipment,PnL,27519.02,0.0,Acme Manufacturing Co.,CORP,,2022-05,27519.02
+GL-00122,2022-05-01,7002,Amortisation - IP,PnL,5983.06,0.0,Acme Manufacturing Co.,CORP,,2022-05,5983.06
+GL-00123,2022-05-01,8001,Interest Expense,PnL,13751.93,0.0,Acme Manufacturing Co.,CORP,,2022-05,13751.93
+GL-00124,2022-05-01,8002,Income Tax Provision,PnL,33267.27,0.0,Acme Manufacturing Co.,CORP,,2022-05,33267.27
+GL-00125,2022-05-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2022-05,22000.0
+GL-00126,2022-06-01,4001,Product Sales - Domestic,PnL,0.0,819514.62,Acme Manufacturing Co.,CORP,,2022-06,-819514.62
+GL-00127,2022-06-01,4002,Product Sales - Export,PnL,0.0,122245.46,Acme Manufacturing Co.,CORP,,2022-06,-122245.46
+GL-00128,2022-06-01,4003,Service Revenue,PnL,0.0,45706.03,Acme Manufacturing Co.,CORP,,2022-06,-45706.03
+GL-00129,2022-06-01,4004,Shipping & Handling Income,PnL,0.0,12154.39,Acme Manufacturing Co.,CORP,,2022-06,-12154.39
+GL-00130,2022-06-01,5001,Raw Materials - Steel,PnL,274796.79,0.0,Acme Manufacturing Co.,CORP,,2022-06,274796.79
+GL-00131,2022-06-01,5002,Raw Materials - Plastics,PnL,53154.3,0.0,Acme Manufacturing Co.,CORP,,2022-06,53154.3
+GL-00132,2022-06-01,5003,Direct Labour,PnL,213285.83,0.0,Acme Manufacturing Co.,CORP,,2022-06,213285.83
+GL-00133,2022-06-01,5004,Manufacturing Overhead,PnL,96879.4,0.0,Acme Manufacturing Co.,CORP,,2022-06,96879.4
+GL-00134,2022-06-01,5005,Freight In,PnL,17425.9,0.0,Acme Manufacturing Co.,CORP,,2022-06,17425.9
+GL-00135,2022-06-01,6001,Management Salaries,PnL,119055.08,0.0,Acme Manufacturing Co.,CORP,,2022-06,119055.08
+GL-00136,2022-06-01,6002,Sales Team Salaries,PnL,62862.73,0.0,Acme Manufacturing Co.,CORP,,2022-06,62862.73
+GL-00137,2022-06-01,6003,Office Rent,PnL,22189.25,0.0,Acme Manufacturing Co.,CORP,,2022-06,22189.25
+GL-00138,2022-06-01,6004,Utilities,PnL,8575.79,0.0,Acme Manufacturing Co.,CORP,,2022-06,8575.79
+GL-00139,2022-06-01,6005,Insurance,PnL,4076.81,0.0,Acme Manufacturing Co.,CORP,,2022-06,4076.81
+GL-00140,2022-06-01,6006,Marketing & Advertising,PnL,17846.7,0.0,Acme Manufacturing Co.,CORP,,2022-06,17846.7
+GL-00141,2022-06-01,6007,Professional Fees,PnL,11951.45,0.0,Acme Manufacturing Co.,CORP,,2022-06,11951.45
+GL-00142,2022-06-01,6008,IT & Software,PnL,6362.65,0.0,Acme Manufacturing Co.,CORP,,2022-06,6362.65
+GL-00143,2022-06-01,6009,Travel & Entertainment,PnL,5076.56,0.0,Acme Manufacturing Co.,CORP,,2022-06,5076.56
+GL-00144,2022-06-01,6010,Office Supplies,PnL,1779.04,0.0,Acme Manufacturing Co.,CORP,,2022-06,1779.04
+GL-00145,2022-06-01,6011,Telephone & Internet,PnL,2146.48,0.0,Acme Manufacturing Co.,CORP,,2022-06,2146.48
+GL-00146,2022-06-01,7001,Depreciation - Equipment,PnL,27869.07,0.0,Acme Manufacturing Co.,CORP,,2022-06,27869.07
+GL-00147,2022-06-01,7002,Amortisation - IP,PnL,6040.57,0.0,Acme Manufacturing Co.,CORP,,2022-06,6040.57
+GL-00148,2022-06-01,8001,Interest Expense,PnL,13650.49,0.0,Acme Manufacturing Co.,CORP,,2022-06,13650.49
+GL-00149,2022-06-01,8002,Income Tax Provision,PnL,34358.42,0.0,Acme Manufacturing Co.,CORP,,2022-06,34358.42
+GL-00150,2022-06-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2022-06,22000.0
+GL-00151,2022-07-01,4001,Product Sales - Domestic,PnL,0.0,874478.86,Acme Manufacturing Co.,CORP,,2022-07,-874478.86
+GL-00152,2022-07-01,4002,Product Sales - Export,PnL,0.0,121931.04,Acme Manufacturing Co.,CORP,,2022-07,-121931.04
+GL-00153,2022-07-01,4003,Service Revenue,PnL,0.0,45938.72,Acme Manufacturing Co.,CORP,,2022-07,-45938.72
+GL-00154,2022-07-01,4004,Shipping & Handling Income,PnL,0.0,11964.79,Acme Manufacturing Co.,CORP,,2022-07,-11964.79
+GL-00155,2022-07-01,5001,Raw Materials - Steel,PnL,280920.59,0.0,Acme Manufacturing Co.,CORP,,2022-07,280920.59
+GL-00156,2022-07-01,5002,Raw Materials - Plastics,PnL,55555.01,0.0,Acme Manufacturing Co.,CORP,,2022-07,55555.01
+GL-00157,2022-07-01,5003,Direct Labour,PnL,215271.94,0.0,Acme Manufacturing Co.,CORP,,2022-07,215271.94
+GL-00158,2022-07-01,5004,Manufacturing Overhead,PnL,95343.22,0.0,Acme Manufacturing Co.,CORP,,2022-07,95343.22
+GL-00159,2022-07-01,5005,Freight In,PnL,18054.34,0.0,Acme Manufacturing Co.,CORP,,2022-07,18054.34
+GL-00160,2022-07-01,6001,Management Salaries,PnL,119287.87,0.0,Acme Manufacturing Co.,CORP,,2022-07,119287.87
+GL-00161,2022-07-01,6002,Sales Team Salaries,PnL,66798.69,0.0,Acme Manufacturing Co.,CORP,,2022-07,66798.69
+GL-00162,2022-07-01,6003,Office Rent,PnL,22077.93,0.0,Acme Manufacturing Co.,CORP,,2022-07,22077.93
+GL-00163,2022-07-01,6004,Utilities,PnL,8875.11,0.0,Acme Manufacturing Co.,CORP,,2022-07,8875.11
+GL-00164,2022-07-01,6005,Insurance,PnL,4373.81,0.0,Acme Manufacturing Co.,CORP,,2022-07,4373.81
+GL-00165,2022-07-01,6006,Marketing & Advertising,PnL,17893.03,0.0,Acme Manufacturing Co.,CORP,,2022-07,17893.03
+GL-00166,2022-07-01,6007,Professional Fees,PnL,12049.04,0.0,Acme Manufacturing Co.,CORP,,2022-07,12049.04
+GL-00167,2022-07-01,6008,IT & Software,PnL,6694.64,0.0,Acme Manufacturing Co.,CORP,,2022-07,6694.64
+GL-00168,2022-07-01,6009,Travel & Entertainment,PnL,5013.3,0.0,Acme Manufacturing Co.,CORP,,2022-07,5013.3
+GL-00169,2022-07-01,6010,Office Supplies,PnL,1795.94,0.0,Acme Manufacturing Co.,CORP,,2022-07,1795.94
+GL-00170,2022-07-01,6011,Telephone & Internet,PnL,2301.06,0.0,Acme Manufacturing Co.,CORP,,2022-07,2301.06
+GL-00171,2022-07-01,7001,Depreciation - Equipment,PnL,28673.92,0.0,Acme Manufacturing Co.,CORP,,2022-07,28673.92
+GL-00172,2022-07-01,7002,Amortisation - IP,PnL,6109.0,0.0,Acme Manufacturing Co.,CORP,,2022-07,6109.0
+GL-00173,2022-07-01,8001,Interest Expense,PnL,14516.36,0.0,Acme Manufacturing Co.,CORP,,2022-07,14516.36
+GL-00174,2022-07-01,8002,Income Tax Provision,PnL,36338.95,0.0,Acme Manufacturing Co.,CORP,,2022-07,36338.95
+GL-00175,2022-07-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2022-07,22000.0
+GL-00176,2022-08-01,4001,Product Sales - Domestic,PnL,0.0,818917.41,Acme Manufacturing Co.,CORP,,2022-08,-818917.41
+GL-00177,2022-08-01,4002,Product Sales - Export,PnL,0.0,118017.54,Acme Manufacturing Co.,CORP,,2022-08,-118017.54
+GL-00178,2022-08-01,4003,Service Revenue,PnL,0.0,44236.4,Acme Manufacturing Co.,CORP,,2022-08,-44236.4
+GL-00179,2022-08-01,4004,Shipping & Handling Income,PnL,0.0,11827.65,Acme Manufacturing Co.,CORP,,2022-08,-11827.65
+GL-00180,2022-08-01,5001,Raw Materials - Steel,PnL,280381.07,0.0,Acme Manufacturing Co.,CORP,,2022-08,280381.07
+GL-00181,2022-08-01,5002,Raw Materials - Plastics,PnL,54891.0,0.0,Acme Manufacturing Co.,CORP,,2022-08,54891.0
+GL-00182,2022-08-01,5003,Direct Labour,PnL,213499.92,0.0,Acme Manufacturing Co.,CORP,,2022-08,213499.92
+GL-00183,2022-08-01,5004,Manufacturing Overhead,PnL,91534.54,0.0,Acme Manufacturing Co.,CORP,,2022-08,91534.54
+GL-00184,2022-08-01,5005,Freight In,PnL,17671.93,0.0,Acme Manufacturing Co.,CORP,,2022-08,17671.93
+GL-00185,2022-08-01,6001,Management Salaries,PnL,117356.95,0.0,Acme Manufacturing Co.,CORP,,2022-08,117356.95
+GL-00186,2022-08-01,6002,Sales Team Salaries,PnL,65605.59,0.0,Acme Manufacturing Co.,CORP,,2022-08,65605.59
+GL-00187,2022-08-01,6003,Office Rent,PnL,21395.79,0.0,Acme Manufacturing Co.,CORP,,2022-08,21395.79
+GL-00188,2022-08-01,6004,Utilities,PnL,8236.75,0.0,Acme Manufacturing Co.,CORP,,2022-08,8236.75
+GL-00189,2022-08-01,6005,Insurance,PnL,4135.04,0.0,Acme Manufacturing Co.,CORP,,2022-08,4135.04
+GL-00190,2022-08-01,6006,Marketing & Advertising,PnL,17692.73,0.0,Acme Manufacturing Co.,CORP,,2022-08,17692.73
+GL-00191,2022-08-01,6007,Professional Fees,PnL,11691.95,0.0,Acme Manufacturing Co.,CORP,,2022-08,11691.95
+GL-00192,2022-08-01,6008,IT & Software,PnL,6321.93,0.0,Acme Manufacturing Co.,CORP,,2022-08,6321.93
+GL-00193,2022-08-01,6009,Travel & Entertainment,PnL,5065.06,0.0,Acme Manufacturing Co.,CORP,,2022-08,5065.06
+GL-00194,2022-08-01,6010,Office Supplies,PnL,1771.57,0.0,Acme Manufacturing Co.,CORP,,2022-08,1771.57
+GL-00195,2022-08-01,6011,Telephone & Internet,PnL,2220.45,0.0,Acme Manufacturing Co.,CORP,,2022-08,2220.45
+GL-00196,2022-08-01,7001,Depreciation - Equipment,PnL,27737.81,0.0,Acme Manufacturing Co.,CORP,,2022-08,27737.81
+GL-00197,2022-08-01,7002,Amortisation - IP,PnL,5763.91,0.0,Acme Manufacturing Co.,CORP,,2022-08,5763.91
+GL-00198,2022-08-01,8001,Interest Expense,PnL,14246.03,0.0,Acme Manufacturing Co.,CORP,,2022-08,14246.03
+GL-00199,2022-08-01,8002,Income Tax Provision,PnL,35272.23,0.0,Acme Manufacturing Co.,CORP,,2022-08,35272.23
+GL-00200,2022-08-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2022-08,22000.0
+GL-00201,2022-09-01,4001,Product Sales - Domestic,PnL,0.0,887690.59,Acme Manufacturing Co.,CORP,,2022-09,-887690.59
+GL-00202,2022-09-01,4002,Product Sales - Export,PnL,0.0,124761.79,Acme Manufacturing Co.,CORP,,2022-09,-124761.79
+GL-00203,2022-09-01,4003,Service Revenue,PnL,0.0,44943.23,Acme Manufacturing Co.,CORP,,2022-09,-44943.23
+GL-00204,2022-09-01,4004,Shipping & Handling Income,PnL,0.0,12214.78,Acme Manufacturing Co.,CORP,,2022-09,-12214.78
+GL-00205,2022-09-01,5001,Raw Materials - Steel,PnL,280443.71,0.0,Acme Manufacturing Co.,CORP,,2022-09,280443.71
+GL-00206,2022-09-01,5002,Raw Materials - Plastics,PnL,55705.22,0.0,Acme Manufacturing Co.,CORP,,2022-09,55705.22
+GL-00207,2022-09-01,5003,Direct Labour,PnL,208378.37,0.0,Acme Manufacturing Co.,CORP,,2022-09,208378.37
+GL-00208,2022-09-01,5004,Manufacturing Overhead,PnL,96092.33,0.0,Acme Manufacturing Co.,CORP,,2022-09,96092.33
+GL-00209,2022-09-01,5005,Freight In,PnL,18861.81,0.0,Acme Manufacturing Co.,CORP,,2022-09,18861.81
+GL-00210,2022-09-01,6001,Management Salaries,PnL,120560.64,0.0,Acme Manufacturing Co.,CORP,,2022-09,120560.64
+GL-00211,2022-09-01,6002,Sales Team Salaries,PnL,67327.27,0.0,Acme Manufacturing Co.,CORP,,2022-09,67327.27
+GL-00212,2022-09-01,6003,Office Rent,PnL,22353.33,0.0,Acme Manufacturing Co.,CORP,,2022-09,22353.33
+GL-00213,2022-09-01,6004,Utilities,PnL,8620.19,0.0,Acme Manufacturing Co.,CORP,,2022-09,8620.19
+GL-00214,2022-09-01,6005,Insurance,PnL,4394.04,0.0,Acme Manufacturing Co.,CORP,,2022-09,4394.04
+GL-00215,2022-09-01,6006,Marketing & Advertising,PnL,18872.73,0.0,Acme Manufacturing Co.,CORP,,2022-09,18872.73
+GL-00216,2022-09-01,6007,Professional Fees,PnL,12265.27,0.0,Acme Manufacturing Co.,CORP,,2022-09,12265.27
+GL-00217,2022-09-01,6008,IT & Software,PnL,6707.12,0.0,Acme Manufacturing Co.,CORP,,2022-09,6707.12
+GL-00218,2022-09-01,6009,Travel & Entertainment,PnL,4990.24,0.0,Acme Manufacturing Co.,CORP,,2022-09,4990.24
+GL-00219,2022-09-01,6010,Office Supplies,PnL,1811.81,0.0,Acme Manufacturing Co.,CORP,,2022-09,1811.81
+GL-00220,2022-09-01,6011,Telephone & Internet,PnL,2303.14,0.0,Acme Manufacturing Co.,CORP,,2022-09,2303.14
+GL-00221,2022-09-01,7001,Depreciation - Equipment,PnL,28658.3,0.0,Acme Manufacturing Co.,CORP,,2022-09,28658.3
+GL-00222,2022-09-01,7002,Amortisation - IP,PnL,6127.75,0.0,Acme Manufacturing Co.,CORP,,2022-09,6127.75
+GL-00223,2022-09-01,8001,Interest Expense,PnL,14470.94,0.0,Acme Manufacturing Co.,CORP,,2022-09,14470.94
+GL-00224,2022-09-01,8002,Income Tax Provision,PnL,34726.64,0.0,Acme Manufacturing Co.,CORP,,2022-09,34726.64
+GL-00225,2022-09-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2022-09,22000.0
+GL-00226,2022-10-01,4001,Product Sales - Domestic,PnL,0.0,980936.71,Acme Manufacturing Co.,CORP,,2022-10,-980936.71
+GL-00227,2022-10-01,4002,Product Sales - Export,PnL,0.0,122943.64,Acme Manufacturing Co.,CORP,,2022-10,-122943.64
+GL-00228,2022-10-01,4003,Service Revenue,PnL,0.0,44226.59,Acme Manufacturing Co.,CORP,,2022-10,-44226.59
+GL-00229,2022-10-01,4004,Shipping & Handling Income,PnL,0.0,12372.17,Acme Manufacturing Co.,CORP,,2022-10,-12372.17
+GL-00230,2022-10-01,5001,Raw Materials - Steel,PnL,273888.66,0.0,Acme Manufacturing Co.,CORP,,2022-10,273888.66
+GL-00231,2022-10-01,5002,Raw Materials - Plastics,PnL,54148.41,0.0,Acme Manufacturing Co.,CORP,,2022-10,54148.41
+GL-00232,2022-10-01,5003,Direct Labour,PnL,211904.53,0.0,Acme Manufacturing Co.,CORP,,2022-10,211904.53
+GL-00233,2022-10-01,5004,Manufacturing Overhead,PnL,96318.59,0.0,Acme Manufacturing Co.,CORP,,2022-10,96318.59
+GL-00234,2022-10-01,5005,Freight In,PnL,17774.63,0.0,Acme Manufacturing Co.,CORP,,2022-10,17774.63
+GL-00235,2022-10-01,6001,Management Salaries,PnL,117667.24,0.0,Acme Manufacturing Co.,CORP,,2022-10,117667.24
+GL-00236,2022-10-01,6002,Sales Team Salaries,PnL,66740.98,0.0,Acme Manufacturing Co.,CORP,,2022-10,66740.98
+GL-00237,2022-10-01,6003,Office Rent,PnL,21739.08,0.0,Acme Manufacturing Co.,CORP,,2022-10,21739.08
+GL-00238,2022-10-01,6004,Utilities,PnL,8576.83,0.0,Acme Manufacturing Co.,CORP,,2022-10,8576.83
+GL-00239,2022-10-01,6005,Insurance,PnL,4244.23,0.0,Acme Manufacturing Co.,CORP,,2022-10,4244.23
+GL-00240,2022-10-01,6006,Marketing & Advertising,PnL,17973.37,0.0,Acme Manufacturing Co.,CORP,,2022-10,17973.37
+GL-00241,2022-10-01,6007,Professional Fees,PnL,12100.65,0.0,Acme Manufacturing Co.,CORP,,2022-10,12100.65
+GL-00242,2022-10-01,6008,IT & Software,PnL,6530.77,0.0,Acme Manufacturing Co.,CORP,,2022-10,6530.77
+GL-00243,2022-10-01,6009,Travel & Entertainment,PnL,5147.25,0.0,Acme Manufacturing Co.,CORP,,2022-10,5147.25
+GL-00244,2022-10-01,6010,Office Supplies,PnL,1774.12,0.0,Acme Manufacturing Co.,CORP,,2022-10,1774.12
+GL-00245,2022-10-01,6011,Telephone & Internet,PnL,2235.94,0.0,Acme Manufacturing Co.,CORP,,2022-10,2235.94
+GL-00246,2022-10-01,7001,Depreciation - Equipment,PnL,27655.27,0.0,Acme Manufacturing Co.,CORP,,2022-10,27655.27
+GL-00247,2022-10-01,7002,Amortisation - IP,PnL,5982.69,0.0,Acme Manufacturing Co.,CORP,,2022-10,5982.69
+GL-00248,2022-10-01,8001,Interest Expense,PnL,14191.36,0.0,Acme Manufacturing Co.,CORP,,2022-10,14191.36
+GL-00249,2022-10-01,8002,Income Tax Provision,PnL,34697.84,0.0,Acme Manufacturing Co.,CORP,,2022-10,34697.84
+GL-00250,2022-10-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2022-10,22000.0
+GL-00251,2022-11-01,4001,Product Sales - Domestic,PnL,0.0,983157.62,Acme Manufacturing Co.,CORP,,2022-11,-983157.62
+GL-00252,2022-11-01,4002,Product Sales - Export,PnL,0.0,116039.96,Acme Manufacturing Co.,CORP,,2022-11,-116039.96
+GL-00253,2022-11-01,4003,Service Revenue,PnL,0.0,44556.49,Acme Manufacturing Co.,CORP,,2022-11,-44556.49
+GL-00254,2022-11-01,4004,Shipping & Handling Income,PnL,0.0,12270.65,Acme Manufacturing Co.,CORP,,2022-11,-12270.65
+GL-00255,2022-11-01,5001,Raw Materials - Steel,PnL,286275.6,0.0,Acme Manufacturing Co.,CORP,,2022-11,286275.6
+GL-00256,2022-11-01,5002,Raw Materials - Plastics,PnL,53187.35,0.0,Acme Manufacturing Co.,CORP,,2022-11,53187.35
+GL-00257,2022-11-01,5003,Direct Labour,PnL,204841.63,0.0,Acme Manufacturing Co.,CORP,,2022-11,204841.63
+GL-00258,2022-11-01,5004,Manufacturing Overhead,PnL,92963.12,0.0,Acme Manufacturing Co.,CORP,,2022-11,92963.12
+GL-00259,2022-11-01,5005,Freight In,PnL,18335.57,0.0,Acme Manufacturing Co.,CORP,,2022-11,18335.57
+GL-00260,2022-11-01,6001,Management Salaries,PnL,121859.87,0.0,Acme Manufacturing Co.,CORP,,2022-11,121859.87
+GL-00261,2022-11-01,6002,Sales Team Salaries,PnL,66001.21,0.0,Acme Manufacturing Co.,CORP,,2022-11,66001.21
+GL-00262,2022-11-01,6003,Office Rent,PnL,21666.01,0.0,Acme Manufacturing Co.,CORP,,2022-11,21666.01
+GL-00263,2022-11-01,6004,Utilities,PnL,8262.95,0.0,Acme Manufacturing Co.,CORP,,2022-11,8262.95
+GL-00264,2022-11-01,6005,Insurance,PnL,4253.22,0.0,Acme Manufacturing Co.,CORP,,2022-11,4253.22
+GL-00265,2022-11-01,6006,Marketing & Advertising,PnL,18087.47,0.0,Acme Manufacturing Co.,CORP,,2022-11,18087.47
+GL-00266,2022-11-01,6007,Professional Fees,PnL,11992.17,0.0,Acme Manufacturing Co.,CORP,,2022-11,11992.17
+GL-00267,2022-11-01,6008,IT & Software,PnL,6642.23,0.0,Acme Manufacturing Co.,CORP,,2022-11,6642.23
+GL-00268,2022-11-01,6009,Travel & Entertainment,PnL,5009.43,0.0,Acme Manufacturing Co.,CORP,,2022-11,5009.43
+GL-00269,2022-11-01,6010,Office Supplies,PnL,1733.61,0.0,Acme Manufacturing Co.,CORP,,2022-11,1733.61
+GL-00270,2022-11-01,6011,Telephone & Internet,PnL,2225.68,0.0,Acme Manufacturing Co.,CORP,,2022-11,2225.68
+GL-00271,2022-11-01,7001,Depreciation - Equipment,PnL,27457.07,0.0,Acme Manufacturing Co.,CORP,,2022-11,27457.07
+GL-00272,2022-11-01,7002,Amortisation - IP,PnL,6014.7,0.0,Acme Manufacturing Co.,CORP,,2022-11,6014.7
+GL-00273,2022-11-01,8001,Interest Expense,PnL,14265.76,0.0,Acme Manufacturing Co.,CORP,,2022-11,14265.76
+GL-00274,2022-11-01,8002,Income Tax Provision,PnL,33974.66,0.0,Acme Manufacturing Co.,CORP,,2022-11,33974.66
+GL-00275,2022-11-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2022-11,22000.0
+GL-00276,2022-12-01,4001,Product Sales - Domestic,PnL,0.0,942422.1,Acme Manufacturing Co.,CORP,,2022-12,-942422.1
+GL-00277,2022-12-01,4002,Product Sales - Export,PnL,0.0,118537.27,Acme Manufacturing Co.,CORP,,2022-12,-118537.27
+GL-00278,2022-12-01,4003,Service Revenue,PnL,0.0,43693.11,Acme Manufacturing Co.,CORP,,2022-12,-43693.11
+GL-00279,2022-12-01,4004,Shipping & Handling Income,PnL,0.0,11890.88,Acme Manufacturing Co.,CORP,,2022-12,-11890.88
+GL-00280,2022-12-01,5001,Raw Materials - Steel,PnL,279348.69,0.0,Acme Manufacturing Co.,CORP,,2022-12,279348.69
+GL-00281,2022-12-01,5002,Raw Materials - Plastics,PnL,53175.81,0.0,Acme Manufacturing Co.,CORP,,2022-12,53175.81
+GL-00282,2022-12-01,5003,Direct Labour,PnL,208461.0,0.0,Acme Manufacturing Co.,CORP,,2022-12,208461.0
+GL-00283,2022-12-01,5004,Manufacturing Overhead,PnL,92193.34,0.0,Acme Manufacturing Co.,CORP,,2022-12,92193.34
+GL-00284,2022-12-01,5005,Freight In,PnL,17710.72,0.0,Acme Manufacturing Co.,CORP,,2022-12,17710.72
+GL-00285,2022-12-01,6001,Management Salaries,PnL,121072.48,0.0,Acme Manufacturing Co.,CORP,,2022-12,121072.48
+GL-00286,2022-12-01,6002,Sales Team Salaries,PnL,65349.92,0.0,Acme Manufacturing Co.,CORP,,2022-12,65349.92
+GL-00287,2022-12-01,6003,Office Rent,PnL,21123.41,0.0,Acme Manufacturing Co.,CORP,,2022-12,21123.41
+GL-00288,2022-12-01,6004,Utilities,PnL,8330.27,0.0,Acme Manufacturing Co.,CORP,,2022-12,8330.27
+GL-00289,2022-12-01,6005,Insurance,PnL,4079.12,0.0,Acme Manufacturing Co.,CORP,,2022-12,4079.12
+GL-00290,2022-12-01,6006,Marketing & Advertising,PnL,17186.94,0.0,Acme Manufacturing Co.,CORP,,2022-12,17186.94
+GL-00291,2022-12-01,6007,Professional Fees,PnL,12010.61,0.0,Acme Manufacturing Co.,CORP,,2022-12,12010.61
+GL-00292,2022-12-01,6008,IT & Software,PnL,6453.49,0.0,Acme Manufacturing Co.,CORP,,2022-12,6453.49
+GL-00293,2022-12-01,6009,Travel & Entertainment,PnL,4851.67,0.0,Acme Manufacturing Co.,CORP,,2022-12,4851.67
+GL-00294,2022-12-01,6010,Office Supplies,PnL,1798.36,0.0,Acme Manufacturing Co.,CORP,,2022-12,1798.36
+GL-00295,2022-12-01,6011,Telephone & Internet,PnL,2172.98,0.0,Acme Manufacturing Co.,CORP,,2022-12,2172.98
+GL-00296,2022-12-01,7001,Depreciation - Equipment,PnL,27447.79,0.0,Acme Manufacturing Co.,CORP,,2022-12,27447.79
+GL-00297,2022-12-01,7002,Amortisation - IP,PnL,5731.18,0.0,Acme Manufacturing Co.,CORP,,2022-12,5731.18
+GL-00298,2022-12-01,8001,Interest Expense,PnL,13427.84,0.0,Acme Manufacturing Co.,CORP,,2022-12,13427.84
+GL-00299,2022-12-01,8002,Income Tax Provision,PnL,35266.12,0.0,Acme Manufacturing Co.,CORP,,2022-12,35266.12
+GL-00300,2022-12-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2022-12,22000.0
+GL-00301,2023-01-01,4001,Product Sales - Domestic,PnL,0.0,891558.68,Acme Manufacturing Co.,CORP,,2023-01,-891558.68
+GL-00302,2023-01-01,4002,Product Sales - Export,PnL,0.0,127947.94,Acme Manufacturing Co.,CORP,,2023-01,-127947.94
+GL-00303,2023-01-01,4003,Service Revenue,PnL,0.0,47299.85,Acme Manufacturing Co.,CORP,,2023-01,-47299.85
+GL-00304,2023-01-01,4004,Shipping & Handling Income,PnL,0.0,12300.51,Acme Manufacturing Co.,CORP,,2023-01,-12300.51
+GL-00305,2023-01-01,5001,Raw Materials - Steel,PnL,286665.08,0.0,Acme Manufacturing Co.,CORP,,2023-01,286665.08
+GL-00306,2023-01-01,5002,Raw Materials - Plastics,PnL,56905.9,0.0,Acme Manufacturing Co.,CORP,,2023-01,56905.9
+GL-00307,2023-01-01,5003,Direct Labour,PnL,224720.17,0.0,Acme Manufacturing Co.,CORP,,2023-01,224720.17
+GL-00308,2023-01-01,5004,Manufacturing Overhead,PnL,101072.83,0.0,Acme Manufacturing Co.,CORP,,2023-01,101072.83
+GL-00309,2023-01-01,5005,Freight In,PnL,19220.39,0.0,Acme Manufacturing Co.,CORP,,2023-01,19220.39
+GL-00310,2023-01-01,6001,Management Salaries,PnL,128411.11,0.0,Acme Manufacturing Co.,CORP,,2023-01,128411.11
+GL-00311,2023-01-01,6002,Sales Team Salaries,PnL,66869.51,0.0,Acme Manufacturing Co.,CORP,,2023-01,66869.51
+GL-00312,2023-01-01,6003,Office Rent,PnL,22684.84,0.0,Acme Manufacturing Co.,CORP,,2023-01,22684.84
+GL-00313,2023-01-01,6004,Utilities,PnL,8689.76,0.0,Acme Manufacturing Co.,CORP,,2023-01,8689.76
+GL-00314,2023-01-01,6005,Insurance,PnL,4464.45,0.0,Acme Manufacturing Co.,CORP,,2023-01,4464.45
+GL-00315,2023-01-01,6006,Marketing & Advertising,PnL,19245.69,0.0,Acme Manufacturing Co.,CORP,,2023-01,19245.69
+GL-00316,2023-01-01,6007,Professional Fees,PnL,12486.48,0.0,Acme Manufacturing Co.,CORP,,2023-01,12486.48
+GL-00317,2023-01-01,6008,IT & Software,PnL,6847.08,0.0,Acme Manufacturing Co.,CORP,,2023-01,6847.08
+GL-00318,2023-01-01,6009,Travel & Entertainment,PnL,5127.15,0.0,Acme Manufacturing Co.,CORP,,2023-01,5127.15
+GL-00319,2023-01-01,6010,Office Supplies,PnL,1929.51,0.0,Acme Manufacturing Co.,CORP,,2023-01,1929.51
+GL-00320,2023-01-01,6011,Telephone & Internet,PnL,2349.67,0.0,Acme Manufacturing Co.,CORP,,2023-01,2349.67
+GL-00321,2023-01-01,7001,Depreciation - Equipment,PnL,30092.43,0.0,Acme Manufacturing Co.,CORP,,2023-01,30092.43
+GL-00322,2023-01-01,7002,Amortisation - IP,PnL,6388.82,0.0,Acme Manufacturing Co.,CORP,,2023-01,6388.82
+GL-00323,2023-01-01,8001,Interest Expense,PnL,14966.59,0.0,Acme Manufacturing Co.,CORP,,2023-01,14966.59
+GL-00324,2023-01-01,8002,Income Tax Provision,PnL,35617.55,0.0,Acme Manufacturing Co.,CORP,,2023-01,35617.55
+GL-00325,2023-01-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2023-01,22000.0
+GL-00326,2023-02-01,4001,Product Sales - Domestic,PnL,0.0,874984.65,Acme Manufacturing Co.,CORP,,2023-02,-874984.65
+GL-00327,2023-02-01,4002,Product Sales - Export,PnL,0.0,127837.38,Acme Manufacturing Co.,CORP,,2023-02,-127837.38
+GL-00328,2023-02-01,4003,Service Revenue,PnL,0.0,47591.85,Acme Manufacturing Co.,CORP,,2023-02,-47591.85
+GL-00329,2023-02-01,4004,Shipping & Handling Income,PnL,0.0,12735.68,Acme Manufacturing Co.,CORP,,2023-02,-12735.68
+GL-00330,2023-02-01,5001,Raw Materials - Steel,PnL,296270.11,0.0,Acme Manufacturing Co.,CORP,,2023-02,296270.11
+GL-00331,2023-02-01,5002,Raw Materials - Plastics,PnL,56400.9,0.0,Acme Manufacturing Co.,CORP,,2023-02,56400.9
+GL-00332,2023-02-01,5003,Direct Labour,PnL,221908.06,0.0,Acme Manufacturing Co.,CORP,,2023-02,221908.06
+GL-00333,2023-02-01,5004,Manufacturing Overhead,PnL,96515.09,0.0,Acme Manufacturing Co.,CORP,,2023-02,96515.09
+GL-00334,2023-02-01,5005,Freight In,PnL,19112.27,0.0,Acme Manufacturing Co.,CORP,,2023-02,19112.27
+GL-00335,2023-02-01,6001,Management Salaries,PnL,127317.38,0.0,Acme Manufacturing Co.,CORP,,2023-02,127317.38
+GL-00336,2023-02-01,6002,Sales Team Salaries,PnL,66482.56,0.0,Acme Manufacturing Co.,CORP,,2023-02,66482.56
+GL-00337,2023-02-01,6003,Office Rent,PnL,23286.07,0.0,Acme Manufacturing Co.,CORP,,2023-02,23286.07
+GL-00338,2023-02-01,6004,Utilities,PnL,8815.19,0.0,Acme Manufacturing Co.,CORP,,2023-02,8815.19
+GL-00339,2023-02-01,6005,Insurance,PnL,4316.65,0.0,Acme Manufacturing Co.,CORP,,2023-02,4316.65
+GL-00340,2023-02-01,6006,Marketing & Advertising,PnL,19029.3,0.0,Acme Manufacturing Co.,CORP,,2023-02,19029.3
+GL-00341,2023-02-01,6007,Professional Fees,PnL,12277.42,0.0,Acme Manufacturing Co.,CORP,,2023-02,12277.42
+GL-00342,2023-02-01,6008,IT & Software,PnL,6570.74,0.0,Acme Manufacturing Co.,CORP,,2023-02,6570.74
+GL-00343,2023-02-01,6009,Travel & Entertainment,PnL,5105.25,0.0,Acme Manufacturing Co.,CORP,,2023-02,5105.25
+GL-00344,2023-02-01,6010,Office Supplies,PnL,1852.48,0.0,Acme Manufacturing Co.,CORP,,2023-02,1852.48
+GL-00345,2023-02-01,6011,Telephone & Internet,PnL,2334.91,0.0,Acme Manufacturing Co.,CORP,,2023-02,2334.91
+GL-00346,2023-02-01,7001,Depreciation - Equipment,PnL,29889.33,0.0,Acme Manufacturing Co.,CORP,,2023-02,29889.33
+GL-00347,2023-02-01,7002,Amortisation - IP,PnL,6157.26,0.0,Acme Manufacturing Co.,CORP,,2023-02,6157.26
+GL-00348,2023-02-01,8001,Interest Expense,PnL,14671.32,0.0,Acme Manufacturing Co.,CORP,,2023-02,14671.32
+GL-00349,2023-02-01,8002,Income Tax Provision,PnL,36170.51,0.0,Acme Manufacturing Co.,CORP,,2023-02,36170.51
+GL-00350,2023-02-01,6099,Legal Settlement - Vendor Dispute,PnL,285000.0,0.0,Acme Manufacturing Co.,CORP,ONE_TIME: Settlement of patent dispute with Supplier XYZ,2023-02,285000.0
+GL-00351,2023-02-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2023-02,22000.0
+GL-00352,2023-03-01,4001,Product Sales - Domestic,PnL,0.0,893706.09,Acme Manufacturing Co.,CORP,,2023-03,-893706.09
+GL-00353,2023-03-01,4002,Product Sales - Export,PnL,0.0,129072.03,Acme Manufacturing Co.,CORP,,2023-03,-129072.03
+GL-00354,2023-03-01,4003,Service Revenue,PnL,0.0,46177.49,Acme Manufacturing Co.,CORP,,2023-03,-46177.49
+GL-00355,2023-03-01,4004,Shipping & Handling Income,PnL,0.0,12929.64,Acme Manufacturing Co.,CORP,,2023-03,-12929.64
+GL-00356,2023-03-01,5001,Raw Materials - Steel,PnL,288388.82,0.0,Acme Manufacturing Co.,CORP,,2023-03,288388.82
+GL-00357,2023-03-01,5002,Raw Materials - Plastics,PnL,59234.89,0.0,Acme Manufacturing Co.,CORP,,2023-03,59234.89
+GL-00358,2023-03-01,5003,Direct Labour,PnL,217386.53,0.0,Acme Manufacturing Co.,CORP,,2023-03,217386.53
+GL-00359,2023-03-01,5004,Manufacturing Overhead,PnL,97446.26,0.0,Acme Manufacturing Co.,CORP,,2023-03,97446.26
+GL-00360,2023-03-01,5005,Freight In,PnL,18815.76,0.0,Acme Manufacturing Co.,CORP,,2023-03,18815.76
+GL-00361,2023-03-01,6001,Management Salaries,PnL,127555.04,0.0,Acme Manufacturing Co.,CORP,,2023-03,127555.04
+GL-00362,2023-03-01,6002,Sales Team Salaries,PnL,67474.33,0.0,Acme Manufacturing Co.,CORP,,2023-03,67474.33
+GL-00363,2023-03-01,6003,Office Rent,PnL,23223.61,0.0,Acme Manufacturing Co.,CORP,,2023-03,23223.61
+GL-00364,2023-03-01,6004,Utilities,PnL,8924.42,0.0,Acme Manufacturing Co.,CORP,,2023-03,8924.42
+GL-00365,2023-03-01,6005,Insurance,PnL,4377.9,0.0,Acme Manufacturing Co.,CORP,,2023-03,4377.9
+GL-00366,2023-03-01,6006,Marketing & Advertising,PnL,18969.14,0.0,Acme Manufacturing Co.,CORP,,2023-03,18969.14
+GL-00367,2023-03-01,6007,Professional Fees,PnL,12414.35,0.0,Acme Manufacturing Co.,CORP,,2023-03,12414.35
+GL-00368,2023-03-01,6008,IT & Software,PnL,6901.53,0.0,Acme Manufacturing Co.,CORP,,2023-03,6901.53
+GL-00369,2023-03-01,6009,Travel & Entertainment,PnL,5096.74,0.0,Acme Manufacturing Co.,CORP,,2023-03,5096.74
+GL-00370,2023-03-01,6010,Office Supplies,PnL,1934.6,0.0,Acme Manufacturing Co.,CORP,,2023-03,1934.6
+GL-00371,2023-03-01,6011,Telephone & Internet,PnL,2313.42,0.0,Acme Manufacturing Co.,CORP,,2023-03,2313.42
+GL-00372,2023-03-01,7001,Depreciation - Equipment,PnL,29747.53,0.0,Acme Manufacturing Co.,CORP,,2023-03,29747.53
+GL-00373,2023-03-01,7002,Amortisation - IP,PnL,6382.58,0.0,Acme Manufacturing Co.,CORP,,2023-03,6382.58
+GL-00374,2023-03-01,8001,Interest Expense,PnL,14832.77,0.0,Acme Manufacturing Co.,CORP,,2023-03,14832.77
+GL-00375,2023-03-01,8002,Income Tax Provision,PnL,36438.47,0.0,Acme Manufacturing Co.,CORP,,2023-03,36438.47
+GL-00376,2023-03-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2023-03,22000.0
+GL-00377,2023-04-01,4001,Product Sales - Domestic,PnL,0.0,869255.23,Acme Manufacturing Co.,CORP,,2023-04,-869255.23
+GL-00378,2023-04-01,4002,Product Sales - Export,PnL,0.0,120313.31,Acme Manufacturing Co.,CORP,,2023-04,-120313.31
+GL-00379,2023-04-01,4003,Service Revenue,PnL,0.0,45073.53,Acme Manufacturing Co.,CORP,,2023-04,-45073.53
+GL-00380,2023-04-01,4004,Shipping & Handling Income,PnL,0.0,12404.16,Acme Manufacturing Co.,CORP,,2023-04,-12404.16
+GL-00381,2023-04-01,5001,Raw Materials - Steel,PnL,287275.58,0.0,Acme Manufacturing Co.,CORP,,2023-04,287275.58
+GL-00382,2023-04-01,5002,Raw Materials - Plastics,PnL,55045.01,0.0,Acme Manufacturing Co.,CORP,,2023-04,55045.01
+GL-00383,2023-04-01,5003,Direct Labour,PnL,210284.77,0.0,Acme Manufacturing Co.,CORP,,2023-04,210284.77
+GL-00384,2023-04-01,5004,Manufacturing Overhead,PnL,95693.74,0.0,Acme Manufacturing Co.,CORP,,2023-04,95693.74
+GL-00385,2023-04-01,5005,Freight In,PnL,18124.97,0.0,Acme Manufacturing Co.,CORP,,2023-04,18124.97
+GL-00386,2023-04-01,6001,Management Salaries,PnL,120064.59,0.0,Acme Manufacturing Co.,CORP,,2023-04,120064.59
+GL-00387,2023-04-01,6002,Sales Team Salaries,PnL,64378.35,0.0,Acme Manufacturing Co.,CORP,,2023-04,64378.35
+GL-00388,2023-04-01,6003,Office Rent,PnL,22176.57,0.0,Acme Manufacturing Co.,CORP,,2023-04,22176.57
+GL-00389,2023-04-01,6004,Utilities,PnL,8833.38,0.0,Acme Manufacturing Co.,CORP,,2023-04,8833.38
+GL-00390,2023-04-01,6005,Insurance,PnL,4298.44,0.0,Acme Manufacturing Co.,CORP,,2023-04,4298.44
+GL-00391,2023-04-01,6006,Marketing & Advertising,PnL,18665.41,0.0,Acme Manufacturing Co.,CORP,,2023-04,18665.41
+GL-00392,2023-04-01,6007,Professional Fees,PnL,12236.76,0.0,Acme Manufacturing Co.,CORP,,2023-04,12236.76
+GL-00393,2023-04-01,6008,IT & Software,PnL,6505.56,0.0,Acme Manufacturing Co.,CORP,,2023-04,6505.56
+GL-00394,2023-04-01,6009,Travel & Entertainment,PnL,5078.38,0.0,Acme Manufacturing Co.,CORP,,2023-04,5078.38
+GL-00395,2023-04-01,6010,Office Supplies,PnL,1769.08,0.0,Acme Manufacturing Co.,CORP,,2023-04,1769.08
+GL-00396,2023-04-01,6011,Telephone & Internet,PnL,2200.03,0.0,Acme Manufacturing Co.,CORP,,2023-04,2200.03
+GL-00397,2023-04-01,7001,Depreciation - Equipment,PnL,28240.58,0.0,Acme Manufacturing Co.,CORP,,2023-04,28240.58
+GL-00398,2023-04-01,7002,Amortisation - IP,PnL,6105.59,0.0,Acme Manufacturing Co.,CORP,,2023-04,6105.59
+GL-00399,2023-04-01,8001,Interest Expense,PnL,14309.14,0.0,Acme Manufacturing Co.,CORP,,2023-04,14309.14
+GL-00400,2023-04-01,8002,Income Tax Provision,PnL,35374.44,0.0,Acme Manufacturing Co.,CORP,,2023-04,35374.44
+GL-00401,2023-04-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2023-04,22000.0
+GL-00402,2023-05-01,4001,Product Sales - Domestic,PnL,0.0,858932.2,Acme Manufacturing Co.,CORP,,2023-05,-858932.2
+GL-00403,2023-05-01,4002,Product Sales - Export,PnL,0.0,123129.31,Acme Manufacturing Co.,CORP,,2023-05,-123129.31
+GL-00404,2023-05-01,4003,Service Revenue,PnL,0.0,47329.08,Acme Manufacturing Co.,CORP,,2023-05,-47329.08
+GL-00405,2023-05-01,4004,Shipping & Handling Income,PnL,0.0,12545.37,Acme Manufacturing Co.,CORP,,2023-05,-12545.37
+GL-00406,2023-05-01,5001,Raw Materials - Steel,PnL,282203.01,0.0,Acme Manufacturing Co.,CORP,,2023-05,282203.01
+GL-00407,2023-05-01,5002,Raw Materials - Plastics,PnL,55152.58,0.0,Acme Manufacturing Co.,CORP,,2023-05,55152.58
+GL-00408,2023-05-01,5003,Direct Labour,PnL,216008.84,0.0,Acme Manufacturing Co.,CORP,,2023-05,216008.84
+GL-00409,2023-05-01,5004,Manufacturing Overhead,PnL,98387.97,0.0,Acme Manufacturing Co.,CORP,,2023-05,98387.97
+GL-00410,2023-05-01,5005,Freight In,PnL,18320.36,0.0,Acme Manufacturing Co.,CORP,,2023-05,18320.36
+GL-00411,2023-05-01,6001,Management Salaries,PnL,125615.02,0.0,Acme Manufacturing Co.,CORP,,2023-05,125615.02
+GL-00412,2023-05-01,6002,Sales Team Salaries,PnL,67779.05,0.0,Acme Manufacturing Co.,CORP,,2023-05,67779.05
+GL-00413,2023-05-01,6003,Office Rent,PnL,22837.19,0.0,Acme Manufacturing Co.,CORP,,2023-05,22837.19
+GL-00414,2023-05-01,6004,Utilities,PnL,8594.9,0.0,Acme Manufacturing Co.,CORP,,2023-05,8594.9
+GL-00415,2023-05-01,6005,Insurance,PnL,4240.46,0.0,Acme Manufacturing Co.,CORP,,2023-05,4240.46
+GL-00416,2023-05-01,6006,Marketing & Advertising,PnL,17984.73,0.0,Acme Manufacturing Co.,CORP,,2023-05,17984.73
+GL-00417,2023-05-01,6007,Professional Fees,PnL,12148.52,0.0,Acme Manufacturing Co.,CORP,,2023-05,12148.52
+GL-00418,2023-05-01,6008,IT & Software,PnL,6670.26,0.0,Acme Manufacturing Co.,CORP,,2023-05,6670.26
+GL-00419,2023-05-01,6009,Travel & Entertainment,PnL,5243.35,0.0,Acme Manufacturing Co.,CORP,,2023-05,5243.35
+GL-00420,2023-05-01,6010,Office Supplies,PnL,1803.7,0.0,Acme Manufacturing Co.,CORP,,2023-05,1803.7
+GL-00421,2023-05-01,6011,Telephone & Internet,PnL,2249.62,0.0,Acme Manufacturing Co.,CORP,,2023-05,2249.62
+GL-00422,2023-05-01,7001,Depreciation - Equipment,PnL,28993.22,0.0,Acme Manufacturing Co.,CORP,,2023-05,28993.22
+GL-00423,2023-05-01,7002,Amortisation - IP,PnL,6056.12,0.0,Acme Manufacturing Co.,CORP,,2023-05,6056.12
+GL-00424,2023-05-01,8001,Interest Expense,PnL,14552.55,0.0,Acme Manufacturing Co.,CORP,,2023-05,14552.55
+GL-00425,2023-05-01,8002,Income Tax Provision,PnL,35957.22,0.0,Acme Manufacturing Co.,CORP,,2023-05,35957.22
+GL-00426,2023-05-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2023-05,22000.0
+GL-00427,2023-06-01,4001,Product Sales - Domestic,PnL,0.0,874754.43,Acme Manufacturing Co.,CORP,,2023-06,-874754.43
+GL-00428,2023-06-01,4002,Product Sales - Export,PnL,0.0,118811.05,Acme Manufacturing Co.,CORP,,2023-06,-118811.05
+GL-00429,2023-06-01,4003,Service Revenue,PnL,0.0,46566.78,Acme Manufacturing Co.,CORP,,2023-06,-46566.78
+GL-00430,2023-06-01,4004,Shipping & Handling Income,PnL,0.0,12431.55,Acme Manufacturing Co.,CORP,,2023-06,-12431.55
+GL-00431,2023-06-01,5001,Raw Materials - Steel,PnL,278923.29,0.0,Acme Manufacturing Co.,CORP,,2023-06,278923.29
+GL-00432,2023-06-01,5002,Raw Materials - Plastics,PnL,55839.75,0.0,Acme Manufacturing Co.,CORP,,2023-06,55839.75
+GL-00433,2023-06-01,5003,Direct Labour,PnL,210065.64,0.0,Acme Manufacturing Co.,CORP,,2023-06,210065.64
+GL-00434,2023-06-01,5004,Manufacturing Overhead,PnL,99487.55,0.0,Acme Manufacturing Co.,CORP,,2023-06,99487.55
+GL-00435,2023-06-01,5005,Freight In,PnL,18375.06,0.0,Acme Manufacturing Co.,CORP,,2023-06,18375.06
+GL-00436,2023-06-01,6001,Management Salaries,PnL,119132.7,0.0,Acme Manufacturing Co.,CORP,,2023-06,119132.7
+GL-00437,2023-06-01,6002,Sales Team Salaries,PnL,65306.23,0.0,Acme Manufacturing Co.,CORP,,2023-06,65306.23
+GL-00438,2023-06-01,6003,Office Rent,PnL,22894.51,0.0,Acme Manufacturing Co.,CORP,,2023-06,22894.51
+GL-00439,2023-06-01,6004,Utilities,PnL,8645.75,0.0,Acme Manufacturing Co.,CORP,,2023-06,8645.75
+GL-00440,2023-06-01,6005,Insurance,PnL,4358.95,0.0,Acme Manufacturing Co.,CORP,,2023-06,4358.95
+GL-00441,2023-06-01,6006,Marketing & Advertising,PnL,18536.65,0.0,Acme Manufacturing Co.,CORP,,2023-06,18536.65
+GL-00442,2023-06-01,6007,Professional Fees,PnL,12588.4,0.0,Acme Manufacturing Co.,CORP,,2023-06,12588.4
+GL-00443,2023-06-01,6008,IT & Software,PnL,6665.66,0.0,Acme Manufacturing Co.,CORP,,2023-06,6665.66
+GL-00444,2023-06-01,6009,Travel & Entertainment,PnL,5233.81,0.0,Acme Manufacturing Co.,CORP,,2023-06,5233.81
+GL-00445,2023-06-01,6010,Office Supplies,PnL,1877.84,0.0,Acme Manufacturing Co.,CORP,,2023-06,1877.84
+GL-00446,2023-06-01,6011,Telephone & Internet,PnL,2258.34,0.0,Acme Manufacturing Co.,CORP,,2023-06,2258.34
+GL-00447,2023-06-01,7001,Depreciation - Equipment,PnL,28921.64,0.0,Acme Manufacturing Co.,CORP,,2023-06,28921.64
+GL-00448,2023-06-01,7002,Amortisation - IP,PnL,6120.28,0.0,Acme Manufacturing Co.,CORP,,2023-06,6120.28
+GL-00449,2023-06-01,8001,Interest Expense,PnL,14554.31,0.0,Acme Manufacturing Co.,CORP,,2023-06,14554.31
+GL-00450,2023-06-01,8002,Income Tax Provision,PnL,35792.11,0.0,Acme Manufacturing Co.,CORP,,2023-06,35792.11
+GL-00451,2023-06-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2023-06,22000.0
+GL-00452,2023-07-01,4001,Product Sales - Domestic,PnL,0.0,901431.5,Acme Manufacturing Co.,CORP,,2023-07,-901431.5
+GL-00453,2023-07-01,4002,Product Sales - Export,PnL,0.0,125324.25,Acme Manufacturing Co.,CORP,,2023-07,-125324.25
+GL-00454,2023-07-01,4003,Service Revenue,PnL,0.0,46414.79,Acme Manufacturing Co.,CORP,,2023-07,-46414.79
+GL-00455,2023-07-01,4004,Shipping & Handling Income,PnL,0.0,12368.67,Acme Manufacturing Co.,CORP,,2023-07,-12368.67
+GL-00456,2023-07-01,5001,Raw Materials - Steel,PnL,295161.44,0.0,Acme Manufacturing Co.,CORP,,2023-07,295161.44
+GL-00457,2023-07-01,5002,Raw Materials - Plastics,PnL,58401.04,0.0,Acme Manufacturing Co.,CORP,,2023-07,58401.04
+GL-00458,2023-07-01,5003,Direct Labour,PnL,219904.93,0.0,Acme Manufacturing Co.,CORP,,2023-07,219904.93
+GL-00459,2023-07-01,5004,Manufacturing Overhead,PnL,100081.86,0.0,Acme Manufacturing Co.,CORP,,2023-07,100081.86
+GL-00460,2023-07-01,5005,Freight In,PnL,18582.56,0.0,Acme Manufacturing Co.,CORP,,2023-07,18582.56
+GL-00461,2023-07-01,6001,Management Salaries,PnL,122464.48,0.0,Acme Manufacturing Co.,CORP,,2023-07,122464.48
+GL-00462,2023-07-01,6002,Sales Team Salaries,PnL,67147.08,0.0,Acme Manufacturing Co.,CORP,,2023-07,67147.08
+GL-00463,2023-07-01,6003,Office Rent,PnL,22708.21,0.0,Acme Manufacturing Co.,CORP,,2023-07,22708.21
+GL-00464,2023-07-01,6004,Utilities,PnL,8798.1,0.0,Acme Manufacturing Co.,CORP,,2023-07,8798.1
+GL-00465,2023-07-01,6005,Insurance,PnL,4402.85,0.0,Acme Manufacturing Co.,CORP,,2023-07,4402.85
+GL-00466,2023-07-01,6006,Marketing & Advertising,PnL,18435.43,0.0,Acme Manufacturing Co.,CORP,,2023-07,18435.43
+GL-00467,2023-07-01,6007,Professional Fees,PnL,12357.17,0.0,Acme Manufacturing Co.,CORP,,2023-07,12357.17
+GL-00468,2023-07-01,6008,IT & Software,PnL,6873.91,0.0,Acme Manufacturing Co.,CORP,,2023-07,6873.91
+GL-00469,2023-07-01,6009,Travel & Entertainment,PnL,5291.37,0.0,Acme Manufacturing Co.,CORP,,2023-07,5291.37
+GL-00470,2023-07-01,6010,Office Supplies,PnL,1835.54,0.0,Acme Manufacturing Co.,CORP,,2023-07,1835.54
+GL-00471,2023-07-01,6011,Telephone & Internet,PnL,2288.76,0.0,Acme Manufacturing Co.,CORP,,2023-07,2288.76
+GL-00472,2023-07-01,7001,Depreciation - Equipment,PnL,29356.46,0.0,Acme Manufacturing Co.,CORP,,2023-07,29356.46
+GL-00473,2023-07-01,7002,Amortisation - IP,PnL,6245.01,0.0,Acme Manufacturing Co.,CORP,,2023-07,6245.01
+GL-00474,2023-07-01,8001,Interest Expense,PnL,14396.18,0.0,Acme Manufacturing Co.,CORP,,2023-07,14396.18
+GL-00475,2023-07-01,8002,Income Tax Provision,PnL,36438.39,0.0,Acme Manufacturing Co.,CORP,,2023-07,36438.39
+GL-00476,2023-07-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2023-07,22000.0
+GL-00477,2023-08-01,4001,Product Sales - Domestic,PnL,0.0,893552.56,Acme Manufacturing Co.,CORP,,2023-08,-893552.56
+GL-00478,2023-08-01,4002,Product Sales - Export,PnL,0.0,126950.99,Acme Manufacturing Co.,CORP,,2023-08,-126950.99
+GL-00479,2023-08-01,4003,Service Revenue,PnL,0.0,48041.89,Acme Manufacturing Co.,CORP,,2023-08,-48041.89
+GL-00480,2023-08-01,4004,Shipping & Handling Income,PnL,0.0,12745.55,Acme Manufacturing Co.,CORP,,2023-08,-12745.55
+GL-00481,2023-08-01,5001,Raw Materials - Steel,PnL,290924.59,0.0,Acme Manufacturing Co.,CORP,,2023-08,290924.59
+GL-00482,2023-08-01,5002,Raw Materials - Plastics,PnL,55910.1,0.0,Acme Manufacturing Co.,CORP,,2023-08,55910.1
+GL-00483,2023-08-01,5003,Direct Labour,PnL,217832.8,0.0,Acme Manufacturing Co.,CORP,,2023-08,217832.8
+GL-00484,2023-08-01,5004,Manufacturing Overhead,PnL,100833.19,0.0,Acme Manufacturing Co.,CORP,,2023-08,100833.19
+GL-00485,2023-08-01,5005,Freight In,PnL,19213.21,0.0,Acme Manufacturing Co.,CORP,,2023-08,19213.21
+GL-00486,2023-08-01,6001,Management Salaries,PnL,128807.92,0.0,Acme Manufacturing Co.,CORP,,2023-08,128807.92
+GL-00487,2023-08-01,6002,Sales Team Salaries,PnL,67686.76,0.0,Acme Manufacturing Co.,CORP,,2023-08,67686.76
+GL-00488,2023-08-01,6003,Office Rent,PnL,23342.98,0.0,Acme Manufacturing Co.,CORP,,2023-08,23342.98
+GL-00489,2023-08-01,6004,Utilities,PnL,8916.17,0.0,Acme Manufacturing Co.,CORP,,2023-08,8916.17
+GL-00490,2023-08-01,6005,Insurance,PnL,4420.03,0.0,Acme Manufacturing Co.,CORP,,2023-08,4420.03
+GL-00491,2023-08-01,6006,Marketing & Advertising,PnL,18529.67,0.0,Acme Manufacturing Co.,CORP,,2023-08,18529.67
+GL-00492,2023-08-01,6007,Professional Fees,PnL,12352.31,0.0,Acme Manufacturing Co.,CORP,,2023-08,12352.31
+GL-00493,2023-08-01,6008,IT & Software,PnL,6775.23,0.0,Acme Manufacturing Co.,CORP,,2023-08,6775.23
+GL-00494,2023-08-01,6009,Travel & Entertainment,PnL,5089.68,0.0,Acme Manufacturing Co.,CORP,,2023-08,5089.68
+GL-00495,2023-08-01,6010,Office Supplies,PnL,1865.45,0.0,Acme Manufacturing Co.,CORP,,2023-08,1865.45
+GL-00496,2023-08-01,6011,Telephone & Internet,PnL,2325.27,0.0,Acme Manufacturing Co.,CORP,,2023-08,2325.27
+GL-00497,2023-08-01,7001,Depreciation - Equipment,PnL,29132.67,0.0,Acme Manufacturing Co.,CORP,,2023-08,29132.67
+GL-00498,2023-08-01,7002,Amortisation - IP,PnL,6156.58,0.0,Acme Manufacturing Co.,CORP,,2023-08,6156.58
+GL-00499,2023-08-01,8001,Interest Expense,PnL,14619.32,0.0,Acme Manufacturing Co.,CORP,,2023-08,14619.32
+GL-00500,2023-08-01,8002,Income Tax Provision,PnL,35834.79,0.0,Acme Manufacturing Co.,CORP,,2023-08,35834.79
+GL-00501,2023-08-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2023-08,22000.0
+GL-00502,2023-09-01,4001,Product Sales - Domestic,PnL,0.0,855532.03,Acme Manufacturing Co.,CORP,,2023-09,-855532.03
+GL-00503,2023-09-01,4002,Product Sales - Export,PnL,0.0,123423.78,Acme Manufacturing Co.,CORP,,2023-09,-123423.78
+GL-00504,2023-09-01,4003,Service Revenue,PnL,0.0,46743.92,Acme Manufacturing Co.,CORP,,2023-09,-46743.92
+GL-00505,2023-09-01,4004,Shipping & Handling Income,PnL,0.0,12078.2,Acme Manufacturing Co.,CORP,,2023-09,-12078.2
+GL-00506,2023-09-01,5001,Raw Materials - Steel,PnL,292167.47,0.0,Acme Manufacturing Co.,CORP,,2023-09,292167.47
+GL-00507,2023-09-01,5002,Raw Materials - Plastics,PnL,55716.77,0.0,Acme Manufacturing Co.,CORP,,2023-09,55716.77
+GL-00508,2023-09-01,5003,Direct Labour,PnL,216844.36,0.0,Acme Manufacturing Co.,CORP,,2023-09,216844.36
+GL-00509,2023-09-01,5004,Manufacturing Overhead,PnL,95751.2,0.0,Acme Manufacturing Co.,CORP,,2023-09,95751.2
+GL-00510,2023-09-01,5005,Freight In,PnL,18497.46,0.0,Acme Manufacturing Co.,CORP,,2023-09,18497.46
+GL-00511,2023-09-01,6001,Management Salaries,PnL,122110.79,0.0,Acme Manufacturing Co.,CORP,,2023-09,122110.79
+GL-00512,2023-09-01,6002,Sales Team Salaries,PnL,66592.57,0.0,Acme Manufacturing Co.,CORP,,2023-09,66592.57
+GL-00513,2023-09-01,6003,Office Rent,PnL,23112.41,0.0,Acme Manufacturing Co.,CORP,,2023-09,23112.41
+GL-00514,2023-09-01,6004,Utilities,PnL,8734.92,0.0,Acme Manufacturing Co.,CORP,,2023-09,8734.92
+GL-00515,2023-09-01,6005,Insurance,PnL,4410.05,0.0,Acme Manufacturing Co.,CORP,,2023-09,4410.05
+GL-00516,2023-09-01,6006,Marketing & Advertising,PnL,18986.5,0.0,Acme Manufacturing Co.,CORP,,2023-09,18986.5
+GL-00517,2023-09-01,6007,Professional Fees,PnL,12240.32,0.0,Acme Manufacturing Co.,CORP,,2023-09,12240.32
+GL-00518,2023-09-01,6008,IT & Software,PnL,6563.73,0.0,Acme Manufacturing Co.,CORP,,2023-09,6563.73
+GL-00519,2023-09-01,6009,Travel & Entertainment,PnL,5030.27,0.0,Acme Manufacturing Co.,CORP,,2023-09,5030.27
+GL-00520,2023-09-01,6010,Office Supplies,PnL,1867.06,0.0,Acme Manufacturing Co.,CORP,,2023-09,1867.06
+GL-00521,2023-09-01,6011,Telephone & Internet,PnL,2342.75,0.0,Acme Manufacturing Co.,CORP,,2023-09,2342.75
+GL-00522,2023-09-01,7001,Depreciation - Equipment,PnL,28724.86,0.0,Acme Manufacturing Co.,CORP,,2023-09,28724.86
+GL-00523,2023-09-01,7002,Amortisation - IP,PnL,6263.39,0.0,Acme Manufacturing Co.,CORP,,2023-09,6263.39
+GL-00524,2023-09-01,8001,Interest Expense,PnL,14724.7,0.0,Acme Manufacturing Co.,CORP,,2023-09,14724.7
+GL-00525,2023-09-01,8002,Income Tax Provision,PnL,36539.84,0.0,Acme Manufacturing Co.,CORP,,2023-09,36539.84
+GL-00526,2023-09-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2023-09,22000.0
+GL-00527,2023-10-01,4001,Product Sales - Domestic,PnL,0.0,1039695.72,Acme Manufacturing Co.,CORP,,2023-10,-1039695.72
+GL-00528,2023-10-01,4002,Product Sales - Export,PnL,0.0,122655.72,Acme Manufacturing Co.,CORP,,2023-10,-122655.72
+GL-00529,2023-10-01,4003,Service Revenue,PnL,0.0,45512.65,Acme Manufacturing Co.,CORP,,2023-10,-45512.65
+GL-00530,2023-10-01,4004,Shipping & Handling Income,PnL,0.0,12231.75,Acme Manufacturing Co.,CORP,,2023-10,-12231.75
+GL-00531,2023-10-01,5001,Raw Materials - Steel,PnL,284967.92,0.0,Acme Manufacturing Co.,CORP,,2023-10,284967.92
+GL-00532,2023-10-01,5002,Raw Materials - Plastics,PnL,57768.53,0.0,Acme Manufacturing Co.,CORP,,2023-10,57768.53
+GL-00533,2023-10-01,5003,Direct Labour,PnL,219241.58,0.0,Acme Manufacturing Co.,CORP,,2023-10,219241.58
+GL-00534,2023-10-01,5004,Manufacturing Overhead,PnL,97208.48,0.0,Acme Manufacturing Co.,CORP,,2023-10,97208.48
+GL-00535,2023-10-01,5005,Freight In,PnL,18938.47,0.0,Acme Manufacturing Co.,CORP,,2023-10,18938.47
+GL-00536,2023-10-01,6001,Management Salaries,PnL,126741.99,0.0,Acme Manufacturing Co.,CORP,,2023-10,126741.99
+GL-00537,2023-10-01,6002,Sales Team Salaries,PnL,66315.38,0.0,Acme Manufacturing Co.,CORP,,2023-10,66315.38
+GL-00538,2023-10-01,6003,Office Rent,PnL,23025.29,0.0,Acme Manufacturing Co.,CORP,,2023-10,23025.29
+GL-00539,2023-10-01,6004,Utilities,PnL,8967.88,0.0,Acme Manufacturing Co.,CORP,,2023-10,8967.88
+GL-00540,2023-10-01,6005,Insurance,PnL,4271.57,0.0,Acme Manufacturing Co.,CORP,,2023-10,4271.57
+GL-00541,2023-10-01,6006,Marketing & Advertising,PnL,19067.89,0.0,Acme Manufacturing Co.,CORP,,2023-10,19067.89
+GL-00542,2023-10-01,6007,Professional Fees,PnL,12816.63,0.0,Acme Manufacturing Co.,CORP,,2023-10,12816.63
+GL-00543,2023-10-01,6008,IT & Software,PnL,6608.26,0.0,Acme Manufacturing Co.,CORP,,2023-10,6608.26
+GL-00544,2023-10-01,6009,Travel & Entertainment,PnL,5058.55,0.0,Acme Manufacturing Co.,CORP,,2023-10,5058.55
+GL-00545,2023-10-01,6010,Office Supplies,PnL,1852.0,0.0,Acme Manufacturing Co.,CORP,,2023-10,1852.0
+GL-00546,2023-10-01,6011,Telephone & Internet,PnL,2311.78,0.0,Acme Manufacturing Co.,CORP,,2023-10,2311.78
+GL-00547,2023-10-01,7001,Depreciation - Equipment,PnL,29894.47,0.0,Acme Manufacturing Co.,CORP,,2023-10,29894.47
+GL-00548,2023-10-01,7002,Amortisation - IP,PnL,6203.81,0.0,Acme Manufacturing Co.,CORP,,2023-10,6203.81
+GL-00549,2023-10-01,8001,Interest Expense,PnL,14742.98,0.0,Acme Manufacturing Co.,CORP,,2023-10,14742.98
+GL-00550,2023-10-01,8002,Income Tax Provision,PnL,35515.52,0.0,Acme Manufacturing Co.,CORP,,2023-10,35515.52
+GL-00551,2023-10-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2023-10,22000.0
+GL-00552,2023-11-01,4001,Product Sales - Domestic,PnL,0.0,1020767.39,Acme Manufacturing Co.,CORP,,2023-11,-1020767.39
+GL-00553,2023-11-01,4002,Product Sales - Export,PnL,0.0,121648.64,Acme Manufacturing Co.,CORP,,2023-11,-121648.64
+GL-00554,2023-11-01,4003,Service Revenue,PnL,0.0,47428.8,Acme Manufacturing Co.,CORP,,2023-11,-47428.8
+GL-00555,2023-11-01,4004,Shipping & Handling Income,PnL,0.0,12703.71,Acme Manufacturing Co.,CORP,,2023-11,-12703.71
+GL-00556,2023-11-01,5001,Raw Materials - Steel,PnL,292221.8,0.0,Acme Manufacturing Co.,CORP,,2023-11,292221.8
+GL-00557,2023-11-01,5002,Raw Materials - Plastics,PnL,55818.83,0.0,Acme Manufacturing Co.,CORP,,2023-11,55818.83
+GL-00558,2023-11-01,5003,Direct Labour,PnL,223997.6,0.0,Acme Manufacturing Co.,CORP,,2023-11,223997.6
+GL-00559,2023-11-01,5004,Manufacturing Overhead,PnL,100185.36,0.0,Acme Manufacturing Co.,CORP,,2023-11,100185.36
+GL-00560,2023-11-01,5005,Freight In,PnL,18512.22,0.0,Acme Manufacturing Co.,CORP,,2023-11,18512.22
+GL-00561,2023-11-01,6001,Management Salaries,PnL,123999.27,0.0,Acme Manufacturing Co.,CORP,,2023-11,123999.27
+GL-00562,2023-11-01,6002,Sales Team Salaries,PnL,66940.82,0.0,Acme Manufacturing Co.,CORP,,2023-11,66940.82
+GL-00563,2023-11-01,6003,Office Rent,PnL,22835.61,0.0,Acme Manufacturing Co.,CORP,,2023-11,22835.61
+GL-00564,2023-11-01,6004,Utilities,PnL,8738.84,0.0,Acme Manufacturing Co.,CORP,,2023-11,8738.84
+GL-00565,2023-11-01,6005,Insurance,PnL,4446.12,0.0,Acme Manufacturing Co.,CORP,,2023-11,4446.12
+GL-00566,2023-11-01,6006,Marketing & Advertising,PnL,19025.36,0.0,Acme Manufacturing Co.,CORP,,2023-11,19025.36
+GL-00567,2023-11-01,6007,Professional Fees,PnL,12167.48,0.0,Acme Manufacturing Co.,CORP,,2023-11,12167.48
+GL-00568,2023-11-01,6008,IT & Software,PnL,6924.27,0.0,Acme Manufacturing Co.,CORP,,2023-11,6924.27
+GL-00569,2023-11-01,6009,Travel & Entertainment,PnL,5228.8,0.0,Acme Manufacturing Co.,CORP,,2023-11,5228.8
+GL-00570,2023-11-01,6010,Office Supplies,PnL,1903.22,0.0,Acme Manufacturing Co.,CORP,,2023-11,1903.22
+GL-00571,2023-11-01,6011,Telephone & Internet,PnL,2310.14,0.0,Acme Manufacturing Co.,CORP,,2023-11,2310.14
+GL-00572,2023-11-01,7001,Depreciation - Equipment,PnL,28945.11,0.0,Acme Manufacturing Co.,CORP,,2023-11,28945.11
+GL-00573,2023-11-01,7002,Amortisation - IP,PnL,6309.91,0.0,Acme Manufacturing Co.,CORP,,2023-11,6309.91
+GL-00574,2023-11-01,8001,Interest Expense,PnL,14917.74,0.0,Acme Manufacturing Co.,CORP,,2023-11,14917.74
+GL-00575,2023-11-01,8002,Income Tax Provision,PnL,35834.03,0.0,Acme Manufacturing Co.,CORP,,2023-11,35834.03
+GL-00576,2023-11-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2023-11,22000.0
+GL-00577,2023-12-01,4001,Product Sales - Domestic,PnL,0.0,1020822.41,Acme Manufacturing Co.,CORP,,2023-12,-1020822.41
+GL-00578,2023-12-01,4002,Product Sales - Export,PnL,0.0,124960.54,Acme Manufacturing Co.,CORP,,2023-12,-124960.54
+GL-00579,2023-12-01,4003,Service Revenue,PnL,0.0,46730.81,Acme Manufacturing Co.,CORP,,2023-12,-46730.81
+GL-00580,2023-12-01,4004,Shipping & Handling Income,PnL,0.0,12674.27,Acme Manufacturing Co.,CORP,,2023-12,-12674.27
+GL-00581,2023-12-01,5001,Raw Materials - Steel,PnL,287960.88,0.0,Acme Manufacturing Co.,CORP,,2023-12,287960.88
+GL-00582,2023-12-01,5002,Raw Materials - Plastics,PnL,58488.69,0.0,Acme Manufacturing Co.,CORP,,2023-12,58488.69
+GL-00583,2023-12-01,5003,Direct Labour,PnL,223056.08,0.0,Acme Manufacturing Co.,CORP,,2023-12,223056.08
+GL-00584,2023-12-01,5004,Manufacturing Overhead,PnL,96665.14,0.0,Acme Manufacturing Co.,CORP,,2023-12,96665.14
+GL-00585,2023-12-01,5005,Freight In,PnL,19174.07,0.0,Acme Manufacturing Co.,CORP,,2023-12,19174.07
+GL-00586,2023-12-01,6001,Management Salaries,PnL,123235.17,0.0,Acme Manufacturing Co.,CORP,,2023-12,123235.17
+GL-00587,2023-12-01,6002,Sales Team Salaries,PnL,67613.68,0.0,Acme Manufacturing Co.,CORP,,2023-12,67613.68
+GL-00588,2023-12-01,6003,Office Rent,PnL,23076.85,0.0,Acme Manufacturing Co.,CORP,,2023-12,23076.85
+GL-00589,2023-12-01,6004,Utilities,PnL,8798.07,0.0,Acme Manufacturing Co.,CORP,,2023-12,8798.07
+GL-00590,2023-12-01,6005,Insurance,PnL,4259.01,0.0,Acme Manufacturing Co.,CORP,,2023-12,4259.01
+GL-00591,2023-12-01,6006,Marketing & Advertising,PnL,19140.93,0.0,Acme Manufacturing Co.,CORP,,2023-12,19140.93
+GL-00592,2023-12-01,6007,Professional Fees,PnL,12278.86,0.0,Acme Manufacturing Co.,CORP,,2023-12,12278.86
+GL-00593,2023-12-01,6008,IT & Software,PnL,6662.86,0.0,Acme Manufacturing Co.,CORP,,2023-12,6662.86
+GL-00594,2023-12-01,6009,Travel & Entertainment,PnL,5300.99,0.0,Acme Manufacturing Co.,CORP,,2023-12,5300.99
+GL-00595,2023-12-01,6010,Office Supplies,PnL,1858.95,0.0,Acme Manufacturing Co.,CORP,,2023-12,1858.95
+GL-00596,2023-12-01,6011,Telephone & Internet,PnL,2343.32,0.0,Acme Manufacturing Co.,CORP,,2023-12,2343.32
+GL-00597,2023-12-01,7001,Depreciation - Equipment,PnL,29523.17,0.0,Acme Manufacturing Co.,CORP,,2023-12,29523.17
+GL-00598,2023-12-01,7002,Amortisation - IP,PnL,6173.42,0.0,Acme Manufacturing Co.,CORP,,2023-12,6173.42
+GL-00599,2023-12-01,8001,Interest Expense,PnL,14181.12,0.0,Acme Manufacturing Co.,CORP,,2023-12,14181.12
+GL-00600,2023-12-01,8002,Income Tax Provision,PnL,37422.41,0.0,Acme Manufacturing Co.,CORP,,2023-12,37422.41
+GL-00601,2023-12-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2023-12,22000.0
+GL-00602,2024-01-01,4001,Product Sales - Domestic,PnL,0.0,898134.65,Acme Manufacturing Co.,CORP,,2024-01,-898134.65
+GL-00603,2024-01-01,4002,Product Sales - Export,PnL,0.0,125128.7,Acme Manufacturing Co.,CORP,,2024-01,-125128.7
+GL-00604,2024-01-01,4003,Service Revenue,PnL,0.0,47651.15,Acme Manufacturing Co.,CORP,,2024-01,-47651.15
+GL-00605,2024-01-01,4004,Shipping & Handling Income,PnL,0.0,12658.33,Acme Manufacturing Co.,CORP,,2024-01,-12658.33
+GL-00606,2024-01-01,5001,Raw Materials - Steel,PnL,294610.03,0.0,Acme Manufacturing Co.,CORP,,2024-01,294610.03
+GL-00607,2024-01-01,5002,Raw Materials - Plastics,PnL,57358.06,0.0,Acme Manufacturing Co.,CORP,,2024-01,57358.06
+GL-00608,2024-01-01,5003,Direct Labour,PnL,222810.1,0.0,Acme Manufacturing Co.,CORP,,2024-01,222810.1
+GL-00609,2024-01-01,5004,Manufacturing Overhead,PnL,96805.73,0.0,Acme Manufacturing Co.,CORP,,2024-01,96805.73
+GL-00610,2024-01-01,5005,Freight In,PnL,18480.97,0.0,Acme Manufacturing Co.,CORP,,2024-01,18480.97
+GL-00611,2024-01-01,6001,Management Salaries,PnL,126591.81,0.0,Acme Manufacturing Co.,CORP,,2024-01,126591.81
+GL-00612,2024-01-01,6002,Sales Team Salaries,PnL,67066.8,0.0,Acme Manufacturing Co.,CORP,,2024-01,67066.8
+GL-00613,2024-01-01,6003,Office Rent,PnL,23062.99,0.0,Acme Manufacturing Co.,CORP,,2024-01,23062.99
+GL-00614,2024-01-01,6004,Utilities,PnL,8855.47,0.0,Acme Manufacturing Co.,CORP,,2024-01,8855.47
+GL-00615,2024-01-01,6005,Insurance,PnL,4390.18,0.0,Acme Manufacturing Co.,CORP,,2024-01,4390.18
+GL-00616,2024-01-01,6006,Marketing & Advertising,PnL,18701.19,0.0,Acme Manufacturing Co.,CORP,,2024-01,18701.19
+GL-00617,2024-01-01,6007,Professional Fees,PnL,12698.17,0.0,Acme Manufacturing Co.,CORP,,2024-01,12698.17
+GL-00618,2024-01-01,6008,IT & Software,PnL,6716.27,0.0,Acme Manufacturing Co.,CORP,,2024-01,6716.27
+GL-00619,2024-01-01,6009,Travel & Entertainment,PnL,5277.98,0.0,Acme Manufacturing Co.,CORP,,2024-01,5277.98
+GL-00620,2024-01-01,6010,Office Supplies,PnL,1853.42,0.0,Acme Manufacturing Co.,CORP,,2024-01,1853.42
+GL-00621,2024-01-01,6011,Telephone & Internet,PnL,2262.72,0.0,Acme Manufacturing Co.,CORP,,2024-01,2262.72
+GL-00622,2024-01-01,7001,Depreciation - Equipment,PnL,28578.59,0.0,Acme Manufacturing Co.,CORP,,2024-01,28578.59
+GL-00623,2024-01-01,7002,Amortisation - IP,PnL,6149.88,0.0,Acme Manufacturing Co.,CORP,,2024-01,6149.88
+GL-00624,2024-01-01,8001,Interest Expense,PnL,14288.37,0.0,Acme Manufacturing Co.,CORP,,2024-01,14288.37
+GL-00625,2024-01-01,8002,Income Tax Provision,PnL,36595.17,0.0,Acme Manufacturing Co.,CORP,,2024-01,36595.17
+GL-00626,2024-01-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2024-01,22000.0
+GL-00627,2024-02-01,4001,Product Sales - Domestic,PnL,0.0,893857.09,Acme Manufacturing Co.,CORP,,2024-02,-893857.09
+GL-00628,2024-02-01,4002,Product Sales - Export,PnL,0.0,126416.48,Acme Manufacturing Co.,CORP,,2024-02,-126416.48
+GL-00629,2024-02-01,4003,Service Revenue,PnL,0.0,48129.28,Acme Manufacturing Co.,CORP,,2024-02,-48129.28
+GL-00630,2024-02-01,4004,Shipping & Handling Income,PnL,0.0,13007.55,Acme Manufacturing Co.,CORP,,2024-02,-13007.55
+GL-00631,2024-02-01,5001,Raw Materials - Steel,PnL,307743.52,0.0,Acme Manufacturing Co.,CORP,,2024-02,307743.52
+GL-00632,2024-02-01,5002,Raw Materials - Plastics,PnL,58958.12,0.0,Acme Manufacturing Co.,CORP,,2024-02,58958.12
+GL-00633,2024-02-01,5003,Direct Labour,PnL,222068.18,0.0,Acme Manufacturing Co.,CORP,,2024-02,222068.18
+GL-00634,2024-02-01,5004,Manufacturing Overhead,PnL,99419.32,0.0,Acme Manufacturing Co.,CORP,,2024-02,99419.32
+GL-00635,2024-02-01,5005,Freight In,PnL,18938.42,0.0,Acme Manufacturing Co.,CORP,,2024-02,18938.42
+GL-00636,2024-02-01,6001,Management Salaries,PnL,126496.39,0.0,Acme Manufacturing Co.,CORP,,2024-02,126496.39
+GL-00637,2024-02-01,6002,Sales Team Salaries,PnL,68331.52,0.0,Acme Manufacturing Co.,CORP,,2024-02,68331.52
+GL-00638,2024-02-01,6003,Office Rent,PnL,22909.4,0.0,Acme Manufacturing Co.,CORP,,2024-02,22909.4
+GL-00639,2024-02-01,6004,Utilities,PnL,9116.55,0.0,Acme Manufacturing Co.,CORP,,2024-02,9116.55
+GL-00640,2024-02-01,6005,Insurance,PnL,4439.17,0.0,Acme Manufacturing Co.,CORP,,2024-02,4439.17
+GL-00641,2024-02-01,6006,Marketing & Advertising,PnL,19781.02,0.0,Acme Manufacturing Co.,CORP,,2024-02,19781.02
+GL-00642,2024-02-01,6007,Professional Fees,PnL,12884.27,0.0,Acme Manufacturing Co.,CORP,,2024-02,12884.27
+GL-00643,2024-02-01,6008,IT & Software,PnL,7035.16,0.0,Acme Manufacturing Co.,CORP,,2024-02,7035.16
+GL-00644,2024-02-01,6009,Travel & Entertainment,PnL,5240.32,0.0,Acme Manufacturing Co.,CORP,,2024-02,5240.32
+GL-00645,2024-02-01,6010,Office Supplies,PnL,1966.67,0.0,Acme Manufacturing Co.,CORP,,2024-02,1966.67
+GL-00646,2024-02-01,6011,Telephone & Internet,PnL,2353.87,0.0,Acme Manufacturing Co.,CORP,,2024-02,2353.87
+GL-00647,2024-02-01,7001,Depreciation - Equipment,PnL,30599.82,0.0,Acme Manufacturing Co.,CORP,,2024-02,30599.82
+GL-00648,2024-02-01,7002,Amortisation - IP,PnL,6449.59,0.0,Acme Manufacturing Co.,CORP,,2024-02,6449.59
+GL-00649,2024-02-01,8001,Interest Expense,PnL,14961.12,0.0,Acme Manufacturing Co.,CORP,,2024-02,14961.12
+GL-00650,2024-02-01,8002,Income Tax Provision,PnL,37342.05,0.0,Acme Manufacturing Co.,CORP,,2024-02,37342.05
+GL-00651,2024-02-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2024-02,22000.0
+GL-00652,2024-03-01,4001,Product Sales - Domestic,PnL,0.0,867388.58,Acme Manufacturing Co.,CORP,,2024-03,-867388.58
+GL-00653,2024-03-01,4002,Product Sales - Export,PnL,0.0,128860.6,Acme Manufacturing Co.,CORP,,2024-03,-128860.6
+GL-00654,2024-03-01,4003,Service Revenue,PnL,0.0,47071.72,Acme Manufacturing Co.,CORP,,2024-03,-47071.72
+GL-00655,2024-03-01,4004,Shipping & Handling Income,PnL,0.0,12800.42,Acme Manufacturing Co.,CORP,,2024-03,-12800.42
+GL-00656,2024-03-01,5001,Raw Materials - Steel,PnL,291596.76,0.0,Acme Manufacturing Co.,CORP,,2024-03,291596.76
+GL-00657,2024-03-01,5002,Raw Materials - Plastics,PnL,56200.07,0.0,Acme Manufacturing Co.,CORP,,2024-03,56200.07
+GL-00658,2024-03-01,5003,Direct Labour,PnL,221579.67,0.0,Acme Manufacturing Co.,CORP,,2024-03,221579.67
+GL-00659,2024-03-01,5004,Manufacturing Overhead,PnL,96956.15,0.0,Acme Manufacturing Co.,CORP,,2024-03,96956.15
+GL-00660,2024-03-01,5005,Freight In,PnL,18473.88,0.0,Acme Manufacturing Co.,CORP,,2024-03,18473.88
+GL-00661,2024-03-01,6001,Management Salaries,PnL,126137.39,0.0,Acme Manufacturing Co.,CORP,,2024-03,126137.39
+GL-00662,2024-03-01,6002,Sales Team Salaries,PnL,67314.3,0.0,Acme Manufacturing Co.,CORP,,2024-03,67314.3
+GL-00663,2024-03-01,6003,Office Rent,PnL,23694.21,0.0,Acme Manufacturing Co.,CORP,,2024-03,23694.21
+GL-00664,2024-03-01,6004,Utilities,PnL,8708.09,0.0,Acme Manufacturing Co.,CORP,,2024-03,8708.09
+GL-00665,2024-03-01,6005,Insurance,PnL,4465.61,0.0,Acme Manufacturing Co.,CORP,,2024-03,4465.61
+GL-00666,2024-03-01,6006,Marketing & Advertising,PnL,18967.56,0.0,Acme Manufacturing Co.,CORP,,2024-03,18967.56
+GL-00667,2024-03-01,6007,Professional Fees,PnL,12777.83,0.0,Acme Manufacturing Co.,CORP,,2024-03,12777.83
+GL-00668,2024-03-01,6008,IT & Software,PnL,6700.95,0.0,Acme Manufacturing Co.,CORP,,2024-03,6700.95
+GL-00669,2024-03-01,6009,Travel & Entertainment,PnL,5243.64,0.0,Acme Manufacturing Co.,CORP,,2024-03,5243.64
+GL-00670,2024-03-01,6010,Office Supplies,PnL,1879.93,0.0,Acme Manufacturing Co.,CORP,,2024-03,1879.93
+GL-00671,2024-03-01,6011,Telephone & Internet,PnL,2296.66,0.0,Acme Manufacturing Co.,CORP,,2024-03,2296.66
+GL-00672,2024-03-01,7001,Depreciation - Equipment,PnL,29931.57,0.0,Acme Manufacturing Co.,CORP,,2024-03,29931.57
+GL-00673,2024-03-01,7002,Amortisation - IP,PnL,6460.66,0.0,Acme Manufacturing Co.,CORP,,2024-03,6460.66
+GL-00674,2024-03-01,8001,Interest Expense,PnL,14499.76,0.0,Acme Manufacturing Co.,CORP,,2024-03,14499.76
+GL-00675,2024-03-01,8002,Income Tax Provision,PnL,36912.27,0.0,Acme Manufacturing Co.,CORP,,2024-03,36912.27
+GL-00676,2024-03-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2024-03,22000.0
+GL-00677,2024-04-01,4001,Product Sales - Domestic,PnL,0.0,916972.01,Acme Manufacturing Co.,CORP,,2024-04,-916972.01
+GL-00678,2024-04-01,4002,Product Sales - Export,PnL,0.0,130948.88,Acme Manufacturing Co.,CORP,,2024-04,-130948.88
+GL-00679,2024-04-01,4003,Service Revenue,PnL,0.0,47108.36,Acme Manufacturing Co.,CORP,,2024-04,-47108.36
+GL-00680,2024-04-01,4004,Shipping & Handling Income,PnL,0.0,12564.56,Acme Manufacturing Co.,CORP,,2024-04,-12564.56
+GL-00681,2024-04-01,5001,Raw Materials - Steel,PnL,300723.06,0.0,Acme Manufacturing Co.,CORP,,2024-04,300723.06
+GL-00682,2024-04-01,5002,Raw Materials - Plastics,PnL,57409.48,0.0,Acme Manufacturing Co.,CORP,,2024-04,57409.48
+GL-00683,2024-04-01,5003,Direct Labour,PnL,219410.95,0.0,Acme Manufacturing Co.,CORP,,2024-04,219410.95
+GL-00684,2024-04-01,5004,Manufacturing Overhead,PnL,98694.47,0.0,Acme Manufacturing Co.,CORP,,2024-04,98694.47
+GL-00685,2024-04-01,5005,Freight In,PnL,18621.82,0.0,Acme Manufacturing Co.,CORP,,2024-04,18621.82
+GL-00686,2024-04-01,6001,Management Salaries,PnL,127369.86,0.0,Acme Manufacturing Co.,CORP,,2024-04,127369.86
+GL-00687,2024-04-01,6002,Sales Team Salaries,PnL,69550.9,0.0,Acme Manufacturing Co.,CORP,,2024-04,69550.9
+GL-00688,2024-04-01,6003,Office Rent,PnL,23140.94,0.0,Acme Manufacturing Co.,CORP,,2024-04,23140.94
+GL-00689,2024-04-01,6004,Utilities,PnL,8910.33,0.0,Acme Manufacturing Co.,CORP,,2024-04,8910.33
+GL-00690,2024-04-01,6005,Insurance,PnL,4522.57,0.0,Acme Manufacturing Co.,CORP,,2024-04,4522.57
+GL-00691,2024-04-01,6006,Marketing & Advertising,PnL,19378.16,0.0,Acme Manufacturing Co.,CORP,,2024-04,19378.16
+GL-00692,2024-04-01,6007,Professional Fees,PnL,12739.53,0.0,Acme Manufacturing Co.,CORP,,2024-04,12739.53
+GL-00693,2024-04-01,6008,IT & Software,PnL,6991.58,0.0,Acme Manufacturing Co.,CORP,,2024-04,6991.58
+GL-00694,2024-04-01,6009,Travel & Entertainment,PnL,5449.1,0.0,Acme Manufacturing Co.,CORP,,2024-04,5449.1
+GL-00695,2024-04-01,6010,Office Supplies,PnL,1946.98,0.0,Acme Manufacturing Co.,CORP,,2024-04,1946.98
+GL-00696,2024-04-01,6011,Telephone & Internet,PnL,2358.16,0.0,Acme Manufacturing Co.,CORP,,2024-04,2358.16
+GL-00697,2024-04-01,7001,Depreciation - Equipment,PnL,30073.57,0.0,Acme Manufacturing Co.,CORP,,2024-04,30073.57
+GL-00698,2024-04-01,7002,Amortisation - IP,PnL,6542.43,0.0,Acme Manufacturing Co.,CORP,,2024-04,6542.43
+GL-00699,2024-04-01,8001,Interest Expense,PnL,14838.51,0.0,Acme Manufacturing Co.,CORP,,2024-04,14838.51
+GL-00700,2024-04-01,8002,Income Tax Provision,PnL,37347.06,0.0,Acme Manufacturing Co.,CORP,,2024-04,37347.06
+GL-00701,2024-04-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2024-04,22000.0
+GL-00702,2024-05-01,4001,Product Sales - Domestic,PnL,0.0,926848.56,Acme Manufacturing Co.,CORP,,2024-05,-926848.56
+GL-00703,2024-05-01,4002,Product Sales - Export,PnL,0.0,130260.39,Acme Manufacturing Co.,CORP,,2024-05,-130260.39
+GL-00704,2024-05-01,4003,Service Revenue,PnL,0.0,46808.55,Acme Manufacturing Co.,CORP,,2024-05,-46808.55
+GL-00705,2024-05-01,4004,Shipping & Handling Income,PnL,0.0,12550.33,Acme Manufacturing Co.,CORP,,2024-05,-12550.33
+GL-00706,2024-05-01,5001,Raw Materials - Steel,PnL,295221.39,0.0,Acme Manufacturing Co.,CORP,,2024-05,295221.39
+GL-00707,2024-05-01,5002,Raw Materials - Plastics,PnL,59446.36,0.0,Acme Manufacturing Co.,CORP,,2024-05,59446.36
+GL-00708,2024-05-01,5003,Direct Labour,PnL,224712.14,0.0,Acme Manufacturing Co.,CORP,,2024-05,224712.14
+GL-00709,2024-05-01,5004,Manufacturing Overhead,PnL,100056.09,0.0,Acme Manufacturing Co.,CORP,,2024-05,100056.09
+GL-00710,2024-05-01,5005,Freight In,PnL,18780.6,0.0,Acme Manufacturing Co.,CORP,,2024-05,18780.6
+GL-00711,2024-05-01,6001,Management Salaries,PnL,129267.13,0.0,Acme Manufacturing Co.,CORP,,2024-05,129267.13
+GL-00712,2024-05-01,6002,Sales Team Salaries,PnL,70062.81,0.0,Acme Manufacturing Co.,CORP,,2024-05,70062.81
+GL-00713,2024-05-01,6003,Office Rent,PnL,24034.25,0.0,Acme Manufacturing Co.,CORP,,2024-05,24034.25
+GL-00714,2024-05-01,6004,Utilities,PnL,9060.44,0.0,Acme Manufacturing Co.,CORP,,2024-05,9060.44
+GL-00715,2024-05-01,6005,Insurance,PnL,4475.24,0.0,Acme Manufacturing Co.,CORP,,2024-05,4475.24
+GL-00716,2024-05-01,6006,Marketing & Advertising,PnL,18733.17,0.0,Acme Manufacturing Co.,CORP,,2024-05,18733.17
+GL-00717,2024-05-01,6007,Professional Fees,PnL,12459.56,0.0,Acme Manufacturing Co.,CORP,,2024-05,12459.56
+GL-00718,2024-05-01,6008,IT & Software,PnL,6901.88,0.0,Acme Manufacturing Co.,CORP,,2024-05,6901.88
+GL-00719,2024-05-01,6009,Travel & Entertainment,PnL,5276.22,0.0,Acme Manufacturing Co.,CORP,,2024-05,5276.22
+GL-00720,2024-05-01,6010,Office Supplies,PnL,1891.67,0.0,Acme Manufacturing Co.,CORP,,2024-05,1891.67
+GL-00721,2024-05-01,6011,Telephone & Internet,PnL,2291.05,0.0,Acme Manufacturing Co.,CORP,,2024-05,2291.05
+GL-00722,2024-05-01,7001,Depreciation - Equipment,PnL,30621.36,0.0,Acme Manufacturing Co.,CORP,,2024-05,30621.36
+GL-00723,2024-05-01,7002,Amortisation - IP,PnL,6516.38,0.0,Acme Manufacturing Co.,CORP,,2024-05,6516.38
+GL-00724,2024-05-01,8001,Interest Expense,PnL,14985.84,0.0,Acme Manufacturing Co.,CORP,,2024-05,14985.84
+GL-00725,2024-05-01,8002,Income Tax Provision,PnL,38253.34,0.0,Acme Manufacturing Co.,CORP,,2024-05,38253.34
+GL-00726,2024-05-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2024-05,22000.0
+GL-00727,2024-06-01,4001,Product Sales - Domestic,PnL,0.0,926771.82,Acme Manufacturing Co.,CORP,,2024-06,-926771.82
+GL-00728,2024-06-01,4002,Product Sales - Export,PnL,0.0,127938.43,Acme Manufacturing Co.,CORP,,2024-06,-127938.43
+GL-00729,2024-06-01,4003,Service Revenue,PnL,0.0,47357.86,Acme Manufacturing Co.,CORP,,2024-06,-47357.86
+GL-00730,2024-06-01,4004,Shipping & Handling Income,PnL,0.0,13144.31,Acme Manufacturing Co.,CORP,,2024-06,-13144.31
+GL-00731,2024-06-01,5001,Raw Materials - Steel,PnL,301899.62,0.0,Acme Manufacturing Co.,CORP,,2024-06,301899.62
+GL-00732,2024-06-01,5002,Raw Materials - Plastics,PnL,59899.04,0.0,Acme Manufacturing Co.,CORP,,2024-06,59899.04
+GL-00733,2024-06-01,5003,Direct Labour,PnL,232038.93,0.0,Acme Manufacturing Co.,CORP,,2024-06,232038.93
+GL-00734,2024-06-01,5004,Manufacturing Overhead,PnL,100782.86,0.0,Acme Manufacturing Co.,CORP,,2024-06,100782.86
+GL-00735,2024-06-01,5005,Freight In,PnL,19531.85,0.0,Acme Manufacturing Co.,CORP,,2024-06,19531.85
+GL-00736,2024-06-01,6001,Management Salaries,PnL,130568.4,0.0,Acme Manufacturing Co.,CORP,,2024-06,130568.4
+GL-00737,2024-06-01,6002,Sales Team Salaries,PnL,70166.62,0.0,Acme Manufacturing Co.,CORP,,2024-06,70166.62
+GL-00738,2024-06-01,6003,Office Rent,PnL,23220.06,0.0,Acme Manufacturing Co.,CORP,,2024-06,23220.06
+GL-00739,2024-06-01,6004,Utilities,PnL,9102.31,0.0,Acme Manufacturing Co.,CORP,,2024-06,9102.31
+GL-00740,2024-06-01,6005,Insurance,PnL,4493.92,0.0,Acme Manufacturing Co.,CORP,,2024-06,4493.92
+GL-00741,2024-06-01,6006,Marketing & Advertising,PnL,19623.44,0.0,Acme Manufacturing Co.,CORP,,2024-06,19623.44
+GL-00742,2024-06-01,6007,Professional Fees,PnL,13217.36,0.0,Acme Manufacturing Co.,CORP,,2024-06,13217.36
+GL-00743,2024-06-01,6008,IT & Software,PnL,6953.51,0.0,Acme Manufacturing Co.,CORP,,2024-06,6953.51
+GL-00744,2024-06-01,6009,Travel & Entertainment,PnL,5458.02,0.0,Acme Manufacturing Co.,CORP,,2024-06,5458.02
+GL-00745,2024-06-01,6010,Office Supplies,PnL,1921.1,0.0,Acme Manufacturing Co.,CORP,,2024-06,1921.1
+GL-00746,2024-06-01,6011,Telephone & Internet,PnL,2434.73,0.0,Acme Manufacturing Co.,CORP,,2024-06,2434.73
+GL-00747,2024-06-01,7001,Depreciation - Equipment,PnL,30766.31,0.0,Acme Manufacturing Co.,CORP,,2024-06,30766.31
+GL-00748,2024-06-01,7002,Amortisation - IP,PnL,6497.93,0.0,Acme Manufacturing Co.,CORP,,2024-06,6497.93
+GL-00749,2024-06-01,8001,Interest Expense,PnL,15081.81,0.0,Acme Manufacturing Co.,CORP,,2024-06,15081.81
+GL-00750,2024-06-01,8002,Income Tax Provision,PnL,37409.89,0.0,Acme Manufacturing Co.,CORP,,2024-06,37409.89
+GL-00751,2024-06-01,6098,M&A Advisory Fees - Project Falcon,PnL,180000.0,0.0,Acme Manufacturing Co.,CORP,ONE_TIME: Investment bank advisory fees for sale process,2024-06,180000.0
+GL-00752,2024-06-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2024-06,22000.0
+GL-00753,2024-07-01,4001,Product Sales - Domestic,PnL,0.0,918970.73,Acme Manufacturing Co.,CORP,,2024-07,-918970.73
+GL-00754,2024-07-01,4002,Product Sales - Export,PnL,0.0,125661.77,Acme Manufacturing Co.,CORP,,2024-07,-125661.77
+GL-00755,2024-07-01,4003,Service Revenue,PnL,0.0,47421.3,Acme Manufacturing Co.,CORP,,2024-07,-47421.3
+GL-00756,2024-07-01,4004,Shipping & Handling Income,PnL,0.0,12986.62,Acme Manufacturing Co.,CORP,,2024-07,-12986.62
+GL-00757,2024-07-01,5001,Raw Materials - Steel,PnL,297469.36,0.0,Acme Manufacturing Co.,CORP,,2024-07,297469.36
+GL-00758,2024-07-01,5002,Raw Materials - Plastics,PnL,58051.76,0.0,Acme Manufacturing Co.,CORP,,2024-07,58051.76
+GL-00759,2024-07-01,5003,Direct Labour,PnL,220022.42,0.0,Acme Manufacturing Co.,CORP,,2024-07,220022.42
+GL-00760,2024-07-01,5004,Manufacturing Overhead,PnL,98247.66,0.0,Acme Manufacturing Co.,CORP,,2024-07,98247.66
+GL-00761,2024-07-01,5005,Freight In,PnL,18803.48,0.0,Acme Manufacturing Co.,CORP,,2024-07,18803.48
+GL-00762,2024-07-01,6001,Management Salaries,PnL,128198.1,0.0,Acme Manufacturing Co.,CORP,,2024-07,128198.1
+GL-00763,2024-07-01,6002,Sales Team Salaries,PnL,68929.61,0.0,Acme Manufacturing Co.,CORP,,2024-07,68929.61
+GL-00764,2024-07-01,6003,Office Rent,PnL,23507.67,0.0,Acme Manufacturing Co.,CORP,,2024-07,23507.67
+GL-00765,2024-07-01,6004,Utilities,PnL,8798.73,0.0,Acme Manufacturing Co.,CORP,,2024-07,8798.73
+GL-00766,2024-07-01,6005,Insurance,PnL,4434.71,0.0,Acme Manufacturing Co.,CORP,,2024-07,4434.71
+GL-00767,2024-07-01,6006,Marketing & Advertising,PnL,19414.64,0.0,Acme Manufacturing Co.,CORP,,2024-07,19414.64
+GL-00768,2024-07-01,6007,Professional Fees,PnL,12590.62,0.0,Acme Manufacturing Co.,CORP,,2024-07,12590.62
+GL-00769,2024-07-01,6008,IT & Software,PnL,6921.37,0.0,Acme Manufacturing Co.,CORP,,2024-07,6921.37
+GL-00770,2024-07-01,6009,Travel & Entertainment,PnL,5151.08,0.0,Acme Manufacturing Co.,CORP,,2024-07,5151.08
+GL-00771,2024-07-01,6010,Office Supplies,PnL,1946.38,0.0,Acme Manufacturing Co.,CORP,,2024-07,1946.38
+GL-00772,2024-07-01,6011,Telephone & Internet,PnL,2330.82,0.0,Acme Manufacturing Co.,CORP,,2024-07,2330.82
+GL-00773,2024-07-01,7001,Depreciation - Equipment,PnL,29044.09,0.0,Acme Manufacturing Co.,CORP,,2024-07,29044.09
+GL-00774,2024-07-01,7002,Amortisation - IP,PnL,6194.6,0.0,Acme Manufacturing Co.,CORP,,2024-07,6194.6
+GL-00775,2024-07-01,8001,Interest Expense,PnL,14783.74,0.0,Acme Manufacturing Co.,CORP,,2024-07,14783.74
+GL-00776,2024-07-01,8002,Income Tax Provision,PnL,36962.31,0.0,Acme Manufacturing Co.,CORP,,2024-07,36962.31
+GL-00777,2024-07-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2024-07,22000.0
+GL-00778,2024-08-01,4001,Product Sales - Domestic,PnL,0.0,912274.23,Acme Manufacturing Co.,CORP,,2024-08,-912274.23
+GL-00779,2024-08-01,4002,Product Sales - Export,PnL,0.0,128220.5,Acme Manufacturing Co.,CORP,,2024-08,-128220.5
+GL-00780,2024-08-01,4003,Service Revenue,PnL,0.0,46863.69,Acme Manufacturing Co.,CORP,,2024-08,-46863.69
+GL-00781,2024-08-01,4004,Shipping & Handling Income,PnL,0.0,12249.32,Acme Manufacturing Co.,CORP,,2024-08,-12249.32
+GL-00782,2024-08-01,5001,Raw Materials - Steel,PnL,297823.95,0.0,Acme Manufacturing Co.,CORP,,2024-08,297823.95
+GL-00783,2024-08-01,5002,Raw Materials - Plastics,PnL,57399.7,0.0,Acme Manufacturing Co.,CORP,,2024-08,57399.7
+GL-00784,2024-08-01,5003,Direct Labour,PnL,221912.16,0.0,Acme Manufacturing Co.,CORP,,2024-08,221912.16
+GL-00785,2024-08-01,5004,Manufacturing Overhead,PnL,99204.77,0.0,Acme Manufacturing Co.,CORP,,2024-08,99204.77
+GL-00786,2024-08-01,5005,Freight In,PnL,18542.41,0.0,Acme Manufacturing Co.,CORP,,2024-08,18542.41
+GL-00787,2024-08-01,6001,Management Salaries,PnL,127657.42,0.0,Acme Manufacturing Co.,CORP,,2024-08,127657.42
+GL-00788,2024-08-01,6002,Sales Team Salaries,PnL,69715.3,0.0,Acme Manufacturing Co.,CORP,,2024-08,69715.3
+GL-00789,2024-08-01,6003,Office Rent,PnL,22623.75,0.0,Acme Manufacturing Co.,CORP,,2024-08,22623.75
+GL-00790,2024-08-01,6004,Utilities,PnL,8897.84,0.0,Acme Manufacturing Co.,CORP,,2024-08,8897.84
+GL-00791,2024-08-01,6005,Insurance,PnL,4354.32,0.0,Acme Manufacturing Co.,CORP,,2024-08,4354.32
+GL-00792,2024-08-01,6006,Marketing & Advertising,PnL,19242.73,0.0,Acme Manufacturing Co.,CORP,,2024-08,19242.73
+GL-00793,2024-08-01,6007,Professional Fees,PnL,12530.67,0.0,Acme Manufacturing Co.,CORP,,2024-08,12530.67
+GL-00794,2024-08-01,6008,IT & Software,PnL,6932.17,0.0,Acme Manufacturing Co.,CORP,,2024-08,6932.17
+GL-00795,2024-08-01,6009,Travel & Entertainment,PnL,5327.85,0.0,Acme Manufacturing Co.,CORP,,2024-08,5327.85
+GL-00796,2024-08-01,6010,Office Supplies,PnL,1854.55,0.0,Acme Manufacturing Co.,CORP,,2024-08,1854.55
+GL-00797,2024-08-01,6011,Telephone & Internet,PnL,2334.48,0.0,Acme Manufacturing Co.,CORP,,2024-08,2334.48
+GL-00798,2024-08-01,7001,Depreciation - Equipment,PnL,29081.5,0.0,Acme Manufacturing Co.,CORP,,2024-08,29081.5
+GL-00799,2024-08-01,7002,Amortisation - IP,PnL,6418.7,0.0,Acme Manufacturing Co.,CORP,,2024-08,6418.7
+GL-00800,2024-08-01,8001,Interest Expense,PnL,14618.7,0.0,Acme Manufacturing Co.,CORP,,2024-08,14618.7
+GL-00801,2024-08-01,8002,Income Tax Provision,PnL,37203.65,0.0,Acme Manufacturing Co.,CORP,,2024-08,37203.65
+GL-00802,2024-08-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2024-08,22000.0
+GL-00803,2024-09-01,4001,Product Sales - Domestic,PnL,0.0,883342.87,Acme Manufacturing Co.,CORP,,2024-09,-883342.87
+GL-00804,2024-09-01,4002,Product Sales - Export,PnL,0.0,126783.58,Acme Manufacturing Co.,CORP,,2024-09,-126783.58
+GL-00805,2024-09-01,4003,Service Revenue,PnL,0.0,48656.15,Acme Manufacturing Co.,CORP,,2024-09,-48656.15
+GL-00806,2024-09-01,4004,Shipping & Handling Income,PnL,0.0,12608.3,Acme Manufacturing Co.,CORP,,2024-09,-12608.3
+GL-00807,2024-09-01,5001,Raw Materials - Steel,PnL,288464.2,0.0,Acme Manufacturing Co.,CORP,,2024-09,288464.2
+GL-00808,2024-09-01,5002,Raw Materials - Plastics,PnL,57949.56,0.0,Acme Manufacturing Co.,CORP,,2024-09,57949.56
+GL-00809,2024-09-01,5003,Direct Labour,PnL,218824.41,0.0,Acme Manufacturing Co.,CORP,,2024-09,218824.41
+GL-00810,2024-09-01,5004,Manufacturing Overhead,PnL,100170.72,0.0,Acme Manufacturing Co.,CORP,,2024-09,100170.72
+GL-00811,2024-09-01,5005,Freight In,PnL,18970.55,0.0,Acme Manufacturing Co.,CORP,,2024-09,18970.55
+GL-00812,2024-09-01,6001,Management Salaries,PnL,125836.11,0.0,Acme Manufacturing Co.,CORP,,2024-09,125836.11
+GL-00813,2024-09-01,6002,Sales Team Salaries,PnL,67640.31,0.0,Acme Manufacturing Co.,CORP,,2024-09,67640.31
+GL-00814,2024-09-01,6003,Office Rent,PnL,22717.92,0.0,Acme Manufacturing Co.,CORP,,2024-09,22717.92
+GL-00815,2024-09-01,6004,Utilities,PnL,9036.89,0.0,Acme Manufacturing Co.,CORP,,2024-09,9036.89
+GL-00816,2024-09-01,6005,Insurance,PnL,4433.61,0.0,Acme Manufacturing Co.,CORP,,2024-09,4433.61
+GL-00817,2024-09-01,6006,Marketing & Advertising,PnL,18635.89,0.0,Acme Manufacturing Co.,CORP,,2024-09,18635.89
+GL-00818,2024-09-01,6007,Professional Fees,PnL,12814.15,0.0,Acme Manufacturing Co.,CORP,,2024-09,12814.15
+GL-00819,2024-09-01,6008,IT & Software,PnL,6655.56,0.0,Acme Manufacturing Co.,CORP,,2024-09,6655.56
+GL-00820,2024-09-01,6009,Travel & Entertainment,PnL,5329.98,0.0,Acme Manufacturing Co.,CORP,,2024-09,5329.98
+GL-00821,2024-09-01,6010,Office Supplies,PnL,1914.53,0.0,Acme Manufacturing Co.,CORP,,2024-09,1914.53
+GL-00822,2024-09-01,6011,Telephone & Internet,PnL,2354.0,0.0,Acme Manufacturing Co.,CORP,,2024-09,2354.0
+GL-00823,2024-09-01,7001,Depreciation - Equipment,PnL,29245.39,0.0,Acme Manufacturing Co.,CORP,,2024-09,29245.39
+GL-00824,2024-09-01,7002,Amortisation - IP,PnL,6366.81,0.0,Acme Manufacturing Co.,CORP,,2024-09,6366.81
+GL-00825,2024-09-01,8001,Interest Expense,PnL,14987.82,0.0,Acme Manufacturing Co.,CORP,,2024-09,14987.82
+GL-00826,2024-09-01,8002,Income Tax Provision,PnL,37805.69,0.0,Acme Manufacturing Co.,CORP,,2024-09,37805.69
+GL-00827,2024-09-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2024-09,22000.0
+GL-00828,2024-10-01,4001,Product Sales - Domestic,PnL,0.0,1012355.35,Acme Manufacturing Co.,CORP,,2024-10,-1012355.35
+GL-00829,2024-10-01,4002,Product Sales - Export,PnL,0.0,127194.07,Acme Manufacturing Co.,CORP,,2024-10,-127194.07
+GL-00830,2024-10-01,4003,Service Revenue,PnL,0.0,47935.08,Acme Manufacturing Co.,CORP,,2024-10,-47935.08
+GL-00831,2024-10-01,4004,Shipping & Handling Income,PnL,0.0,12983.94,Acme Manufacturing Co.,CORP,,2024-10,-12983.94
+GL-00832,2024-10-01,5001,Raw Materials - Steel,PnL,303034.08,0.0,Acme Manufacturing Co.,CORP,,2024-10,303034.08
+GL-00833,2024-10-01,5002,Raw Materials - Plastics,PnL,58092.73,0.0,Acme Manufacturing Co.,CORP,,2024-10,58092.73
+GL-00834,2024-10-01,5003,Direct Labour,PnL,222887.74,0.0,Acme Manufacturing Co.,CORP,,2024-10,222887.74
+GL-00835,2024-10-01,5004,Manufacturing Overhead,PnL,100436.74,0.0,Acme Manufacturing Co.,CORP,,2024-10,100436.74
+GL-00836,2024-10-01,5005,Freight In,PnL,19316.88,0.0,Acme Manufacturing Co.,CORP,,2024-10,19316.88
+GL-00837,2024-10-01,6001,Management Salaries,PnL,126529.42,0.0,Acme Manufacturing Co.,CORP,,2024-10,126529.42
+GL-00838,2024-10-01,6002,Sales Team Salaries,PnL,69491.5,0.0,Acme Manufacturing Co.,CORP,,2024-10,69491.5
+GL-00839,2024-10-01,6003,Office Rent,PnL,22859.65,0.0,Acme Manufacturing Co.,CORP,,2024-10,22859.65
+GL-00840,2024-10-01,6004,Utilities,PnL,8992.85,0.0,Acme Manufacturing Co.,CORP,,2024-10,8992.85
+GL-00841,2024-10-01,6005,Insurance,PnL,4569.45,0.0,Acme Manufacturing Co.,CORP,,2024-10,4569.45
+GL-00842,2024-10-01,6006,Marketing & Advertising,PnL,18902.28,0.0,Acme Manufacturing Co.,CORP,,2024-10,18902.28
+GL-00843,2024-10-01,6007,Professional Fees,PnL,12856.51,0.0,Acme Manufacturing Co.,CORP,,2024-10,12856.51
+GL-00844,2024-10-01,6008,IT & Software,PnL,6947.22,0.0,Acme Manufacturing Co.,CORP,,2024-10,6947.22
+GL-00845,2024-10-01,6009,Travel & Entertainment,PnL,5404.6,0.0,Acme Manufacturing Co.,CORP,,2024-10,5404.6
+GL-00846,2024-10-01,6010,Office Supplies,PnL,1945.72,0.0,Acme Manufacturing Co.,CORP,,2024-10,1945.72
+GL-00847,2024-10-01,6011,Telephone & Internet,PnL,2379.02,0.0,Acme Manufacturing Co.,CORP,,2024-10,2379.02
+GL-00848,2024-10-01,7001,Depreciation - Equipment,PnL,29473.18,0.0,Acme Manufacturing Co.,CORP,,2024-10,29473.18
+GL-00849,2024-10-01,7002,Amortisation - IP,PnL,6292.88,0.0,Acme Manufacturing Co.,CORP,,2024-10,6292.88
+GL-00850,2024-10-01,8001,Interest Expense,PnL,15021.11,0.0,Acme Manufacturing Co.,CORP,,2024-10,15021.11
+GL-00851,2024-10-01,8002,Income Tax Provision,PnL,37638.2,0.0,Acme Manufacturing Co.,CORP,,2024-10,37638.2
+GL-00852,2024-10-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2024-10,22000.0
+GL-00853,2024-11-01,4001,Product Sales - Domestic,PnL,0.0,1027041.03,Acme Manufacturing Co.,CORP,,2024-11,-1027041.03
+GL-00854,2024-11-01,4002,Product Sales - Export,PnL,0.0,125880.07,Acme Manufacturing Co.,CORP,,2024-11,-125880.07
+GL-00855,2024-11-01,4003,Service Revenue,PnL,0.0,48724.42,Acme Manufacturing Co.,CORP,,2024-11,-48724.42
+GL-00856,2024-11-01,4004,Shipping & Handling Income,PnL,0.0,13201.81,Acme Manufacturing Co.,CORP,,2024-11,-13201.81
+GL-00857,2024-11-01,5001,Raw Materials - Steel,PnL,309327.45,0.0,Acme Manufacturing Co.,CORP,,2024-11,309327.45
+GL-00858,2024-11-01,5002,Raw Materials - Plastics,PnL,59933.57,0.0,Acme Manufacturing Co.,CORP,,2024-11,59933.57
+GL-00859,2024-11-01,5003,Direct Labour,PnL,224896.06,0.0,Acme Manufacturing Co.,CORP,,2024-11,224896.06
+GL-00860,2024-11-01,5004,Manufacturing Overhead,PnL,99826.18,0.0,Acme Manufacturing Co.,CORP,,2024-11,99826.18
+GL-00861,2024-11-01,5005,Freight In,PnL,19492.56,0.0,Acme Manufacturing Co.,CORP,,2024-11,19492.56
+GL-00862,2024-11-01,6001,Management Salaries,PnL,131670.01,0.0,Acme Manufacturing Co.,CORP,,2024-11,131670.01
+GL-00863,2024-11-01,6002,Sales Team Salaries,PnL,69648.54,0.0,Acme Manufacturing Co.,CORP,,2024-11,69648.54
+GL-00864,2024-11-01,6003,Office Rent,PnL,23903.78,0.0,Acme Manufacturing Co.,CORP,,2024-11,23903.78
+GL-00865,2024-11-01,6004,Utilities,PnL,9342.36,0.0,Acme Manufacturing Co.,CORP,,2024-11,9342.36
+GL-00866,2024-11-01,6005,Insurance,PnL,4400.15,0.0,Acme Manufacturing Co.,CORP,,2024-11,4400.15
+GL-00867,2024-11-01,6006,Marketing & Advertising,PnL,19667.95,0.0,Acme Manufacturing Co.,CORP,,2024-11,19667.95
+GL-00868,2024-11-01,6007,Professional Fees,PnL,12749.97,0.0,Acme Manufacturing Co.,CORP,,2024-11,12749.97
+GL-00869,2024-11-01,6008,IT & Software,PnL,6938.01,0.0,Acme Manufacturing Co.,CORP,,2024-11,6938.01
+GL-00870,2024-11-01,6009,Travel & Entertainment,PnL,5268.15,0.0,Acme Manufacturing Co.,CORP,,2024-11,5268.15
+GL-00871,2024-11-01,6010,Office Supplies,PnL,1938.18,0.0,Acme Manufacturing Co.,CORP,,2024-11,1938.18
+GL-00872,2024-11-01,6011,Telephone & Internet,PnL,2373.47,0.0,Acme Manufacturing Co.,CORP,,2024-11,2373.47
+GL-00873,2024-11-01,7001,Depreciation - Equipment,PnL,30588.5,0.0,Acme Manufacturing Co.,CORP,,2024-11,30588.5
+GL-00874,2024-11-01,7002,Amortisation - IP,PnL,6330.57,0.0,Acme Manufacturing Co.,CORP,,2024-11,6330.57
+GL-00875,2024-11-01,8001,Interest Expense,PnL,14694.87,0.0,Acme Manufacturing Co.,CORP,,2024-11,14694.87
+GL-00876,2024-11-01,8002,Income Tax Provision,PnL,38400.1,0.0,Acme Manufacturing Co.,CORP,,2024-11,38400.1
+GL-00877,2024-11-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2024-11,22000.0
+GL-00878,2024-12-01,4001,Product Sales - Domestic,PnL,0.0,1027612.99,Acme Manufacturing Co.,CORP,,2024-12,-1027612.99
+GL-00879,2024-12-01,4002,Product Sales - Export,PnL,0.0,130746.98,Acme Manufacturing Co.,CORP,,2024-12,-130746.98
+GL-00880,2024-12-01,4003,Service Revenue,PnL,0.0,46951.9,Acme Manufacturing Co.,CORP,,2024-12,-46951.9
+GL-00881,2024-12-01,4004,Shipping & Handling Income,PnL,0.0,12749.49,Acme Manufacturing Co.,CORP,,2024-12,-12749.49
+GL-00882,2024-12-01,5001,Raw Materials - Steel,PnL,294007.58,0.0,Acme Manufacturing Co.,CORP,,2024-12,294007.58
+GL-00883,2024-12-01,5002,Raw Materials - Plastics,PnL,57755.94,0.0,Acme Manufacturing Co.,CORP,,2024-12,57755.94
+GL-00884,2024-12-01,5003,Direct Labour,PnL,217423.97,0.0,Acme Manufacturing Co.,CORP,,2024-12,217423.97
+GL-00885,2024-12-01,5004,Manufacturing Overhead,PnL,102891.31,0.0,Acme Manufacturing Co.,CORP,,2024-12,102891.31
+GL-00886,2024-12-01,5005,Freight In,PnL,19599.5,0.0,Acme Manufacturing Co.,CORP,,2024-12,19599.5
+GL-00887,2024-12-01,6001,Management Salaries,PnL,129053.41,0.0,Acme Manufacturing Co.,CORP,,2024-12,129053.41
+GL-00888,2024-12-01,6002,Sales Team Salaries,PnL,67877.35,0.0,Acme Manufacturing Co.,CORP,,2024-12,67877.35
+GL-00889,2024-12-01,6003,Office Rent,PnL,23348.43,0.0,Acme Manufacturing Co.,CORP,,2024-12,23348.43
+GL-00890,2024-12-01,6004,Utilities,PnL,8971.94,0.0,Acme Manufacturing Co.,CORP,,2024-12,8971.94
+GL-00891,2024-12-01,6005,Insurance,PnL,4494.18,0.0,Acme Manufacturing Co.,CORP,,2024-12,4494.18
+GL-00892,2024-12-01,6006,Marketing & Advertising,PnL,19316.25,0.0,Acme Manufacturing Co.,CORP,,2024-12,19316.25
+GL-00893,2024-12-01,6007,Professional Fees,PnL,12722.96,0.0,Acme Manufacturing Co.,CORP,,2024-12,12722.96
+GL-00894,2024-12-01,6008,IT & Software,PnL,6823.66,0.0,Acme Manufacturing Co.,CORP,,2024-12,6823.66
+GL-00895,2024-12-01,6009,Travel & Entertainment,PnL,5427.53,0.0,Acme Manufacturing Co.,CORP,,2024-12,5427.53
+GL-00896,2024-12-01,6010,Office Supplies,PnL,1884.13,0.0,Acme Manufacturing Co.,CORP,,2024-12,1884.13
+GL-00897,2024-12-01,6011,Telephone & Internet,PnL,2327.31,0.0,Acme Manufacturing Co.,CORP,,2024-12,2327.31
+GL-00898,2024-12-01,7001,Depreciation - Equipment,PnL,29785.87,0.0,Acme Manufacturing Co.,CORP,,2024-12,29785.87
+GL-00899,2024-12-01,7002,Amortisation - IP,PnL,6294.12,0.0,Acme Manufacturing Co.,CORP,,2024-12,6294.12
+GL-00900,2024-12-01,8001,Interest Expense,PnL,14967.45,0.0,Acme Manufacturing Co.,CORP,,2024-12,14967.45
+GL-00901,2024-12-01,8002,Income Tax Provision,PnL,37424.7,0.0,Acme Manufacturing Co.,CORP,,2024-12,37424.7
+GL-00902,2024-12-01,6097,Consulting - Acme Holdings LLC (related party),PnL,22000.0,0.0,Acme Manufacturing Co.,CORP,RELATED_PARTY: Monthly consulting retainer to owner entity,2024-12,22000.0

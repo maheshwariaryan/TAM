@@ -1,0 +1,325 @@
+Period,Customer,Product / Service,Region,Channel,Revenue Amount
+2022-01,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,80504.51
+2022-01,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,90567.57
+2022-01,Cedar Manufacturing,Service Contracts,South,Service / Other,100630.63
+2022-01,Delta Components,Shipping & Handling,West / Export,Direct OEM,110693.7
+2022-01,Evergreen Distribution,Standard Components,Midwest,Distributor,80504.51
+2022-01,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,90567.57
+2022-01,Granite Fabrication,Service Contracts,South,Direct OEM,100630.63
+2022-01,Harbor Tooling,Shipping & Handling,West / Export,Distributor,110693.7
+2022-01,Other customers,Mixed portfolio,Various,Mixed,241513.52
+2022-02,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,79810.13
+2022-02,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,89786.39
+2022-02,Cedar Manufacturing,Service Contracts,South,Service / Other,99762.66
+2022-02,Delta Components,Shipping & Handling,West / Export,Direct OEM,109738.93
+2022-02,Evergreen Distribution,Standard Components,Midwest,Distributor,79810.13
+2022-02,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,89786.39
+2022-02,Granite Fabrication,Service Contracts,South,Direct OEM,99762.66
+2022-02,Harbor Tooling,Shipping & Handling,West / Export,Distributor,109738.93
+2022-02,Other customers,Mixed portfolio,Various,Mixed,239430.39
+2022-03,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,80516.77
+2022-03,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,90581.37
+2022-03,Cedar Manufacturing,Service Contracts,South,Service / Other,100645.97
+2022-03,Delta Components,Shipping & Handling,West / Export,Direct OEM,110710.56
+2022-03,Evergreen Distribution,Standard Components,Midwest,Distributor,80516.77
+2022-03,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,90581.37
+2022-03,Granite Fabrication,Service Contracts,South,Direct OEM,100645.97
+2022-03,Harbor Tooling,Shipping & Handling,West / Export,Distributor,110710.56
+2022-03,Other customers,Mixed portfolio,Various,Mixed,241550.34
+2022-04,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,83419.28
+2022-04,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,93846.69
+2022-04,Cedar Manufacturing,Service Contracts,South,Service / Other,104274.1
+2022-04,Delta Components,Shipping & Handling,West / Export,Direct OEM,114701.51
+2022-04,Evergreen Distribution,Standard Components,Midwest,Distributor,83419.28
+2022-04,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,93846.69
+2022-04,Granite Fabrication,Service Contracts,South,Direct OEM,104274.1
+2022-04,Harbor Tooling,Shipping & Handling,West / Export,Distributor,114701.51
+2022-04,Other customers,Mixed portfolio,Various,Mixed,250257.81
+2022-05,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,81554.3
+2022-05,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,91748.58
+2022-05,Cedar Manufacturing,Service Contracts,South,Service / Other,101942.87
+2022-05,Delta Components,Shipping & Handling,West / Export,Direct OEM,112137.16
+2022-05,Evergreen Distribution,Standard Components,Midwest,Distributor,81554.3
+2022-05,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,91748.58
+2022-05,Granite Fabrication,Service Contracts,South,Direct OEM,101942.87
+2022-05,Harbor Tooling,Shipping & Handling,West / Export,Distributor,112137.16
+2022-05,Other customers,Mixed portfolio,Various,Mixed,244662.89
+2022-06,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,79969.64
+2022-06,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,89965.85
+2022-06,Cedar Manufacturing,Service Contracts,South,Service / Other,99962.05
+2022-06,Delta Components,Shipping & Handling,West / Export,Direct OEM,109958.26
+2022-06,Evergreen Distribution,Standard Components,Midwest,Distributor,79969.64
+2022-06,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,89965.85
+2022-06,Granite Fabrication,Service Contracts,South,Direct OEM,99962.05
+2022-06,Harbor Tooling,Shipping & Handling,West / Export,Distributor,109958.26
+2022-06,Other customers,Mixed portfolio,Various,Mixed,239908.9
+2022-07,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,84345.07
+2022-07,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,94888.21
+2022-07,Cedar Manufacturing,Service Contracts,South,Service / Other,105431.34
+2022-07,Delta Components,Shipping & Handling,West / Export,Direct OEM,115974.48
+2022-07,Evergreen Distribution,Standard Components,Midwest,Distributor,84345.07
+2022-07,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,94888.21
+2022-07,Granite Fabrication,Service Contracts,South,Direct OEM,105431.34
+2022-07,Harbor Tooling,Shipping & Handling,West / Export,Distributor,115974.48
+2022-07,Other customers,Mixed portfolio,Various,Mixed,253035.21
+2022-08,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,79439.92
+2022-08,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,89369.91
+2022-08,Cedar Manufacturing,Service Contracts,South,Service / Other,99299.9
+2022-08,Delta Components,Shipping & Handling,West / Export,Direct OEM,109229.89
+2022-08,Evergreen Distribution,Standard Components,Midwest,Distributor,79439.92
+2022-08,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,89369.91
+2022-08,Granite Fabrication,Service Contracts,South,Direct OEM,99299.9
+2022-08,Harbor Tooling,Shipping & Handling,West / Export,Distributor,109229.89
+2022-08,Other customers,Mixed portfolio,Various,Mixed,238319.76
+2022-09,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,85568.83
+2022-09,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,96264.94
+2022-09,Cedar Manufacturing,Service Contracts,South,Service / Other,106961.04
+2022-09,Delta Components,Shipping & Handling,West / Export,Direct OEM,117657.14
+2022-09,Evergreen Distribution,Standard Components,Midwest,Distributor,85568.83
+2022-09,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,96264.94
+2022-09,Granite Fabrication,Service Contracts,South,Direct OEM,106961.04
+2022-09,Harbor Tooling,Shipping & Handling,West / Export,Distributor,117657.14
+2022-09,Other customers,Mixed portfolio,Various,Mixed,256706.49
+2022-10,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,92838.33
+2022-10,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,104443.12
+2022-10,Cedar Manufacturing,Service Contracts,South,Service / Other,116047.91
+2022-10,Delta Components,Shipping & Handling,West / Export,Direct OEM,127652.7
+2022-10,Evergreen Distribution,Standard Components,Midwest,Distributor,92838.33
+2022-10,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,104443.12
+2022-10,Granite Fabrication,Service Contracts,South,Direct OEM,116047.91
+2022-10,Harbor Tooling,Shipping & Handling,West / Export,Distributor,127652.7
+2022-10,Other customers,Mixed portfolio,Various,Mixed,278514.99
+2022-11,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,92481.98
+2022-11,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,104042.22
+2022-11,Cedar Manufacturing,Service Contracts,South,Service / Other,115602.47
+2022-11,Delta Components,Shipping & Handling,West / Export,Direct OEM,127162.72
+2022-11,Evergreen Distribution,Standard Components,Midwest,Distributor,92481.98
+2022-11,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,104042.22
+2022-11,Granite Fabrication,Service Contracts,South,Direct OEM,115602.47
+2022-11,Harbor Tooling,Shipping & Handling,West / Export,Distributor,127162.72
+2022-11,Other customers,Mixed portfolio,Various,Mixed,277445.94
+2022-12,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,89323.47
+2022-12,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,100488.9
+2022-12,Cedar Manufacturing,Service Contracts,South,Service / Other,111654.34
+2022-12,Delta Components,Shipping & Handling,West / Export,Direct OEM,122819.77
+2022-12,Evergreen Distribution,Standard Components,Midwest,Distributor,89323.47
+2022-12,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,100488.9
+2022-12,Granite Fabrication,Service Contracts,South,Direct OEM,111654.34
+2022-12,Harbor Tooling,Shipping & Handling,West / Export,Distributor,122819.77
+2022-12,Other customers,Mixed portfolio,Various,Mixed,267970.4
+2023-01,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,86328.56
+2023-01,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,97119.63
+2023-01,Cedar Manufacturing,Service Contracts,South,Service / Other,107910.7
+2023-01,Delta Components,Shipping & Handling,West / Export,Direct OEM,118701.77
+2023-01,Evergreen Distribution,Standard Components,Midwest,Distributor,86328.56
+2023-01,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,97119.63
+2023-01,Granite Fabrication,Service Contracts,South,Direct OEM,107910.7
+2023-01,Harbor Tooling,Shipping & Handling,West / Export,Distributor,118701.77
+2023-01,Other customers,Mixed portfolio,Various,Mixed,258985.66
+2023-02,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,85051.96
+2023-02,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,95683.46
+2023-02,Cedar Manufacturing,Service Contracts,South,Service / Other,106314.96
+2023-02,Delta Components,Shipping & Handling,West / Export,Direct OEM,116946.45
+2023-02,Evergreen Distribution,Standard Components,Midwest,Distributor,85051.96
+2023-02,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,95683.46
+2023-02,Granite Fabrication,Service Contracts,South,Direct OEM,106314.96
+2023-02,Harbor Tooling,Shipping & Handling,West / Export,Distributor,116946.45
+2023-02,Other customers,Mixed portfolio,Various,Mixed,255155.9
+2023-03,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,86550.82
+2023-03,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,97369.67
+2023-03,Cedar Manufacturing,Service Contracts,South,Service / Other,108188.53
+2023-03,Delta Components,Shipping & Handling,West / Export,Direct OEM,119007.38
+2023-03,Evergreen Distribution,Standard Components,Midwest,Distributor,86550.82
+2023-03,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,97369.67
+2023-03,Granite Fabrication,Service Contracts,South,Direct OEM,108188.53
+2023-03,Harbor Tooling,Shipping & Handling,West / Export,Distributor,119007.38
+2023-03,Other customers,Mixed portfolio,Various,Mixed,259652.45
+2023-04,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,83763.7
+2023-04,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,94234.16
+2023-04,Cedar Manufacturing,Service Contracts,South,Service / Other,104704.62
+2023-04,Delta Components,Shipping & Handling,West / Export,Direct OEM,115175.09
+2023-04,Evergreen Distribution,Standard Components,Midwest,Distributor,83763.7
+2023-04,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,94234.16
+2023-04,Granite Fabrication,Service Contracts,South,Direct OEM,104704.62
+2023-04,Harbor Tooling,Shipping & Handling,West / Export,Distributor,115175.09
+2023-04,Other customers,Mixed portfolio,Various,Mixed,251291.09
+2023-05,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,83354.88
+2023-05,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,93774.24
+2023-05,Cedar Manufacturing,Service Contracts,South,Service / Other,104193.6
+2023-05,Delta Components,Shipping & Handling,West / Export,Direct OEM,114612.96
+2023-05,Evergreen Distribution,Standard Components,Midwest,Distributor,83354.88
+2023-05,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,93774.24
+2023-05,Granite Fabrication,Service Contracts,South,Direct OEM,104193.6
+2023-05,Harbor Tooling,Shipping & Handling,West / Export,Distributor,114612.96
+2023-05,Other customers,Mixed portfolio,Various,Mixed,250064.6
+2023-06,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,84205.1
+2023-06,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,94730.74
+2023-06,Cedar Manufacturing,Service Contracts,South,Service / Other,105256.38
+2023-06,Delta Components,Shipping & Handling,West / Export,Direct OEM,115782.02
+2023-06,Evergreen Distribution,Standard Components,Midwest,Distributor,84205.1
+2023-06,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,94730.74
+2023-06,Granite Fabrication,Service Contracts,South,Direct OEM,105256.38
+2023-06,Harbor Tooling,Shipping & Handling,West / Export,Distributor,115782.02
+2023-06,Other customers,Mixed portfolio,Various,Mixed,252615.33
+2023-07,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,86843.14
+2023-07,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,97698.53
+2023-07,Cedar Manufacturing,Service Contracts,South,Service / Other,108553.92
+2023-07,Delta Components,Shipping & Handling,West / Export,Direct OEM,119409.31
+2023-07,Evergreen Distribution,Standard Components,Midwest,Distributor,86843.14
+2023-07,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,97698.53
+2023-07,Granite Fabrication,Service Contracts,South,Direct OEM,108553.92
+2023-07,Harbor Tooling,Shipping & Handling,West / Export,Distributor,119409.31
+2023-07,Other customers,Mixed portfolio,Various,Mixed,260529.41
+2023-08,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,86503.28
+2023-08,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,97316.19
+2023-08,Cedar Manufacturing,Service Contracts,South,Service / Other,108129.1
+2023-08,Delta Components,Shipping & Handling,West / Export,Direct OEM,118942.01
+2023-08,Evergreen Distribution,Standard Components,Midwest,Distributor,86503.28
+2023-08,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,97316.19
+2023-08,Granite Fabrication,Service Contracts,South,Direct OEM,108129.1
+2023-08,Harbor Tooling,Shipping & Handling,West / Export,Distributor,118942.01
+2023-08,Other customers,Mixed portfolio,Various,Mixed,259509.83
+2023-09,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,83022.23
+2023-09,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,93400.01
+2023-09,Cedar Manufacturing,Service Contracts,South,Service / Other,103777.79
+2023-09,Delta Components,Shipping & Handling,West / Export,Direct OEM,114155.57
+2023-09,Evergreen Distribution,Standard Components,Midwest,Distributor,83022.23
+2023-09,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,93400.01
+2023-09,Granite Fabrication,Service Contracts,South,Direct OEM,103777.79
+2023-09,Harbor Tooling,Shipping & Handling,West / Export,Distributor,114155.57
+2023-09,Other customers,Mixed portfolio,Various,Mixed,249066.73
+2023-10,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,97607.67
+2023-10,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,109808.63
+2023-10,Cedar Manufacturing,Service Contracts,South,Service / Other,122009.58
+2023-10,Delta Components,Shipping & Handling,West / Export,Direct OEM,134210.54
+2023-10,Evergreen Distribution,Standard Components,Midwest,Distributor,97607.67
+2023-10,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,109808.63
+2023-10,Granite Fabrication,Service Contracts,South,Direct OEM,122009.58
+2023-10,Harbor Tooling,Shipping & Handling,West / Export,Distributor,134210.54
+2023-10,Other customers,Mixed portfolio,Various,Mixed,292823.0
+2023-11,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,96203.88
+2023-11,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,108229.37
+2023-11,Cedar Manufacturing,Service Contracts,South,Service / Other,120254.85
+2023-11,Delta Components,Shipping & Handling,West / Export,Direct OEM,132280.34
+2023-11,Evergreen Distribution,Standard Components,Midwest,Distributor,96203.88
+2023-11,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,108229.37
+2023-11,Granite Fabrication,Service Contracts,South,Direct OEM,120254.85
+2023-11,Harbor Tooling,Shipping & Handling,West / Export,Distributor,132280.34
+2023-11,Other customers,Mixed portfolio,Various,Mixed,288611.66
+2023-12,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,96415.04
+2023-12,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,108466.92
+2023-12,Cedar Manufacturing,Service Contracts,South,Service / Other,120518.8
+2023-12,Delta Components,Shipping & Handling,West / Export,Direct OEM,132570.68
+2023-12,Evergreen Distribution,Standard Components,Midwest,Distributor,96415.04
+2023-12,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,108466.92
+2023-12,Granite Fabrication,Service Contracts,South,Direct OEM,120518.8
+2023-12,Harbor Tooling,Shipping & Handling,West / Export,Distributor,132570.68
+2023-12,Other customers,Mixed portfolio,Various,Mixed,289245.15
+2024-01,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,86685.83
+2024-01,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,97521.55
+2024-01,Cedar Manufacturing,Service Contracts,South,Service / Other,108357.28
+2024-01,Delta Components,Shipping & Handling,West / Export,Direct OEM,119193.01
+2024-01,Evergreen Distribution,Standard Components,Midwest,Distributor,86685.83
+2024-01,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,97521.55
+2024-01,Granite Fabrication,Service Contracts,South,Direct OEM,108357.28
+2024-01,Harbor Tooling,Shipping & Handling,West / Export,Distributor,119193.01
+2024-01,Other customers,Mixed portfolio,Various,Mixed,260057.49
+2024-02,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,86512.83
+2024-02,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,97326.94
+2024-02,Cedar Manufacturing,Service Contracts,South,Service / Other,108141.04
+2024-02,Delta Components,Shipping & Handling,West / Export,Direct OEM,118955.14
+2024-02,Evergreen Distribution,Standard Components,Midwest,Distributor,86512.83
+2024-02,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,97326.94
+2024-02,Granite Fabrication,Service Contracts,South,Direct OEM,108141.04
+2024-02,Harbor Tooling,Shipping & Handling,West / Export,Distributor,118955.14
+2024-02,Other customers,Mixed portfolio,Various,Mixed,259538.5
+2024-03,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,84489.71
+2024-03,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,95050.92
+2024-03,Cedar Manufacturing,Service Contracts,South,Service / Other,105612.13
+2024-03,Delta Components,Shipping & Handling,West / Export,Direct OEM,116173.35
+2024-03,Evergreen Distribution,Standard Components,Midwest,Distributor,84489.71
+2024-03,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,95050.92
+2024-03,Granite Fabrication,Service Contracts,South,Direct OEM,105612.13
+2024-03,Harbor Tooling,Shipping & Handling,West / Export,Distributor,116173.35
+2024-03,Other customers,Mixed portfolio,Various,Mixed,253469.1
+2024-04,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,88607.5
+2024-04,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,99683.44
+2024-04,Cedar Manufacturing,Service Contracts,South,Service / Other,110759.38
+2024-04,Delta Components,Shipping & Handling,West / Export,Direct OEM,121835.32
+2024-04,Evergreen Distribution,Standard Components,Midwest,Distributor,88607.5
+2024-04,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,99683.44
+2024-04,Granite Fabrication,Service Contracts,South,Direct OEM,110759.38
+2024-04,Harbor Tooling,Shipping & Handling,West / Export,Distributor,121835.32
+2024-04,Other customers,Mixed portfolio,Various,Mixed,265822.53
+2024-05,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,89317.43
+2024-05,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,100482.1
+2024-05,Cedar Manufacturing,Service Contracts,South,Service / Other,111646.78
+2024-05,Delta Components,Shipping & Handling,West / Export,Direct OEM,122811.46
+2024-05,Evergreen Distribution,Standard Components,Midwest,Distributor,89317.43
+2024-05,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,100482.1
+2024-05,Granite Fabrication,Service Contracts,South,Direct OEM,111646.78
+2024-05,Harbor Tooling,Shipping & Handling,West / Export,Distributor,122811.46
+2024-05,Other customers,Mixed portfolio,Various,Mixed,267952.29
+2024-06,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,89216.99
+2024-06,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,100369.12
+2024-06,Cedar Manufacturing,Service Contracts,South,Service / Other,111521.24
+2024-06,Delta Components,Shipping & Handling,West / Export,Direct OEM,122673.37
+2024-06,Evergreen Distribution,Standard Components,Midwest,Distributor,89216.99
+2024-06,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,100369.12
+2024-06,Granite Fabrication,Service Contracts,South,Direct OEM,111521.24
+2024-06,Harbor Tooling,Shipping & Handling,West / Export,Distributor,122673.37
+2024-06,Other customers,Mixed portfolio,Various,Mixed,267650.98
+2024-07,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,88403.23
+2024-07,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,-150546.36
+2024-07,Cedar Manufacturing,Service Contracts,South,Service / Other,110504.04
+2024-07,Delta Components,Shipping & Handling,West / Export,Direct OEM,121554.45
+2024-07,Evergreen Distribution,Standard Components,Midwest,Distributor,88403.23
+2024-07,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,99453.64
+2024-07,Granite Fabrication,Service Contracts,South,Direct OEM,110504.04
+2024-07,Harbor Tooling,Shipping & Handling,Midwest,Direct OEM,371554.45
+2024-07,Other customers,Mixed portfolio,Various,Mixed,265209.7
+2024-08,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,87968.62
+2024-08,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,98964.7
+2024-08,Cedar Manufacturing,Service Contracts,South,Service / Other,109960.77
+2024-08,Delta Components,Shipping & Handling,West / Export,Direct OEM,120956.85
+2024-08,Evergreen Distribution,Standard Components,Midwest,Distributor,87968.62
+2024-08,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,98964.7
+2024-08,Granite Fabrication,Service Contracts,South,Direct OEM,109960.77
+2024-08,Harbor Tooling,Shipping & Handling,West / Export,Distributor,120956.85
+2024-08,Other customers,Mixed portfolio,Various,Mixed,263905.86
+2024-09,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,85711.27
+2024-09,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,96425.18
+2024-09,Cedar Manufacturing,Service Contracts,South,Service / Other,107139.09
+2024-09,Delta Components,Shipping & Handling,West / Export,Direct OEM,117853.0
+2024-09,Evergreen Distribution,Standard Components,Midwest,Distributor,85711.27
+2024-09,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,96425.18
+2024-09,Granite Fabrication,Service Contracts,South,Direct OEM,107139.09
+2024-09,Harbor Tooling,Shipping & Handling,West / Export,Distributor,117853.0
+2024-09,Other customers,Mixed portfolio,Various,Mixed,257133.82
+2024-10,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,96037.48
+2024-10,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,108042.16
+2024-10,Cedar Manufacturing,Service Contracts,South,Service / Other,120046.84
+2024-10,Delta Components,Shipping & Handling,West / Export,Direct OEM,132051.53
+2024-10,Evergreen Distribution,Standard Components,Midwest,Distributor,96037.48
+2024-10,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,108042.16
+2024-10,Granite Fabrication,Service Contracts,South,Direct OEM,120046.84
+2024-10,Harbor Tooling,Shipping & Handling,West / Export,Distributor,132051.53
+2024-10,Other customers,Mixed portfolio,Various,Mixed,288112.42
+2024-11,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,97187.79
+2024-11,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,109336.26
+2024-11,Cedar Manufacturing,Service Contracts,South,Service / Other,121484.73
+2024-11,Delta Components,Shipping & Handling,West / Export,Direct OEM,133633.21
+2024-11,Evergreen Distribution,Standard Components,Midwest,Distributor,97187.79
+2024-11,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,109336.26
+2024-11,Granite Fabrication,Service Contracts,South,Direct OEM,121484.73
+2024-11,Harbor Tooling,Shipping & Handling,West / Export,Distributor,133633.21
+2024-11,Other customers,Mixed portfolio,Various,Mixed,291563.35
+2024-12,Atlas Industrial Supply,Standard Components,Midwest,Direct OEM,97444.91
+2024-12,Boreal Equipment Group,Custom Assemblies,Northeast,Distributor,109625.52
+2024-12,Cedar Manufacturing,Service Contracts,South,Service / Other,121806.14
+2024-12,Delta Components,Shipping & Handling,West / Export,Direct OEM,133986.75
+2024-12,Evergreen Distribution,Standard Components,Midwest,Distributor,97444.91
+2024-12,ForgeWorks LLC,Custom Assemblies,Northeast,Service / Other,109625.52
+2024-12,Granite Fabrication,Service Contracts,South,Direct OEM,121806.14
+2024-12,Harbor Tooling,Shipping & Handling,West / Export,Distributor,133986.75
+2024-12,Other customers,Mixed portfolio,Various,Mixed,292334.72

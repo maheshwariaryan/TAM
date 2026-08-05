@@ -15,14 +15,15 @@ EBITDA = Revenue - COGS - Operating Expenses (before D&A, interest, tax)
 
 import logging
 from collections import defaultdict
-from datetime import date
 from decimal import Decimal
 
 from app.schemas.financials import PnLRow, PnLStatement
 from app.schemas.gl import (
-    ChartOfAccountsCategory as CAT,
     EBITDA_COMPONENTS,
     MappedGLLine,
+)
+from app.schemas.gl import (
+    ChartOfAccountsCategory as CAT,
 )
 
 logger = logging.getLogger(__name__)
@@ -53,12 +54,12 @@ def build(lines: list[MappedGLLine]) -> PnLStatement:
     Build a PnLStatement from a list of mapped GL lines.
     Only PnL-statement lines are processed; BalanceSheet lines are ignored.
     """
-    pnl_lines = [l for l in lines if l.financial_statement == "PnL"]
+    pnl_lines = [gl for gl in lines if gl.financial_statement == "PnL"]
     if not pnl_lines:
         raise ValueError("No PnL lines found in mapped GL. Verify CoA mapping completed.")
 
     deal_id = pnl_lines[0].deal_id
-    periods = sorted({l.period for l in pnl_lines})
+    periods = sorted({gl.period for gl in pnl_lines})
 
     # Aggregate amounts by (period, category, description)
     # Key: (period, account_code, account_description, category)

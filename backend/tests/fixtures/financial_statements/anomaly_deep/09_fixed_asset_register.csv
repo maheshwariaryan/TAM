@@ -1,0 +1,6 @@
+As Of Period,Asset ID,Asset Description,Category,Acquisition Date,Cost,Accumulated Depreciation,Net Book Value,Useful Life Years,Implied Remaining Life Years
+2024-12,FA-100,Production machinery,Machinery,2018-03-01,10737638.03,7252499.1,3485138.93,10,3.2
+2024-12,FA-200,Packaging line,Machinery,2020-07-01,2940067.56,1623979.83,1316087.72,8,3.6
+2024-12,FA-300,Warehouse improvements,Leasehold Improvements,2019-01-01,2364836.95,1165962.28,1198874.67,12,6.1
+2024-12,FA-400,Forklifts and fleet,Vehicles,2021-05-01,1636211.51,838344.41,797867.1,7,3.4
+2024-12,FA-500,ERP and IT equipment,IT Equipment,2021-10-01,1367770.56,136777.06,1230993.5,4,0.8

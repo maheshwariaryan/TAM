@@ -13,6 +13,8 @@ import { DecisionQueueResponseSchema, SummaryResponseSchema, type Metric } from 
 import { useGlobalStore } from "@/lib/store/use-global-store";
 import { formatDateTime } from "@/lib/utils/format";
 import { DealSummaryBanner } from "@/components/fdd/deal-summary-banner";
+import { JuniorAnalystReport } from "@/components/fdd/junior-analyst-report";
+import { RealDashboard } from "@/components/fdd/real-dashboard";
 
 const kpiTabs = [
   { key: "overview", label: "Executive Overview" },
@@ -38,6 +40,17 @@ export default function DashboardPage() {
     `/api/deal/decision-queue?deal=${encodeURIComponent(deal)}&period=${encodeURIComponent(period)}&basis=${encodeURIComponent(basis)}`,
     DecisionQueueResponseSchema
   );
+
+  // A processed deal is selected — show real backend data only, never the seeded mock demo.
+  if (dealId) {
+    return (
+      <div className="space-y-6">
+        <DealSummaryBanner dealId={dealId} />
+        <JuniorAnalystReport dealId={dealId} deal={deal} />
+        <RealDashboard dealId={dealId} />
+      </div>
+    );
+  }
 
   if (query.isLoading || !query.data) {
     return (
@@ -119,8 +132,8 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* ── Real deal metrics from FDD backend ── */}
-      {dealId && <DealSummaryBanner dealId={dealId} />}
+      {/* dealId is always null here — demo/mock view only, see early return above */}
+      <JuniorAnalystReport dealId={dealId} deal={deal} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>

@@ -12,16 +12,22 @@ import { useGlobalStore } from "@/lib/store/use-global-store";
 type Stage = "form" | "uploading" | "processing" | "done" | "error";
 
 const POLL_INTERVAL_MS = 2500;
-const ALLOWED_EXTENSIONS = [".csv", ".xlsx", ".xls", ".pdf"];
+const ALLOWED_EXTENSIONS = [".csv", ".xlsx", ".pdf", ".zip"];
 
 function StageProgress({ stages }: { stages: Deal["stages"] }) {
-  const order = ["ingestion", "coa_mapping", "financial_builder", "qoe_engine", "redflag_detector"];
+  const order = [
+    "ingestion", "coa_mapping", "financial_builder", "qoe_engine", "redflag_detector",
+    "nwc_analyzer", "dcf_engine", "net_debt_bridge",
+  ];
   const labels: Record<string, string> = {
-    ingestion: "Ingesting GL data",
+    ingestion: "Ingesting data room",
     coa_mapping: "Mapping chart of accounts",
     financial_builder: "Building financial statements",
     qoe_engine: "Running QoE analysis",
     redflag_detector: "Detecting red flags",
+    nwc_analyzer: "Analyzing net working capital",
+    dcf_engine: "Running DCF valuation",
+    net_debt_bridge: "Building net debt bridge",
   };
   return (
     <div className="space-y-2">
@@ -158,11 +164,8 @@ export default function UploadPage() {
             </p>
             <StageProgress stages={deal.stages} />
             <div className="flex gap-3 pt-2">
-              <Button onClick={() => router.push("/financial-analysis")} className="flex-1">
-                View Financial Analysis
-              </Button>
-              <Button variant="outline" onClick={() => router.push("/risk-assessment")} className="flex-1">
-                View Red Flags
+              <Button onClick={() => router.push("/dashboard")} className="flex-1">
+                Open Dashboard
               </Button>
             </div>
             <Button variant="ghost" size="sm" className="w-full" onClick={() => {

@@ -16,7 +16,6 @@ Writes to:   data/processed/{deal_id}/mapped_gl.json
 """
 
 import asyncio
-import json
 import logging
 from pathlib import Path
 
@@ -24,7 +23,9 @@ from app.agents.coa_mapper import CoAMapperAgent
 from app.pipeline.financial_builder import balance_sheet as bs_builder
 from app.pipeline.financial_builder import cash_flow as cf_builder
 from app.pipeline.financial_builder import pnl as pnl_builder
+from app.pipeline.ingestion.cross_document_validator import reconcile_schedules
 from app.pipeline.ingestion.orchestrator import IngestionError, load_raw_gl
+from app.schemas.aging import CrossDocumentValidation
 from app.schemas.gl import (
     EBITDA_COMPONENTS,
     NWC_COMPONENTS,
@@ -32,7 +33,9 @@ from app.schemas.gl import (
     MappedGLLine,
     RawGLLine,
 )
-from app.storage import file_store
+from app.schemas.settings import get_deal_settings
+from app.storage import deal_store, file_store
+from app.storage.json_io import read_json_encrypted, write_json_encrypted
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +49,7 @@ def _processed_path(deal_id: str, filename: str) -> Path:
 
 
 def _save_json(path: Path, data: object) -> None:
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, default=str)
+    write_json_encrypted(path, data)
 
 
 def run(deal_id: str) -> None:
@@ -81,7 +83,7 @@ async def _run_async(deal_id: str) -> None:
     # Persist mapped GL
     _save_json(
         _processed_path(deal_id, "mapped_gl.json"),
-        [l.model_dump(mode="json") for l in mapped_lines],
+        [gl.model_dump(mode="json") for gl in mapped_lines],
     )
 
     # ── Step 4: Build financial statements ────────────────────────────────────
@@ -90,7 +92,9 @@ async def _run_async(deal_id: str) -> None:
     logger.info("P&L built: %d periods", len(pnl.periods))
 
     # Balance sheet (only if BS lines exist)
-    bs_lines = [l for l in mapped_lines if l.financial_statement == "BalanceSheet"]
+    bs = None
+    cf = None
+    bs_lines = [gl for gl in mapped_lines if gl.financial_statement == "BalanceSheet"]
     if bs_lines:
         bs = bs_builder.build(mapped_lines)
         _save_json(_processed_path(deal_id, "financials_bs.json"), bs.model_dump(mode="json"))
@@ -100,6 +104,26 @@ async def _run_async(deal_id: str) -> None:
         logger.info("Balance sheet and cash flow built")
     else:
         logger.warning("No balance sheet accounts mapped — skipping BS and CF statements")
+
+    # ── Step 5: Reconcile Group A supporting schedules (if any were uploaded) against
+    # the GL-derived statements just built. Never used to recompute those statements —
+    # see cross_document_validator.reconcile_schedules docstring.
+    schedule_path = _processed_path(deal_id, "schedule_reconciliation.json")
+    if schedule_path.exists():
+        schedule_data = read_json_encrypted(schedule_path)
+        deal_settings = get_deal_settings(deal_store.get_deal(deal_id))
+        new_tie_outs = reconcile_schedules(
+            schedule_data, pnl, bs, cf, tolerance_pct=deal_settings.tie_out_tolerance_pct
+        )
+        if new_tie_outs:
+            validation_path = _processed_path(deal_id, "cross_document_validation.json")
+            if validation_path.exists():
+                validation = CrossDocumentValidation.model_validate(read_json_encrypted(validation_path))
+                validation.tie_outs.extend(new_tie_outs)
+            else:
+                validation = CrossDocumentValidation(deal_id=deal_id, tie_outs=new_tie_outs)
+            _save_json(validation_path, validation.model_dump(mode="json"))
+            logger.info("Merged %d schedule reconciliation tie-out(s) for deal %s", len(new_tie_outs), deal_id)
 
 
 def _apply_classifications(
@@ -137,8 +161,10 @@ def _apply_classifications(
             is_ebitda_component=category in EBITDA_COMPONENTS,
             is_nwc_component=category in NWC_COMPONENTS,
             mapping_confidence=confidence,
-            mapping_source="rule" if reasoning.startswith("Mock") else
-                           "llm" if confidence < 1.0 else "manual",
+            # "manual" is reserved for a future human-review workflow — nothing in this
+            # codebase currently sets it, so every non-mock classification here came from
+            # the LLM regardless of its confidence score.
+            mapping_source="rule" if reasoning.startswith("Mock") else "llm",
             mapping_reasoning=reasoning,
         ))
 
@@ -151,5 +177,4 @@ def load_mapped_gl(deal_id: str) -> list[MappedGLLine]:
         raise FinancialBuilderError(
             f"No mapped GL found for deal {deal_id}. Run coa_mapping + financial_builder stages first."
         )
-    with open(path, encoding="utf-8") as f:
-        return [MappedGLLine.model_validate(item) for item in json.load(f)]
+    return [MappedGLLine.model_validate(item) for item in read_json_encrypted(path)]

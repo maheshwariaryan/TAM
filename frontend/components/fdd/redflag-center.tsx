@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AlertTriangle, AlertCircle, Info, ChevronDown, ChevronRight, Shield } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getRedFlags, type RedFlag, type RedFlagReport } from "@/lib/api/fdd-client";
@@ -18,25 +18,49 @@ const SEVERITY_CONFIG = {
 const fmt = (v: string | number | null) =>
   v !== null ? `$${Math.abs(Number(v)).toLocaleString("en-US", { maximumFractionDigits: 0 })}` : null;
 
-function SummaryChips({ summary }: { summary: RedFlagReport["summary"] }) {
+const SEVERITY_BAR_COLOR: Record<string, string> = {
+  High: "bg-red-500",
+  Medium: "bg-amber-500",
+  Low: "bg-blue-500",
+  Informational: "bg-slate-400",
+};
+
+function SeverityDistributionBar({ summary }: { summary: RedFlagReport["summary"] }) {
+  if (summary.total === 0) return null;
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
       {(["High", "Medium", "Low", "Informational"] as const).map((sev) => {
         const count = summary[sev.toLowerCase() as keyof typeof summary] as number;
-        const cfg = SEVERITY_CONFIG[sev];
-        return (
-          <div key={sev} className={cn("flex items-center gap-2 rounded-lg border px-4 py-2.5", cfg.bg)}>
-            <cfg.icon className={cn("h-4 w-4", cfg.color)} />
-            <span className="text-sm font-semibold">{count}</span>
-            <span className="text-sm text-muted-foreground">{sev}</span>
-          </div>
-        );
+        if (count === 0) return null;
+        const pct = (count / summary.total) * 100;
+        return <div key={sev} className={SEVERITY_BAR_COLOR[sev]} style={{ width: `${pct}%` }} title={`${sev}: ${count}`} />;
       })}
-      <div className="flex items-center gap-2 rounded-lg border px-4 py-2.5">
-        <Shield className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-semibold">{summary.total}</span>
-        <span className="text-sm text-muted-foreground">Total</span>
+    </div>
+  );
+}
+
+function SummaryChips({ summary }: { summary: RedFlagReport["summary"] }) {
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-3">
+        {(["High", "Medium", "Low", "Informational"] as const).map((sev) => {
+          const count = summary[sev.toLowerCase() as keyof typeof summary] as number;
+          const cfg = SEVERITY_CONFIG[sev];
+          return (
+            <div key={sev} className={cn("flex items-center gap-2 rounded-lg border px-4 py-2.5", cfg.bg)}>
+              <cfg.icon className={cn("h-4 w-4", cfg.color)} />
+              <span className="text-sm font-semibold">{count}</span>
+              <span className="text-sm text-muted-foreground">{sev}</span>
+            </div>
+          );
+        })}
+        <div className="flex items-center gap-2 rounded-lg border px-4 py-2.5">
+          <Shield className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-semibold">{summary.total}</span>
+          <span className="text-sm text-muted-foreground">Total</span>
+        </div>
       </div>
+      <SeverityDistributionBar summary={summary} />
     </div>
   );
 }

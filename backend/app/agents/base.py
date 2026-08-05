@@ -2,7 +2,7 @@
 BaseAgent — shared foundation for all LLM agents in the FDD Engine.
 
 Responsibilities:
-  - Holds the OpenAI async client (one per process, shared across agents)
+  - Holds the Anthropic async client (one per process, shared across agents)
   - Enforces the mock/real mode switch via USE_MOCK_LLM
   - Provides _call() with exponential-backoff retry for transient API errors
   - Tracks token usage per call for cost visibility
@@ -20,7 +20,7 @@ import logging
 import time
 from typing import Any
 
-from anthropic import AsyncAnthropic, APIStatusError, APIConnectionError, RateLimitError
+from anthropic import APIConnectionError, APIStatusError, AsyncAnthropic, RateLimitError
 
 from app.config import settings
 
@@ -52,11 +52,19 @@ class BaseAgent:
     Subclasses must implement: _build_messages, _tools, _parse_response, _mock_response
     """
 
-    #: Override in subclass with the OpenAI function/tool definitions
+    #: Override in subclass with tool definitions in OpenAI's function-calling
+    #: shape ({"type": "function", "function": {...}}) — _call() below translates
+    #: them to Anthropic's tool format at request time. The client is Anthropic;
+    #: only this one definition format is borrowed from OpenAI's convention.
     _tools: list[dict] = []
 
     #: Name used in logs
     name: str = "BaseAgent"
+
+    #: Override in subclass to pin this agent to a specific model instead of
+    #: settings.anthropic_model — e.g. a task that needs stricter tool-schema
+    #: adherence than the global default model reliably provides.
+    model: str | None = None
 
     async def run(self, payload: Any) -> Any:
         """
@@ -107,9 +115,8 @@ class BaseAgent:
         for attempt in range(max_retries):
             try:
                 kwargs: dict[str, Any] = {
-                    "model": settings.anthropic_model,
+                    "model": self.model or settings.anthropic_model,
                     "messages": api_messages,
-                    "temperature": 0.0,
                     "max_tokens": 4000,
                 }
                 if system_prompt:
@@ -143,7 +150,17 @@ class BaseAgent:
                 last_exc = exc
 
             except APIStatusError as exc:
-                # 4xx errors are not retryable
+                # 5xx (server error) and 529 (overloaded) are transient — retry with backoff,
+                # same as rate limits. Only 4xx client errors are treated as non-retryable.
+                if exc.status_code >= 500:
+                    wait = 2 ** attempt * 5  # 5s, 10s, 20s
+                    logger.warning(
+                        "[%s] server error %d — retrying in %ds (attempt %d)",
+                        self.name, exc.status_code, wait, attempt + 1,
+                    )
+                    await asyncio.sleep(wait)
+                    last_exc = exc
+                    continue
                 raise AgentError(f"[{self.name}] API error {exc.status_code}: {exc.message}") from exc
 
         raise AgentError(

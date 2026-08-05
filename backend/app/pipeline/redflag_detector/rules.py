@@ -13,14 +13,24 @@ Rules implemented:
   AR_DAYS_HIGH            — Accounts receivable days >75                 → Medium
   DEFERRED_REVENUE_DECLINE — Deferred revenue shrinking YoY             → High
   EBITDA_VOLATILITY       — Monthly EBITDA std dev / mean >40%           → Medium
+  NWC_VOLATILITY          — Monthly NWC std dev / mean >30%              → Medium
+  REVENUE_SEASONALITY     — Q4 revenue >40% of annual revenue            → Informational
+
+Not implemented (require customer-level revenue data this system does not ingest —
+skipped rather than approximated from aggregate GL, per the no-invented-numbers rule):
+  CUSTOMER_CONCENTRATION, CUSTOMER_COUNT_DECLINE
 """
 
 import logging
 import uuid
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 
+from app.schemas.aging import CrossDocumentValidation
 from app.schemas.financials import BalanceSheet, CashFlowStatement, PnLStatement
-from app.schemas.gl import ChartOfAccountsCategory as CAT, MappedGLLine
+from app.schemas.gl import ChartOfAccountsCategory as CAT
+from app.schemas.gl import MappedGLLine
+from app.schemas.net_debt import NetDebtReport
+from app.schemas.nwc import NWCReport
 from app.schemas.qoe import QoEReport
 from app.schemas.redflags import RedFlag
 
@@ -30,9 +40,17 @@ logger = logging.getLogger(__name__)
 EBITDA_MARGIN_DECLINE_BPS = 300          # 3.00%
 OWNER_COMP_PCT_THRESHOLD = Decimal("0.10")    # >10% of revenue flags owner comp (mid-market norm)
 RELATED_PARTY_PCT_THRESHOLD = Decimal("0.02") # >2% of revenue flags related-party materiality
-CASH_CONVERSION_THRESHOLD = 0.60
+# Cash conversion severity bands (percent points, i.e. 60 means 60%), configurable per
+# deal via app.schemas.settings.DealSettings — these are the defaults when no deal
+# settings exist. below medium -> Medium, below high -> High, at/below critical -> High
+# with amplified "Critical" language (RedFlag.severity has no tier above High).
+CASH_CONVERSION_MEDIUM_PCT = 60.0
+CASH_CONVERSION_HIGH_PCT = 30.0
+CASH_CONVERSION_CRITICAL_PCT = 0.0
 AR_DAYS_THRESHOLD = 75
 EBITDA_VOLATILITY_THRESHOLD = 0.40       # std dev / mean
+NWC_VOLATILITY_THRESHOLD = 0.30          # std dev / mean (plan.txt threshold)
+REVENUE_SEASONALITY_Q4_THRESHOLD = 0.40  # Q4 share of annual revenue
 
 
 def detect_all(
@@ -42,22 +60,67 @@ def detect_all(
     qoe: QoEReport,
     balance_sheet: BalanceSheet | None = None,
     cash_flow: CashFlowStatement | None = None,
+    nwc_report: NWCReport | None = None,
+    cross_validation: CrossDocumentValidation | None = None,
+    net_debt_report: NetDebtReport | None = None,
+    materiality_threshold: float | None = None,
+    cash_conversion_medium_pct: float = CASH_CONVERSION_MEDIUM_PCT,
+    cash_conversion_high_pct: float = CASH_CONVERSION_HIGH_PCT,
+    cash_conversion_critical_pct: float = CASH_CONVERSION_CRITICAL_PCT,
 ) -> list[RedFlag]:
-    """Run all rules and return the combined flag list, sorted by severity."""
+    """Run all rules and return the combined flag list, sorted by severity.
+
+    materiality_threshold is deliberately opt-in (None by default): direct/unit-test
+    callers get today's behavior unchanged; the orchestrator passes the deal's
+    configured (or default) materiality so the demotion pass below actually runs for
+    real deals — see app.schemas.settings.DealSettings."""
     flags: list[RedFlag] = []
 
-    flags.extend(_rule_ebitda_margin_decline(deal_id, pnl))
-    flags.extend(_rule_owner_comp_high(deal_id, pnl, mapped_lines))
-    flags.extend(_rule_related_party_material(deal_id, pnl, mapped_lines))
-    flags.extend(_rule_one_time_items_present(deal_id, qoe))
-    flags.extend(_rule_ebitda_volatility(deal_id, pnl))
+    def _run(rule_id: str, rule_flags: list[RedFlag]) -> list[RedFlag]:
+        logger.info(
+            "redflag_rule rule=%s fired=%s flags_produced=%d",
+            rule_id, bool(rule_flags), len(rule_flags),
+            extra={"event": "redflag_rule", "deal_id": deal_id, "rule": rule_id,
+                   "fired": bool(rule_flags), "flags_produced": len(rule_flags)},
+        )
+        return rule_flags
+
+    flags.extend(_run("EBITDA_MARGIN_DECLINE", _rule_ebitda_margin_decline(deal_id, pnl)))
+    flags.extend(_run("OWNER_COMP_HIGH", _rule_owner_comp_high(deal_id, pnl, mapped_lines)))
+    flags.extend(_run("RELATED_PARTY_MATERIAL", _rule_related_party_material(deal_id, pnl, mapped_lines)))
+    flags.extend(_run("QOE_ITEMS_PRESENT", _rule_one_time_items_present(deal_id, qoe)))
+    flags.extend(_run("EBITDA_VOLATILITY", _rule_ebitda_volatility(deal_id, pnl)))
+    flags.extend(_run("REVENUE_SEASONALITY", _rule_revenue_seasonality(deal_id, pnl)))
 
     if balance_sheet:
-        flags.extend(_rule_ar_days_high(deal_id, pnl, balance_sheet))
-        flags.extend(_rule_deferred_revenue_decline(deal_id, balance_sheet))
+        flags.extend(_run("AR_DAYS_HIGH", _rule_ar_days_high(deal_id, pnl, balance_sheet)))
+        flags.extend(_run("DEFERRED_REVENUE_DECLINE", _rule_deferred_revenue_decline(deal_id, balance_sheet)))
 
     if cash_flow:
-        flags.extend(_rule_low_cash_conversion(deal_id, cash_flow, pnl))
+        flags.extend(_run("LOW_CASH_CONVERSION", _rule_low_cash_conversion(
+            deal_id, cash_flow, pnl,
+            medium_pct=cash_conversion_medium_pct,
+            high_pct=cash_conversion_high_pct,
+            critical_pct=cash_conversion_critical_pct,
+        )))
+
+    if nwc_report and nwc_report.status != "skipped":
+        flags.extend(_run("NWC_VOLATILITY", _rule_nwc_volatility(deal_id, nwc_report)))
+
+    if cross_validation:
+        flags.extend(_run(
+            "CROSS_DOC_TIE_OUT_FAILURE",
+            _rule_cross_doc_tie_out_failures(deal_id, cross_validation),
+        ))
+
+    if net_debt_report:
+        flags.extend(_run(
+            "NET_DEBT_RECONCILIATION_MISMATCH",
+            _rule_net_debt_reconciliation_mismatch(deal_id, net_debt_report),
+        ))
+
+    if materiality_threshold is not None:
+        flags = _apply_materiality_demotion(deal_id, flags, materiality_threshold)
 
     # Sort: High → Medium → Low → Informational
     order = {"High": 0, "Medium": 1, "Low": 2, "Informational": 3}
@@ -88,6 +151,40 @@ def _flag(deal_id: str, severity, category, title, description, rule_id,
         rule_id=rule_id,
         source_gl_line_ids=gl_line_ids or [],
     )
+
+
+def _apply_materiality_demotion(
+    deal_id: str, flags: list[RedFlag], materiality_threshold: float
+) -> list[RedFlag]:
+    """Demote (never drop) any flag whose entire estimated impact range falls below the
+    deal's materiality threshold to Informational severity. Flags with no impact
+    estimate at all are left untouched — there is nothing to compare against, and
+    inventing one would violate the no-invented-numbers rule."""
+    demoted: list[RedFlag] = []
+    for f in flags:
+        if (
+            f.severity != "Informational"
+            and f.financial_impact_low is not None
+            and f.financial_impact_high is not None
+            and abs(f.financial_impact_high) < Decimal(str(materiality_threshold))
+        ):
+            logger.info(
+                "redflag_materiality_demotion rule=%s deal_id=%s from=%s impact_high=%s threshold=%s",
+                f.rule_id, deal_id, f.severity, f.financial_impact_high, materiality_threshold,
+                extra={"event": "redflag_materiality_demotion", "deal_id": deal_id, "rule": f.rule_id,
+                       "from_severity": f.severity, "impact_high": str(f.financial_impact_high),
+                       "materiality_threshold": materiality_threshold},
+            )
+            note = (
+                f"(Below the ${materiality_threshold:,.0f} materiality threshold — "
+                "informational only.)"
+            )
+            f = f.model_copy(update={
+                "severity": "Informational",
+                "description": f"{f.description} {note}",
+            })
+        demoted.append(f)
+    return demoted
 
 
 def _rule_ebitda_margin_decline(deal_id: str, pnl: PnLStatement) -> list[RedFlag]:
@@ -356,9 +453,19 @@ def _rule_deferred_revenue_decline(
 
 
 def _rule_low_cash_conversion(
-    deal_id: str, cf: CashFlowStatement, pnl: PnLStatement
+    deal_id: str,
+    cf: CashFlowStatement,
+    pnl: PnLStatement,
+    medium_pct: float = CASH_CONVERSION_MEDIUM_PCT,
+    high_pct: float = CASH_CONVERSION_HIGH_PCT,
+    critical_pct: float = CASH_CONVERSION_CRITICAL_PCT,
 ) -> list[RedFlag]:
-    """Flag if operating cash flow / EBITDA < 60% for 2+ consecutive years."""
+    """Flag if operating cash flow / EBITDA is below `medium_pct` for 2+ years.
+
+    Graduated severity (all percent points, e.g. 60 means 60%): below medium_pct ->
+    Medium, below high_pct -> High, at/below critical_pct -> High with amplified
+    "Critical" language (RedFlag.severity has no tier above High, so the worst band is
+    distinguished by title/description rather than a new enum value)."""
     from collections import defaultdict
 
     annual_op: dict[str, float] = defaultdict(float)
@@ -370,30 +477,169 @@ def _rule_low_cash_conversion(
         annual_ebitda[pk[:4]] += float(ebitda_val)
 
     years = sorted(set(annual_op.keys()) & set(annual_ebitda.keys()))
-    low_years = [
-        yr for yr in years
+    year_conv_pct = {
+        yr: annual_op[yr] / annual_ebitda[yr] * 100
+        for yr in years
         if annual_ebitda[yr] > 0
-        and annual_op[yr] / annual_ebitda[yr] < CASH_CONVERSION_THRESHOLD
-    ]
+    }
+    low_years = [yr for yr, conv_pct in year_conv_pct.items() if conv_pct < medium_pct]
 
     if len(low_years) < 2:
         return []
 
-    avg_conv = sum(
-        annual_op[yr] / annual_ebitda[yr] for yr in low_years if annual_ebitda[yr] > 0
-    ) / len(low_years)
+    avg_conv_pct = sum(year_conv_pct[yr] for yr in low_years) / len(low_years)
+
+    if avg_conv_pct <= critical_pct:
+        severity = "High"
+        title_prefix = "Critical: "
+        band_note = f"at or below the {critical_pct:.0f}% critical threshold"
+    elif avg_conv_pct < high_pct:
+        severity = "High"
+        title_prefix = ""
+        band_note = f"below the {high_pct:.0f}% high-severity threshold"
+    else:
+        severity = "Medium"
+        title_prefix = ""
+        band_note = f"below the {medium_pct:.0f}% threshold"
 
     return [_flag(
         deal_id=deal_id,
-        severity="High",
+        severity=severity,
         category="Cash Flow Quality",
-        title=f"Low Cash Conversion ({avg_conv:.0%} avg over {len(low_years)} years)",
+        title=f"{title_prefix}Low Cash Conversion ({avg_conv_pct:.0f}% avg over {len(low_years)} years)",
         description=(
-            f"Operating cash flow conversion averaged {avg_conv:.0%} of EBITDA over "
-            f"{len(low_years)} years ({', '.join(low_years)}), below the 60% threshold. "
+            f"Operating cash flow conversion averaged {avg_conv_pct:.0f}% of EBITDA over "
+            f"{len(low_years)} years ({', '.join(low_years)}), {band_note}. "
             "This signals meaningful working capital consumption or capitalisation of costs "
             "that may be masking true cash generation."
         ),
         rule_id="LOW_CASH_CONVERSION",
         affected_periods=[f"{yr}-01" for yr in low_years],
+    )]
+
+
+def _rule_nwc_volatility(deal_id: str, nwc_report: NWCReport) -> list[RedFlag]:
+    """Flag if monthly NWC has a coefficient of variation > 30% (plan.txt threshold)."""
+    cv = nwc_report.nwc_volatility
+    if cv is None or cv <= NWC_VOLATILITY_THRESHOLD:
+        return []
+
+    periods = [dp.period.strftime("%Y-%m") for dp in nwc_report.data_points]
+    return [_flag(
+        deal_id=deal_id,
+        severity="Medium",
+        category="Working Capital",
+        title=f"High NWC Volatility (CV: {cv:.0%})",
+        description=(
+            f"Monthly net working capital has a coefficient of variation of {cv:.0%}, above the "
+            f"{NWC_VOLATILITY_THRESHOLD:.0%} threshold. Volatile NWC increases peg risk and may "
+            "indicate seasonality, inconsistent collections/payment timing, or lumpy inventory builds — "
+            "see the NWC seasonal_adjusted peg for a normalized alternative."
+        ),
+        rule_id="NWC_VOLATILITY",
+        affected_periods=periods,
+    )]
+
+
+def _rule_revenue_seasonality(deal_id: str, pnl: PnLStatement) -> list[RedFlag]:
+    """Informational: flag if Q4 revenue exceeds 40% of annual revenue on average."""
+    from collections import defaultdict
+
+    annual: dict[str, list[str]] = defaultdict(list)
+    for pk in pnl.revenue:
+        annual[pk[:4]].append(pk)
+
+    q4_pcts = []
+    full_years = []
+    for yr, periods in annual.items():
+        if len(periods) < 12:
+            continue
+        yr_total = sum(pnl.revenue[pk] for pk in periods)
+        if not yr_total:
+            continue
+        q4_total = sum(pnl.revenue[pk] for pk in periods if pk.split("-")[1] in ("10", "11", "12"))
+        q4_pcts.append(float(q4_total / yr_total))
+        full_years.append(yr)
+
+    if not q4_pcts:
+        return []
+
+    avg_q4_pct = sum(q4_pcts) / len(q4_pcts)
+    if avg_q4_pct <= REVENUE_SEASONALITY_Q4_THRESHOLD:
+        return []
+
+    return [_flag(
+        deal_id=deal_id,
+        severity="Informational",
+        category="Revenue Quality",
+        title=f"Significant Revenue Seasonality (Q4: {avg_q4_pct:.0%} of Annual Revenue)",
+        description=(
+            f"Q4 revenue averages {avg_q4_pct:.0%} of annual revenue across {len(full_years)} full "
+            f"year(s), above the {REVENUE_SEASONALITY_Q4_THRESHOLD:.0%} concentration threshold. "
+            "This is informational context for NWC peg timing and quarterly run-rate comparisons, "
+            "not necessarily a defect."
+        ),
+        rule_id="REVENUE_SEASONALITY",
+        affected_periods=sorted(pk for yr in full_years for pk in annual[yr]),
+    )]
+
+
+def _rule_cross_doc_tie_out_failures(
+    deal_id: str, cross_validation: CrossDocumentValidation
+) -> list[RedFlag]:
+    """Flag any cross-document tie-out (e.g. AR/AP aging vs. balance sheet) that failed —
+    variance beyond 2x tolerance, meaning the source documents materially disagree."""
+    flags: list[RedFlag] = []
+    for tie_out in cross_validation.tie_outs:
+        if tie_out.status != "Fail":
+            continue
+        flags.append(_flag(
+            deal_id=deal_id,
+            severity="High",
+            category="Data Quality",
+            title=f"Data Mismatch: {tie_out.name} ({tie_out.variance_pct:.1f}% variance)",
+            description=(
+                f"{tie_out.name} does not tie out: expected ${float(tie_out.expected):,.0f} "
+                f"(from {', '.join(tie_out.source_documents) or 'the balance sheet'}) vs. observed "
+                f"${float(tie_out.observed):,.0f}, a difference of ${float(abs(tie_out.difference)):,.0f} "
+                f"({tie_out.variance_pct:.1f}%), exceeding the {tie_out.tolerance_pct:.1f}% tolerance. "
+                "Reconcile the source documents before relying on either figure."
+            ),
+            rule_id="CROSS_DOC_TIE_OUT_FAILURE",
+            impact_low=float(abs(tie_out.difference)),
+            impact_high=float(abs(tie_out.difference)),
+        ))
+    return flags
+
+
+def _rule_net_debt_reconciliation_mismatch(
+    deal_id: str, net_debt_report: NetDebtReport
+) -> list[RedFlag]:
+    """Flag if contract-extracted debt principal fails to reconcile against balance-sheet debt
+    beyond the 5% tolerance already computed in the net debt bridge."""
+    variance = net_debt_report.reconciliation_variance
+    if variance is None:
+        return []
+
+    tolerance = abs(net_debt_report.total_debt) * Decimal("0.05")
+    if abs(variance) <= tolerance:
+        return []
+
+    return [_flag(
+        deal_id=deal_id,
+        severity="High",
+        category="Data Quality",
+        title=f"Debt Schedule Mismatch (${float(abs(variance)):,.0f} variance)",
+        description=(
+            net_debt_report.reconciliation_note
+            or (
+                f"Contract-extracted principal (${float(net_debt_report.instrument_principal_total or 0):,.0f}) "
+                f"differs from balance sheet debt (${float(net_debt_report.total_debt):,.0f}) by "
+                f"${float(abs(variance)):,.0f}, beyond the 5% tolerance."
+            )
+        ),
+        rule_id="NET_DEBT_RECONCILIATION_MISMATCH",
+        affected_periods=[net_debt_report.period] if net_debt_report.period else [],
+        impact_low=float(abs(variance)),
+        impact_high=float(abs(variance)),
     )]

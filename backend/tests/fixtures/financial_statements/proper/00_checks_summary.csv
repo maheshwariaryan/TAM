@@ -1,0 +1,113 @@
+Check Name,Actual,Expected,Difference,Tolerance,Status,Notes
+IS gross profit recomputes 2022-01,346531.32,346531.32,0.0,0.01,OK,GL-derived
+BS balances 2022-01,11548486.26,11548486.26,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2022-01,2525692.03,2525692.03,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2022-02,334987.52,334987.52,0.0,0.01,OK,GL-derived
+BS balances 2022-02,11704617.32,11704617.32,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2022-02,2603547.23,2603547.23,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2022-03,350290.15,350290.15,0.0,0.01,OK,GL-derived
+BS balances 2022-03,11855761.01,11855761.01,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2022-03,2672814.19,2672814.19,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2022-04,384015.18,384015.18,0.0,0.01,OK,GL-derived
+BS balances 2022-04,12049624.74,12049624.74,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2022-04,2728559.19,2728559.19,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2022-05,373795.86,373795.86,0.0,0.01,OK,GL-derived
+BS balances 2022-05,12193786.84,12193786.84,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2022-05,2857035.47,2857035.47,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2022-06,344078.28,344078.28,0.0,0.01,OK,GL-derived
+BS balances 2022-06,12363267.27,12363267.27,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2022-06,2964700.18,2964700.18,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2022-07,389168.31,389168.31,0.0,0.01,OK,GL-derived
+BS balances 2022-07,12566538.16,12566538.16,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2022-07,3165119.01,3165119.01,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2022-08,335020.54,335020.54,0.0,0.01,OK,GL-derived
+BS balances 2022-08,12695203.08,12695203.08,-0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2022-08,3334203.98,3334203.98,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2022-09,410128.95,410128.95,0.0,0.01,OK,GL-derived
+BS balances 2022-09,12883830.09,12883830.09,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2022-09,3352308.78,3352308.78,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2022-10,506444.29,506444.29,0.0,0.01,OK,GL-derived
+BS balances 2022-10,13184681.51,13184681.51,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2022-10,3475574.64,3475574.64,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2022-11,500421.45,500421.45,0.0,0.01,OK,GL-derived
+BS balances 2022-11,13490407.71,13490407.71,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2022-11,3733281.59,3733281.59,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2022-12,465653.8,465653.8,0.0,0.01,OK,GL-derived
+BS balances 2022-12,13754380.46,13754380.46,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2022-12,4019723.37,4019723.37,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2023-01,390522.61,390522.61,0.0,0.01,OK,GL-derived
+BS balances 2023-01,13963894.12,13963894.12,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2023-01,4374859.7,4374859.7,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2023-02,372943.13,372943.13,0.0,0.01,OK,GL-derived
+BS balances 2023-02,13933776.0,13933776.0,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2023-02,4312647.22,4312647.22,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2023-03,400612.99,400612.99,0.0,0.01,OK,GL-derived
+BS balances 2023-03,13966194.56,13966194.56,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2023-03,4307515.15,4307515.15,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2023-04,380622.16,380622.16,0.0,0.01,OK,GL-derived
+BS balances 2023-04,14133779.27,14133779.27,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2023-04,4293300.34,4293300.34,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2023-05,371863.2,371863.2,0.0,0.01,OK,GL-derived
+BS balances 2023-05,14293853.18,14293853.18,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2023-05,4408233.92,4408233.92,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2023-06,389872.52,389872.52,0.0,0.01,OK,GL-derived
+BS balances 2023-06,14424856.76,14424856.76,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2023-06,4486450.74,4486450.74,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2023-07,393407.38,393407.38,0.0,0.01,OK,GL-derived
+BS balances 2023-07,14664922.18,14664922.18,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2023-07,4739640.79,4739640.79,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2023-08,396577.1,396577.1,0.0,0.01,OK,GL-derived
+BS balances 2023-08,14862116.44,14862116.44,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2023-08,4894846.88,4894846.88,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2023-09,358800.67,358800.67,0.0,0.01,OK,GL-derived
+BS balances 2023-09,14940584.69,14940584.69,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2023-09,4981843.28,4981843.28,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2023-10,541970.86,541970.86,0.0,0.01,OK,GL-derived
+BS balances 2023-10,15293817.88,15293817.88,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2023-10,4989171.7,4989171.7,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2023-11,511812.73,511812.73,0.0,0.01,OK,GL-derived
+BS balances 2023-11,15638936.08,15638936.08,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2023-11,5257407.56,5257407.56,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2023-12,519843.17,519843.17,0.0,0.01,OK,GL-derived
+BS balances 2023-12,15906803.86,15906803.86,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2023-12,5446838.13,5446838.13,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2024-01,393507.94,393507.94,0.0,0.01,OK,GL-derived
+BS balances 2024-01,16098766.45,16098766.45,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2024-01,5940252.35,5940252.35,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2024-02,374282.84,374282.84,0.0,0.01,OK,GL-derived
+BS balances 2024-02,16305270.01,16305270.01,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2024-02,6032827.44,6032827.44,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2024-03,371314.79,371314.79,0.0,0.01,OK,GL-derived
+BS balances 2024-03,16395614.66,16395614.66,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2024-03,6119662.97,6119662.97,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2024-04,412734.03,412734.03,0.0,0.01,OK,GL-derived
+BS balances 2024-04,16627398.1,16627398.1,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2024-04,6169883.47,6169883.47,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2024-05,418251.25,418251.25,0.0,0.01,OK,GL-derived
+BS balances 2024-05,16825624.85,16825624.85,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2024-05,6266208.0,6266208.0,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2024-06,401060.12,401060.12,0.0,0.01,OK,GL-derived
+BS balances 2024-06,16861309.39,16861309.39,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2024-06,6185509.67,6185509.67,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2024-07,412445.74,412445.74,0.0,0.01,OK,GL-derived
+BS balances 2024-07,16986201.4,16986201.4,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2024-07,6481286.89,6481286.89,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2024-08,404724.75,404724.75,0.0,0.01,OK,GL-derived
+BS balances 2024-08,17190411.89,17190411.89,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2024-08,6620076.08,6620076.08,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2024-09,387011.46,387011.46,0.0,0.01,OK,GL-derived
+BS balances 2024-09,17277498.77,17277498.77,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2024-09,6489664.22,6489664.22,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2024-10,496700.27,496700.27,0.0,0.01,OK,GL-derived
+BS balances 2024-10,17593775.63,17593775.63,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2024-10,6510511.22,6510511.22,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2024-11,501371.51,501371.51,0.0,0.01,OK,GL-derived
+BS balances 2024-11,17892233.55,17892233.55,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2024-11,6713022.69,6713022.69,0.0,1.0,OK,Cash and BS
+IS gross profit recomputes 2024-12,526383.06,526383.06,0.0,0.01,OK,GL-derived
+BS balances 2024-12,18109743.64,18109743.64,0.0,1.0,OK,Generated BS
+CF ending cash ties BS 2024-12,6920002.44,6920002.44,0.0,1.0,OK,Cash and BS
+AR aging ties to BS AR,1948898.18,1948898.18,0.0,1.0,OK,Latest period
+AP aging ties to BS AP,951327.57,951327.57,0.0,1.0,OK,Latest period
+Inventory SKU ties to BS inventory,1394859.11,1394859.11,0.0,1.0,OK,Latest period
+FAR NBV ties to BS PP&E,7082569.54,7082569.54,0.0,1.0,OK,Latest period

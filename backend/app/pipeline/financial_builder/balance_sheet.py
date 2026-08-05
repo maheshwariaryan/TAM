@@ -16,7 +16,8 @@ from decimal import Decimal
 from typing import Literal
 
 from app.schemas.financials import BalanceSheet, BalanceSheetRow
-from app.schemas.gl import ChartOfAccountsCategory as CAT, MappedGLLine
+from app.schemas.gl import ChartOfAccountsCategory as CAT
+from app.schemas.gl import MappedGLLine
 
 logger = logging.getLogger(__name__)
 
@@ -59,12 +60,15 @@ _LIABILITY_SECTIONS = {"Current Liabilities", "Non-Current Liabilities"}
 
 
 def build(lines: list[MappedGLLine]) -> BalanceSheet:
-    bs_lines = [l for l in lines if l.financial_statement == "BalanceSheet"]
+    bs_lines = [gl for gl in lines if gl.financial_statement == "BalanceSheet"]
     if not bs_lines:
-        raise ValueError("No BalanceSheet lines in mapped GL. If this is a P&L-only upload, balance sheet analysis is unavailable.")
+        raise ValueError(
+            "No BalanceSheet lines in mapped GL. "
+            "If this is a P&L-only upload, balance sheet analysis is unavailable."
+        )
 
     deal_id = bs_lines[0].deal_id
-    periods = sorted({l.period for l in bs_lines})
+    periods = sorted({gl.period for gl in bs_lines})
 
     # Aggregate by (period, account_code, description, category)
     agg: dict[tuple, Decimal] = defaultdict(Decimal)
@@ -76,7 +80,14 @@ def build(lines: list[MappedGLLine]) -> BalanceSheet:
     for (period, code, desc, cat), gl_amount in sorted(agg.items()):
         section = _SECTION_MAP.get(cat)
         if section is None:
-            logger.debug("Balance sheet category %s has no section mapping — skipping", cat)
+            logger.warning(
+                "Balance sheet: GL line(s) with category %s (account %s, period %s, amount %s) have "
+                "no section mapping — excluded from total_assets/liabilities/equity and the "
+                "is_balanced check. This usually means CoA mapping returned an unexpected category.",
+                cat, code, period, gl_amount,
+                extra={"event": "balance_sheet_category_unmapped", "category": str(cat),
+                       "account_code": code, "period": str(period), "amount": str(gl_amount)},
+            )
             continue
 
         # Presentation sign:

@@ -1,8 +1,7 @@
 """
 Pipeline Orchestrator — coordinates all processing stages for a deal.
 
-This is a stub for Step 1. Full implementation in Step 2+.
-Each stage is run sequentially; status is updated in the deal store after each.
+Runs stages sequentially; status is updated in the deal store after each.
 """
 
 import logging
@@ -16,58 +15,102 @@ STAGE_ORDER = [
     "coa_mapping",
     "financial_builder",
     "qoe_engine",
+    "nwc_analyzer",
+    "net_debt_bridge",
     "redflag_detector",
+    "dcf_engine",
+    "narrative_drafter",
 ]
 
 
 def run(deal_id: str, stages: list[str]) -> None:
     """
     Entry point called as a FastAPI BackgroundTask.
-    Runs each requested stage in order, updating deal status as it goes.
 
-    In Step 2+ each stage delegates to its dedicated pipeline module.
+    This runs after the triggering HTTP response has already been sent (BackgroundTasks
+    execute post-response), so nothing here can ever change that response — the only way
+    the caller learns what happened is via deal_store (polled through /status). That makes
+    this function the last line of defense: every branch below is deliberately paranoid
+    about recording *something* readable, even if the recording itself fails, because a
+    silent hang here is invisible to both the terminal and the client.
     """
     logger.info("Pipeline started for deal %s | stages: %s", deal_id, stages)
 
-    for stage in stages:
-        if stage not in STAGE_ORDER:
-            logger.warning("Unknown stage '%s' — skipping", stage)
-            continue
+    try:
+        for stage in stages:
+            if stage not in STAGE_ORDER:
+                logger.warning("Unknown stage '%s' — skipping", stage)
+                continue
 
-        try:
-            deal_store.set_stage_status(deal_id, stage, "running")
-            logger.info("Stage '%s' started for deal %s", stage, deal_id)
-
-            _run_stage(deal_id, stage)
-
-            deal_store.set_stage_status(deal_id, stage, "complete")
-            logger.info("Stage '%s' complete for deal %s", stage, deal_id)
-
-        except Exception as exc:
-            logger.exception("Stage '%s' failed for deal %s: %s", stage, deal_id, exc)
-            deal_store.set_stage_status(deal_id, stage, "failed")
-            deal_store.update_deal(deal_id, {"error": str(exc)})
-            return  # Abort remaining stages on failure
+            try:
+                deal_store.set_stage_status(deal_id, stage, "running")
+                logger.info("Stage '%s' started for deal %s", stage, deal_id)
+                _run_stage(deal_id, stage, stages)
+                deal_store.set_stage_status(deal_id, stage, "complete")
+                logger.info("Stage '%s' complete for deal %s", stage, deal_id)
+            except Exception as exc:
+                logger.exception("Stage '%s' failed for deal %s: %s", stage, deal_id, exc)
+                _record_failure(deal_id, stage, str(exc))
+                return
+    except Exception as exc:
+        # Anything not already caught above (e.g. a bug in this loop itself) — this is
+        # the absolute last resort before the deal would otherwise sit at "running"
+        # forever with no error ever recorded and no way for the client to find out.
+        logger.exception("Pipeline crashed unexpectedly for deal %s: %s", deal_id, exc)
+        _record_failure(deal_id, "unknown", str(exc))
+        return
 
     logger.info("Pipeline complete for deal %s", deal_id)
 
 
-def _run_stage(deal_id: str, stage: str) -> None:
-    """
-    Dispatches to the appropriate pipeline module.
-    Stages are stubs until their respective implementation steps.
-    """
+def _record_failure(deal_id: str, stage: str, error: str) -> None:
+    """Best-effort failure recording. If deal_store itself is the thing that's broken
+    (corrupted deal file, disk issue), log loudly rather than let a secondary exception
+    here mask the original failure and leave the deal silently stuck at 'running'."""
+    try:
+        deal_store.set_stage_status(deal_id, stage, "failed")
+        deal_store.update_deal(deal_id, {"error": error})
+    except Exception as exc:
+        logger.exception(
+            "Failed to record pipeline failure for deal %s (stage=%s, original_error=%r): %s — "
+            "this deal may now be stuck showing an incomplete status; check the deal file directly.",
+            deal_id, stage, error, exc,
+        )
+
+
+def _run_stage(deal_id: str, stage: str, requested_stages: list[str]) -> None:
     if stage == "ingestion":
         from app.pipeline.ingestion import orchestrator as ingestion_orch
-        lines, report = ingestion_orch.run(deal_id)
+        result = ingestion_orch.run(deal_id)
+        report = result.validation_report
         logger.info(
-            "Ingestion complete: %d lines, %d periods, balanced=%s",
-            len(lines), report.periods_checked, report.is_balanced,
+            "Ingestion complete: %d GL lines, %d periods, balanced=%s, warnings=%d",
+            len(result.gl_lines),
+            report.periods_checked if report else 0,
+            report.is_balanced if report else False,
+            len(result.warnings),
         )
 
     elif stage == "coa_mapping":
-        # CoA mapping is handled as part of financial_builder to share the mapped GL
-        logger.info("coa_mapping is run as part of financial_builder stage — no-op here")
+        # coa_mapping has no independent implementation — it always runs as part
+        # of financial_builder. In the default full-pipeline run both are in
+        # `requested_stages` together, so this is a harmless, expected no-op.
+        # But if a caller ever requests `stages=["coa_mapping"]` on its own
+        # (e.g. a future partial-reprocess API, or a manual /process call),
+        # this branch will still report "complete" having done nothing — worth
+        # a loud warning rather than the same quiet info-level line either way.
+        if "financial_builder" not in requested_stages:
+            logger.warning(
+                "Stage 'coa_mapping' was requested without 'financial_builder' in "
+                "the same run for deal %s — coa_mapping has no independent "
+                "implementation, so this is a complete no-op. It will still be "
+                "marked 'complete' since nothing failed, but no chart-of-accounts "
+                "mapping was actually performed. Include 'financial_builder' in "
+                "`stages` to run it.",
+                deal_id,
+            )
+        else:
+            logger.info("coa_mapping is run as part of financial_builder — no-op here")
 
     elif stage == "financial_builder":
         from app.pipeline.financial_builder import orchestrator as fb_orch
@@ -80,3 +123,19 @@ def _run_stage(deal_id: str, stage: str) -> None:
     elif stage == "redflag_detector":
         from app.pipeline.redflag_detector import orchestrator as rf_orch
         rf_orch.run(deal_id)
+
+    elif stage == "nwc_analyzer":
+        from app.pipeline.nwc_analyzer import orchestrator as nwc_orch
+        nwc_orch.run(deal_id)
+
+    elif stage == "dcf_engine":
+        from app.pipeline.dcf_engine import orchestrator as dcf_orch
+        dcf_orch.run(deal_id)
+
+    elif stage == "net_debt_bridge":
+        from app.pipeline.net_debt_bridge import orchestrator as nd_orch
+        nd_orch.run(deal_id)
+
+    elif stage == "narrative_drafter":
+        from app.pipeline.narrative import orchestrator as narrative_orch
+        narrative_orch.run(deal_id)

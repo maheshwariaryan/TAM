@@ -1,0 +1,622 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+# Cancel a superseded run when a new commit lands on the same PR/branch — avoids
+# burning real-API time/cost on a push that's already been replaced.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Path-based change detection ────────────────────────────────────────────
+  # The pipeline is a DAG, not independent phases: several test files re-derive
+  # ingestion + CoA-mapped GL as their own setup (see tests/conftest.py's
+  # shared_mapped_gl fixture), so a change to ingestion/financial_builder/the CoA
+  # mapper has to trigger every downstream phase's job, not just its own. Anything
+  # under "shared" below is genuinely cross-cutting and triggers every phase.
+  changes:
+    name: Detect changed phases
+    runs-on: ubuntu-latest
+    outputs:
+      ingestion: ${{ steps.filter.outputs.ingestion }}
+      financial_builder: ${{ steps.filter.outputs.financial_builder }}
+      qoe_redflag: ${{ steps.filter.outputs.qoe_redflag }}
+      nwc: ${{ steps.filter.outputs.nwc }}
+      net_debt_dcf: ${{ steps.filter.outputs.net_debt_dcf }}
+      contracts: ${{ steps.filter.outputs.contracts }}
+      narrative: ${{ steps.filter.outputs.narrative }}
+      databook: ${{ steps.filter.outputs.databook }}
+      auth_security: ${{ steps.filter.outputs.auth_security }}
+      notes: ${{ steps.filter.outputs.notes }}
+      documents_api: ${{ steps.filter.outputs.documents_api }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      # fetch-depth: 0 (full history) — dorny/paths-filter needs to diff against the
+      # PR base / previous push commit; a shallow clone risks it falling back to
+      # "treat everything as changed", which is safe but defeats the point here.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          # NOTE: deliberately no YAML anchors/aliases here for "shared + phase-specific"
+          # composition — `- *anchor` as a list item inserts the referenced list as one
+          # *nested* list item (verified via `yaml.safe_load`), not a flattened merge. Each
+          # filter below is a fully explicit, flat list of patterns instead, even though
+          # that duplicates the shared/upstream paths — correctness over DRY-ness for
+          # something this easy to get silently wrong.
+          filters: |
+            shared: &shared
+              - 'backend/app/config.py'
+              - 'backend/app/main.py'
+              - 'backend/app/pipeline_orchestrator.py'
+              - 'backend/app/agents/base.py'
+              - 'backend/app/schemas/**'
+              - 'backend/app/storage/**'
+              - 'backend/app/security/**'
+              - 'backend/app/api/v1/deps.py'
+              - 'backend/pyproject.toml'
+              - 'backend/tests/conftest.py'
+              - 'backend/tests/auth_helpers.py'
+              - '.github/workflows/ci.yml'
+            upstream: &upstream
+              - 'backend/app/config.py'
+              - 'backend/app/main.py'
+              - 'backend/app/pipeline_orchestrator.py'
+              - 'backend/app/agents/base.py'
+              - 'backend/app/schemas/**'
+              - 'backend/app/storage/**'
+              - 'backend/app/security/**'
+              - 'backend/app/api/v1/deps.py'
+              - 'backend/pyproject.toml'
+              - 'backend/tests/conftest.py'
+              - 'backend/tests/auth_helpers.py'
+              - '.github/workflows/ci.yml'
+              - 'backend/app/pipeline/ingestion/**'
+              - 'backend/app/agents/coa_mapper.py'
+              - 'backend/app/pipeline/financial_builder/**'
+            ingestion: *upstream
+            financial_builder: *upstream
+            qoe_redflag:
+              - 'backend/app/config.py'
+              - 'backend/app/main.py'
+              - 'backend/app/pipeline_orchestrator.py'
+              - 'backend/app/agents/base.py'
+              - 'backend/app/schemas/**'
+              - 'backend/app/storage/**'
+              - 'backend/app/security/**'
+              - 'backend/app/api/v1/deps.py'
+              - 'backend/pyproject.toml'
+              - 'backend/tests/conftest.py'
+              - 'backend/tests/auth_helpers.py'
+              - '.github/workflows/ci.yml'
+              - 'backend/app/pipeline/ingestion/**'
+              - 'backend/app/agents/coa_mapper.py'
+              - 'backend/app/pipeline/financial_builder/**'
+              - 'backend/app/pipeline/qoe_engine/**'
+              - 'backend/app/pipeline/redflag_detector/**'
+              - 'backend/app/agents/qoe_reviewer.py'
+              - 'backend/app/agents/redflag_analyst.py'
+              - 'backend/app/api/v1/qoe.py'
+              - 'backend/app/api/v1/redflags.py'
+            nwc:
+              - 'backend/app/config.py'
+              - 'backend/app/main.py'
+              - 'backend/app/pipeline_orchestrator.py'
+              - 'backend/app/agents/base.py'
+              - 'backend/app/schemas/**'
+              - 'backend/app/storage/**'
+              - 'backend/app/security/**'
+              - 'backend/app/api/v1/deps.py'
+              - 'backend/pyproject.toml'
+              - 'backend/tests/conftest.py'
+              - 'backend/tests/auth_helpers.py'
+              - '.github/workflows/ci.yml'
+              - 'backend/app/pipeline/ingestion/**'
+              - 'backend/app/agents/coa_mapper.py'
+              - 'backend/app/pipeline/financial_builder/**'
+              - 'backend/app/pipeline/nwc_analyzer/**'
+              - 'backend/app/api/v1/nwc.py'
+            net_debt_dcf:
+              - 'backend/app/config.py'
+              - 'backend/app/main.py'
+              - 'backend/app/pipeline_orchestrator.py'
+              - 'backend/app/agents/base.py'
+              - 'backend/app/schemas/**'
+              - 'backend/app/storage/**'
+              - 'backend/app/security/**'
+              - 'backend/app/api/v1/deps.py'
+              - 'backend/pyproject.toml'
+              - 'backend/tests/conftest.py'
+              - 'backend/tests/auth_helpers.py'
+              - '.github/workflows/ci.yml'
+              - 'backend/app/pipeline/ingestion/**'
+              - 'backend/app/agents/coa_mapper.py'
+              - 'backend/app/pipeline/financial_builder/**'
+              - 'backend/app/pipeline/net_debt_bridge/**'
+              - 'backend/app/pipeline/dcf_engine/**'
+              - 'backend/app/api/v1/net_debt.py'
+              - 'backend/app/api/v1/dcf.py'
+            contracts:
+              - 'backend/app/config.py'
+              - 'backend/app/main.py'
+              - 'backend/app/pipeline_orchestrator.py'
+              - 'backend/app/agents/base.py'
+              - 'backend/app/schemas/**'
+              - 'backend/app/storage/**'
+              - 'backend/app/security/**'
+              - 'backend/app/api/v1/deps.py'
+              - 'backend/pyproject.toml'
+              - 'backend/tests/conftest.py'
+              - 'backend/tests/auth_helpers.py'
+              - '.github/workflows/ci.yml'
+              - 'backend/app/pipeline/ingestion/**'
+              - 'backend/app/agents/coa_mapper.py'
+              - 'backend/app/pipeline/financial_builder/**'
+              - 'backend/app/pipeline/contracts/**'
+              - 'backend/app/agents/contract_parser.py'
+              - 'backend/app/api/v1/contracts.py'
+            narrative:
+              - 'backend/app/config.py'
+              - 'backend/app/main.py'
+              - 'backend/app/pipeline_orchestrator.py'
+              - 'backend/app/agents/base.py'
+              - 'backend/app/schemas/**'
+              - 'backend/app/storage/**'
+              - 'backend/app/security/**'
+              - 'backend/app/api/v1/deps.py'
+              - 'backend/pyproject.toml'
+              - 'backend/tests/conftest.py'
+              - 'backend/tests/auth_helpers.py'
+              - '.github/workflows/ci.yml'
+              - 'backend/app/pipeline/ingestion/**'
+              - 'backend/app/agents/coa_mapper.py'
+              - 'backend/app/pipeline/financial_builder/**'
+              - 'backend/app/pipeline/narrative/**'
+              - 'backend/app/agents/narrative_drafter.py'
+              - 'backend/app/api/v1/narrative.py'
+            databook:
+              - 'backend/app/config.py'
+              - 'backend/app/main.py'
+              - 'backend/app/pipeline_orchestrator.py'
+              - 'backend/app/agents/base.py'
+              - 'backend/app/schemas/**'
+              - 'backend/app/storage/**'
+              - 'backend/app/security/**'
+              - 'backend/app/api/v1/deps.py'
+              - 'backend/pyproject.toml'
+              - 'backend/tests/conftest.py'
+              - 'backend/tests/auth_helpers.py'
+              - '.github/workflows/ci.yml'
+              - 'backend/app/pipeline/ingestion/**'
+              - 'backend/app/agents/coa_mapper.py'
+              - 'backend/app/pipeline/financial_builder/**'
+              - 'backend/app/pipeline/databook/**'
+              - 'backend/app/api/v1/databook.py'
+            auth_security:
+              - 'backend/app/config.py'
+              - 'backend/app/main.py'
+              - 'backend/app/pipeline_orchestrator.py'
+              - 'backend/app/agents/base.py'
+              - 'backend/app/schemas/**'
+              - 'backend/app/storage/**'
+              - 'backend/app/security/**'
+              - 'backend/app/api/v1/deps.py'
+              - 'backend/pyproject.toml'
+              - 'backend/tests/conftest.py'
+              - 'backend/tests/auth_helpers.py'
+              - '.github/workflows/ci.yml'
+              - 'backend/app/api/v1/notes.py'
+            notes:
+              - 'backend/app/config.py'
+              - 'backend/app/main.py'
+              - 'backend/app/pipeline_orchestrator.py'
+              - 'backend/app/agents/base.py'
+              - 'backend/app/schemas/**'
+              - 'backend/app/storage/**'
+              - 'backend/app/security/**'
+              - 'backend/app/api/v1/deps.py'
+              - 'backend/pyproject.toml'
+              - 'backend/tests/conftest.py'
+              - 'backend/tests/auth_helpers.py'
+              - '.github/workflows/ci.yml'
+              - 'backend/app/api/v1/notes.py'
+              - 'backend/tests/test_storage/test_note_store.py'
+              - 'backend/tests/test_api/test_notes.py'
+            documents_api:
+              - 'backend/app/config.py'
+              - 'backend/app/main.py'
+              - 'backend/app/pipeline_orchestrator.py'
+              - 'backend/app/agents/base.py'
+              - 'backend/app/schemas/**'
+              - 'backend/app/storage/**'
+              - 'backend/app/security/**'
+              - 'backend/app/api/v1/deps.py'
+              - 'backend/pyproject.toml'
+              - 'backend/tests/conftest.py'
+              - 'backend/tests/auth_helpers.py'
+              - '.github/workflows/ci.yml'
+              - 'backend/app/pipeline/ingestion/**'
+              - 'backend/app/agents/coa_mapper.py'
+              - 'backend/app/pipeline/financial_builder/**'
+              - 'backend/app/api/v1/documents.py'
+              - 'backend/app/api/v1/tieouts.py'
+              - 'backend/app/api/v1/financial.py'
+              - 'backend/app/pipeline/ingestion/document_registry.py'
+            frontend:
+              - 'frontend/**'
+
+  # ── Backend: always-run, fast, free ────────────────────────────────────────
+  backend-lint:
+    name: Backend — Ruff
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - run: python -m ruff check .
+
+  backend-unit:
+    name: Backend — unit tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - name: Test (unit — ms-scale, no I/O, no agent calls)
+        env:
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+        run: python -m pytest -m unit --tb=short -q
+
+  # ── Backend: per-phase integration jobs, real Anthropic API, path-gated ────
+  # Each job only runs if `changes` says its phase (or something it depends on)
+  # was touched. All run in parallel — wall-clock time is bounded by the
+  # slowest single phase, not the sum of all of them.
+  backend-ingestion:
+    name: Backend — ingestion
+    needs: changes
+    if: needs.changes.outputs.ingestion == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
+        run: >
+          python -m pytest -m "unit or integration" --tb=short -q
+          tests/test_pipeline/test_ingestion.py
+          tests/test_pipeline/test_multi_document_ingestion.py
+          tests/test_pipeline/test_schedule_ingestion.py
+          tests/test_api/test_ingestion.py
+
+  backend-financial-builder:
+    name: Backend — financial builder
+    needs: changes
+    if: needs.changes.outputs.financial_builder == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
+        run: >
+          python -m pytest -m "unit or integration" --tb=short -q
+          tests/test_pipeline/test_financial_builder.py
+          tests/test_api/test_financials.py
+
+  backend-qoe-redflag:
+    name: Backend — QoE + red flags
+    needs: changes
+    if: needs.changes.outputs.qoe_redflag == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
+        run: >
+          python -m pytest -m "unit or integration" --tb=short -q
+          tests/test_pipeline/test_qoe_and_redflags.py
+          tests/test_api/test_qoe_redflags.py
+
+  backend-nwc:
+    name: Backend — NWC analyzer
+    needs: changes
+    if: needs.changes.outputs.nwc == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
+        run: python -m pytest -m "unit or integration" --tb=short -q tests/test_pipeline/test_nwc_analyzer.py
+
+  backend-net-debt-dcf:
+    name: Backend — net debt + DCF
+    needs: changes
+    if: needs.changes.outputs.net_debt_dcf == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
+        run: python -m pytest -m "unit or integration" --tb=short -q tests/test_pipeline/test_net_debt_and_dcf.py
+
+  backend-contracts:
+    name: Backend — contracts
+    needs: changes
+    if: needs.changes.outputs.contracts == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
+        run: >
+          python -m pytest -m "unit or integration" --tb=short -q
+          tests/test_pipeline/test_contract_analysis.py
+          tests/test_pipeline/test_contract_parser.py
+
+  backend-narrative:
+    name: Backend — narrative
+    needs: changes
+    if: needs.changes.outputs.narrative == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
+        run: python -m pytest -m "unit or integration" --tb=short -q tests/test_pipeline/test_narrative_drafter.py
+
+  backend-databook:
+    name: Backend — databook
+    needs: changes
+    if: needs.changes.outputs.databook == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
+        run: python -m pytest -m "unit or integration" --tb=short -q tests/test_pipeline/test_databook.py
+
+  backend-auth-security:
+    name: Backend — auth + security
+    needs: changes
+    if: needs.changes.outputs.auth_security == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
+        run: >
+          python -m pytest -m "unit or integration" --tb=short -q
+          tests/test_api/test_auth.py
+          tests/test_api/test_authorization.py
+          tests/test_security/
+
+  backend-notes:
+    name: Backend — notes
+    needs: changes
+    if: needs.changes.outputs.notes == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - env:
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+        run: >
+          python -m pytest -m "unit or integration" --tb=short -q
+          tests/test_storage/test_note_store.py
+          tests/test_api/test_notes.py
+
+  backend-documents-api:
+    name: Backend — documents + tie-outs API
+    needs: changes
+    if: needs.changes.outputs.documents_api == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          FILE_ENCRYPTION_KEY: ${{ secrets.FILE_ENCRYPTION_KEY }}
+          USE_MOCK_LLM: "false"
+        run: python -m pytest -m "unit or integration" --tb=short -q tests/test_api/test_middleware.py
+
+  # ── Frontend ────────────────────────────────────────────────────────────────
+  frontend:
+    name: Frontend — lint + build
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  # ── Single required check — add this one job to branch protection instead of
+  # every individual phase job, so adding/renaming a phase later doesn't require
+  # updating required-status-check settings too. Succeeds only if every phase
+  # job that actually ran, passed (skipped jobs don't count against it).
+  ci-gate:
+    name: CI gate
+    if: always()
+    needs:
+      - backend-lint
+      - backend-unit
+      - backend-ingestion
+      - backend-financial-builder
+      - backend-qoe-redflag
+      - backend-nwc
+      - backend-net-debt-dcf
+      - backend-contracts
+      - backend-narrative
+      - backend-databook
+      - backend-auth-security
+      - backend-notes
+      - backend-documents-api
+      - frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check all required jobs succeeded or were skipped
+        run: |
+          echo '${{ toJSON(needs) }}' | python3 -c "
+          import json, sys
+          results = json.load(sys.stdin)
+          bad = {k: v['result'] for k, v in results.items() if v['result'] not in ('success', 'skipped')}
+          if bad:
+              print('Failing jobs:', bad)
+              sys.exit(1)
+          print('All required jobs passed or were skipped.')
+          "

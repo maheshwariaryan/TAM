@@ -16,41 +16,24 @@ from pathlib import Path
 
 import pytest
 
-from app.pipeline.financial_builder.orchestrator import _apply_classifications
-from app.pipeline.ingestion.loader import infer_column_map, load_file
-from app.pipeline.ingestion.normalizer import normalise
-from app.pipeline.qoe_engine import rules as qoe_rules, normalizer as qoe_normalizer
+from app.pipeline.financial_builder import pnl as pnl_builder
+from app.pipeline.qoe_engine import normalizer as qoe_normalizer
+from app.pipeline.qoe_engine import rules as qoe_rules
 from app.pipeline.redflag_detector import rules as rf_rules
-from app.agents.coa_mapper import CoAMapperAgent
-from app.schemas.financials import PnLStatement
 from app.schemas.qoe import QoEAdjustment
 
 FIXTURE_GL = Path(__file__).parent.parent / "fixtures" / "sample_gl.csv"
 DEAL_ID = "test-step4-001"
 
 
-# ─── Shared fixtures ──────────────────────────────────────────────────────────
-
-def _build_mapped_and_pnl():
-    df = load_file(FIXTURE_GL)
-    col_map = infer_column_map(df)
-    raw = normalise(df, col_map, "sample_gl.csv", DEAL_ID)
-    unique_pairs = list({(l.account_code, l.account_description) for l in raw})
-    agent = CoAMapperAgent()
-    cls_map = asyncio.run(agent.map_accounts(unique_pairs))
-    mapped = _apply_classifications(raw, cls_map)
-
-    from app.pipeline.financial_builder import pnl as pnl_builder
-    pnl = pnl_builder.build(mapped)
-    return mapped, pnl
-
-
 # ─── QoE Rules tests ──────────────────────────────────────────────────────────
 
 class TestQoERules:
-    def setup_method(self):
-        self.mapped, self.pnl = _build_mapped_and_pnl()
-        self.candidates = qoe_rules.detect_all(self.mapped, DEAL_ID)
+    @pytest.fixture(scope="class", autouse=True)
+    def _setup(self, request, shared_mapped_gl):
+        request.cls.mapped = shared_mapped_gl
+        request.cls.pnl = pnl_builder.build(shared_mapped_gl)
+        request.cls.candidates = qoe_rules.detect_all(request.cls.mapped, DEAL_ID)
 
     def test_legal_settlement_detected(self):
         legal = [a for a in self.candidates if a.rule_triggered == "LEGAL_SETTLEMENTS"]
@@ -93,12 +76,14 @@ class TestQoERules:
 # ─── QoE Normalizer / Report tests ───────────────────────────────────────────
 
 class TestQoENormalizer:
-    def setup_method(self):
-        self.mapped, self.pnl = _build_mapped_and_pnl()
-        candidates = qoe_rules.detect_all(self.mapped, DEAL_ID)
+    @pytest.fixture(scope="class", autouse=True)
+    def _setup(self, request, shared_mapped_gl):
+        request.cls.mapped = shared_mapped_gl
+        request.cls.pnl = pnl_builder.build(shared_mapped_gl)
+        candidates = qoe_rules.detect_all(request.cls.mapped, DEAL_ID)
         # Simulate mock LLM review: accept all
         approved = [a.model_copy(update={"llm_reviewed": True}) for a in candidates]
-        self.report = qoe_normalizer.build_report(self.pnl, approved, DEAL_ID)
+        request.cls.report = qoe_normalizer.build_report(request.cls.pnl, approved, DEAL_ID)
 
     def test_adjusted_ebitda_gt_reported_every_period(self):
         for pk in self.report.reported_ebitda:
@@ -151,16 +136,18 @@ class TestQoENormalizer:
 # ─── Red Flag Detector tests ──────────────────────────────────────────────────
 
 class TestRedFlagRules:
-    def setup_method(self):
-        self.mapped, self.pnl = _build_mapped_and_pnl()
-        candidates = qoe_rules.detect_all(self.mapped, DEAL_ID)
+    @pytest.fixture(scope="class", autouse=True)
+    def _setup(self, request, shared_mapped_gl):
+        request.cls.mapped = shared_mapped_gl
+        request.cls.pnl = pnl_builder.build(shared_mapped_gl)
+        candidates = qoe_rules.detect_all(request.cls.mapped, DEAL_ID)
         approved = [a.model_copy(update={"llm_reviewed": True}) for a in candidates]
-        self.qoe = qoe_normalizer.build_report(self.pnl, approved, DEAL_ID)
-        self.flags = rf_rules.detect_all(
+        request.cls.qoe = qoe_normalizer.build_report(request.cls.pnl, approved, DEAL_ID)
+        request.cls.flags = rf_rules.detect_all(
             deal_id=DEAL_ID,
-            pnl=self.pnl,
-            mapped_lines=self.mapped,
-            qoe=self.qoe,
+            pnl=request.cls.pnl,
+            mapped_lines=request.cls.mapped,
+            qoe=request.cls.qoe,
         )
 
     def test_flags_present(self):
@@ -205,12 +192,101 @@ class TestRedFlagRules:
                 f"Flag '{flag.title}' has no affected_periods"
 
 
+class TestRedFlagDataQualityRules:
+    """A Fail-severity cross-document mismatch (AR/AP aging vs. balance sheet, or
+    contract-extracted debt vs. balance-sheet debt) must surface as a visible red flag,
+    not just a JSON file nobody looks at."""
+
+    @pytest.fixture(scope="class", autouse=True)
+    def _setup(self, request, shared_mapped_gl):
+        request.cls.mapped = shared_mapped_gl
+        request.cls.pnl = pnl_builder.build(shared_mapped_gl)
+        candidates = qoe_rules.detect_all(request.cls.mapped, DEAL_ID)
+        approved = [a.model_copy(update={"llm_reviewed": True}) for a in candidates]
+        request.cls.qoe = qoe_normalizer.build_report(request.cls.pnl, approved, DEAL_ID)
+
+    def test_cross_doc_tie_out_failure_becomes_high_flag(self):
+        from app.schemas.aging import CrossDocumentValidation, TieOutResult
+
+        cross_validation = CrossDocumentValidation(
+            deal_id=DEAL_ID,
+            tie_outs=[
+                TieOutResult(
+                    name="AR Aging <-> BS AR",
+                    expected=Decimal("262000"),
+                    observed=Decimal("504000"),
+                    difference=Decimal("242000"),
+                    variance_pct=92.4,
+                    tolerance_pct=0.5,
+                    status="Fail",
+                    source_documents=["mismatched_ar_aging.csv"],
+                )
+            ],
+        )
+        flags = rf_rules.detect_all(
+            deal_id=DEAL_ID, pnl=self.pnl, mapped_lines=self.mapped, qoe=self.qoe,
+            cross_validation=cross_validation,
+        )
+        dq_flags = [f for f in flags if f.rule_id == "CROSS_DOC_TIE_OUT_FAILURE"]
+        assert len(dq_flags) == 1
+        assert dq_flags[0].severity == "High"
+        assert dq_flags[0].category == "Data Quality"
+        assert "504,000" in dq_flags[0].description or "504000" in dq_flags[0].description
+
+    def test_net_debt_reconciliation_mismatch_becomes_high_flag(self):
+        from app.schemas.net_debt import NetDebtReport
+
+        net_debt_report = NetDebtReport(
+            deal_id=DEAL_ID,
+            status="complete",
+            message="test",
+            period="2024-12",
+            total_debt=Decimal("1000000"),
+            instrument_principal_total=Decimal("1500000"),
+            reconciliation_variance=Decimal("-500000"),
+            reconciliation_note="Contract-extracted principal differs from balance sheet debt by $500,000.",
+        )
+        flags = rf_rules.detect_all(
+            deal_id=DEAL_ID, pnl=self.pnl, mapped_lines=self.mapped, qoe=self.qoe,
+            net_debt_report=net_debt_report,
+        )
+        dq_flags = [f for f in flags if f.rule_id == "NET_DEBT_RECONCILIATION_MISMATCH"]
+        assert len(dq_flags) == 1
+        assert dq_flags[0].severity == "High"
+        assert dq_flags[0].category == "Data Quality"
+
+    def test_no_flag_when_tie_out_passes(self):
+        from app.schemas.aging import CrossDocumentValidation, TieOutResult
+
+        cross_validation = CrossDocumentValidation(
+            deal_id=DEAL_ID,
+            tie_outs=[
+                TieOutResult(
+                    name="AR Aging <-> BS AR",
+                    expected=Decimal("262000"),
+                    observed=Decimal("262500"),
+                    difference=Decimal("500"),
+                    variance_pct=0.19,
+                    tolerance_pct=0.5,
+                    status="Pass",
+                    source_documents=["sample_ar_aging.csv"],
+                )
+            ],
+        )
+        flags = rf_rules.detect_all(
+            deal_id=DEAL_ID, pnl=self.pnl, mapped_lines=self.mapped, qoe=self.qoe,
+            cross_validation=cross_validation,
+        )
+        assert not [f for f in flags if f.rule_id == "CROSS_DOC_TIE_OUT_FAILURE"]
+
+
 # ─── Agent mock tests ─────────────────────────────────────────────────────────
 
 class TestAgentMocks:
     def test_qoe_reviewer_accepts_all_in_mock(self):
-        from app.agents.qoe_reviewer import QoEReviewerAgent
         from datetime import date
+
+        from app.agents.qoe_reviewer import QoEReviewerAgent
 
         candidates = [
             QoEAdjustment(
@@ -252,3 +328,193 @@ class TestAgentMocks:
         assert len(result) == 1
         assert len(result[0].diligence_questions) == 3
         assert result[0].llm_context is not None
+
+
+# ─── Red Flag rules with Balance Sheet + Cash Flow ────────────────────────────
+
+class TestRedFlagRulesWithBSCF:
+    """
+    Verify detect_all() accepts and uses balance_sheet and cash_flow arguments.
+    With our synthetic fixture the BS/CF-dependent rules don't breach thresholds
+    (AR days ~10d, deferred revenue growing, cash conversion healthy), but the
+    function must run without error, return a valid sorted list, and include all
+    the base flags that fire without BS/CF.
+    """
+
+    @pytest.fixture(scope="class", autouse=True)
+    def _setup(self, request, shared_mapped_gl):
+        from app.pipeline.financial_builder import balance_sheet as bs_builder
+        from app.pipeline.financial_builder import cash_flow as cf_builder
+
+        mapped = shared_mapped_gl
+        pnl = pnl_builder.build(mapped)
+        candidates = qoe_rules.detect_all(mapped, DEAL_ID)
+        approved = [a.model_copy(update={"llm_reviewed": True}) for a in candidates]
+        qoe = qoe_normalizer.build_report(pnl, approved, DEAL_ID)
+
+        bs = bs_builder.build(mapped)
+        cf = cf_builder.build(mapped, pnl, bs)
+
+        request.cls.flags_base = rf_rules.detect_all(
+            deal_id=DEAL_ID, pnl=pnl, mapped_lines=mapped, qoe=qoe,
+        )
+        request.cls.flags_full = rf_rules.detect_all(
+            deal_id=DEAL_ID, pnl=pnl, mapped_lines=mapped, qoe=qoe,
+            balance_sheet=bs, cash_flow=cf,
+        )
+
+    def test_runs_without_error(self):
+        assert isinstance(self.flags_full, list)
+
+    def test_flags_still_sorted_high_first(self):
+        order = {"High": 0, "Medium": 1, "Low": 2, "Informational": 3}
+        severities = [order[f.severity] for f in self.flags_full]
+        assert severities == sorted(severities), "Flags not sorted by severity when BS/CF passed"
+
+    def test_base_flags_all_present(self):
+        """Every flag that fired without BS/CF must still be present."""
+        base_rule_ids = {f.rule_id for f in self.flags_base}
+        full_rule_ids = {f.rule_id for f in self.flags_full}
+        assert base_rule_ids.issubset(full_rule_ids), (
+            f"Rules missing after passing BS/CF: {base_rule_ids - full_rule_ids}"
+        )
+
+    def test_count_at_least_as_large(self):
+        """BS/CF can only add flags, never remove them."""
+        assert len(self.flags_full) >= len(self.flags_base)
+
+    def test_all_flags_valid_structure(self):
+        for f in self.flags_full:
+            assert f.rule_id is not None
+            assert f.severity in {"High", "Medium", "Low", "Informational"}
+            assert len(f.affected_periods) > 0
+            assert len(f.description) > 10
+
+
+# ─── Orchestrator integration tests ───────────────────────────────────────────
+
+_ORCH_DEAL_ID = "test-step4-orch-001"
+
+
+def _setup_orch_pipeline() -> None:
+    """
+    Write sample_gl.csv to the uploads folder and run all four pipeline stages
+    to disk: ingestion → financial_builder → qoe_engine → redflag_detector.
+    """
+    from app.pipeline.financial_builder import orchestrator as fb_orch
+    from app.pipeline.ingestion import orchestrator as ing_orch
+    from app.pipeline.qoe_engine import orchestrator as qoe_orch
+    from app.pipeline.redflag_detector import orchestrator as rf_orch
+    from app.storage import file_store
+
+    file_store.save_upload(_ORCH_DEAL_ID, "sample_gl.csv", FIXTURE_GL.read_bytes())
+
+    ing_orch.run(_ORCH_DEAL_ID)
+    fb_orch.run(_ORCH_DEAL_ID)
+    qoe_orch.run(_ORCH_DEAL_ID)
+    rf_orch.run(_ORCH_DEAL_ID)
+
+
+class TestQoEOrchestrator:
+    """
+    End-to-end disk persistence tests for the QoE and red-flag orchestrators.
+    Runs the full pipeline once per class via setup_class.
+    """
+
+    @classmethod
+    def setup_class(cls):
+        _setup_orch_pipeline()
+
+        from app.config import settings
+        from app.pipeline.qoe_engine.orchestrator import load_qoe_report
+        from app.pipeline.redflag_detector.orchestrator import load_redflag_report
+
+        cls.processed_dir = settings.processed_dir / _ORCH_DEAL_ID
+        cls.qoe_report = load_qoe_report(_ORCH_DEAL_ID)
+        cls.rf_report = load_redflag_report(_ORCH_DEAL_ID)
+
+    # ── QoE persistence ────────────────────────────────────────────────────────
+
+    def test_qoe_report_json_on_disk(self):
+        assert (self.processed_dir / "qoe_report.json").exists()
+
+    def test_qoe_adjusted_gt_reported(self):
+        assert self.qoe_report.ltm_adjusted > self.qoe_report.ltm_reported, (
+            "Adjusted LTM EBITDA must be greater than reported (all planted items are add-backs)"
+        )
+
+    def test_qoe_at_least_4_adjustments(self):
+        """All four planted anomaly types must generate adjustments."""
+        rule_ids = {a.rule_triggered for a in self.qoe_report.adjustments}
+        expected = {
+            "LEGAL_SETTLEMENTS",
+            "MA_TRANSACTION_COSTS",
+            "RELATED_PARTY_CONSULTING",
+            "OWNER_COMP_EXCESS",
+        }
+        assert expected.issubset(rule_ids), (
+            f"Missing adjustment rules: {expected - rule_ids}"
+        )
+
+    def test_qoe_waterfall_balances(self):
+        """Waterfall: base + bars == result (to the cent)."""
+        base = next(w.amount for w in self.qoe_report.waterfall if w.type == "base")
+        bars = sum(
+            w.amount for w in self.qoe_report.waterfall if w.type in ("addback", "deduction")
+        )
+        result = next(w.amount for w in self.qoe_report.waterfall if w.type == "result")
+        assert abs(base + bars - result) < Decimal("0.01"), (
+            f"Waterfall doesn't balance: {base} + {bars} ≠ {result}"
+        )
+
+    def test_qoe_ltm_arithmetic(self):
+        """LTM adjusted == LTM reported + net add-backs (to the cent)."""
+        ltm_periods = set(sorted(self.qoe_report.reported_ebitda.keys())[-12:])
+        net = sum(
+            a.adjustment_amount * (1 if a.direction == "add_back" else -1)
+            for a in self.qoe_report.adjustments
+            if a.period.strftime("%Y-%m") in ltm_periods
+        )
+        expected = self.qoe_report.ltm_reported + net
+        assert abs(self.qoe_report.ltm_adjusted - expected) < Decimal("0.01"), (
+            f"LTM adjusted {self.qoe_report.ltm_adjusted} ≠ expected {expected}"
+        )
+
+    # ── Red Flag persistence ────────────────────────────────────────────────────
+
+    def test_redflag_report_json_on_disk(self):
+        assert (self.processed_dir / "redflag_report.json").exists()
+
+    def test_at_least_3_flags(self):
+        assert len(self.rf_report.flags) >= 3, (
+            f"Expected ≥3 flags, got {len(self.rf_report.flags)}"
+        )
+
+    def test_has_high_severity_flag(self):
+        high = [f for f in self.rf_report.flags if f.severity == "High"]
+        assert len(high) >= 1, "Expected at least one High severity flag"
+
+    def test_related_party_flag_present(self):
+        rp = [f for f in self.rf_report.flags if f.rule_id == "RELATED_PARTY_MATERIAL"]
+        assert len(rp) == 1
+        assert rp[0].severity == "High"
+
+    def test_summary_counts_match_flags(self):
+        s = self.rf_report.summary
+        assert s.high == sum(1 for f in self.rf_report.flags if f.severity == "High")
+        assert s.medium == sum(1 for f in self.rf_report.flags if f.severity == "Medium")
+        assert s.total == len(self.rf_report.flags)
+
+    def test_high_medium_flags_enriched_by_llm(self):
+        """Real LLM enrichment should set diligence_questions on nearly all High/Medium
+        flags. Each flag is enriched via its own independent real API call, and the
+        real model occasionally returns a malformed (non-object) response for a single
+        flag — the pipeline degrades that flag gracefully rather than crashing, so we
+        tolerate at most one such miss per run rather than requiring every flag to
+        succeed (would make this flaky against real, non-deterministic model output)."""
+        high_medium = [f for f in self.rf_report.flags if f.severity in ("High", "Medium")]
+        missing = [f for f in high_medium if len(f.diligence_questions) < 3]
+        assert len(missing) <= 1, (
+            f"Too many High/Medium flags missing diligence questions: "
+            f"{[f.title for f in missing]}"
+        )

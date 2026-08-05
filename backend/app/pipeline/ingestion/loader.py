@@ -12,6 +12,7 @@ This module does NOT interpret or transform data — that is normalizer.py's job
 """
 
 import logging
+from io import BytesIO
 from pathlib import Path
 
 import chardet
@@ -19,7 +20,7 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-SUPPORTED_EXTENSIONS = {".csv", ".xlsx", ".xls"}
+SUPPORTED_EXTENSIONS = {".csv", ".xlsx"}
 
 
 class LoaderError(Exception):
@@ -28,36 +29,47 @@ class LoaderError(Exception):
 
 def load_file(path: str | Path) -> pd.DataFrame:
     """
-    Load a GL file from disk into a raw DataFrame.
+    Load a GL file from disk (as plaintext bytes) into a raw DataFrame.
+
+    This function knows nothing about at-rest encryption — it reads whatever
+    bytes are at `path` as literal file content, which is exactly right for
+    test fixtures and any other plaintext file. Real uploaded documents are
+    encrypted at rest (see app/storage/file_store.py); callers dealing with
+    those must decrypt first (file_store.read_upload_decrypted) and call
+    load_bytes() below with the result — see
+    app/pipeline/ingestion/orchestrator.py::_parse_gl for the production path.
+
     Raises LoaderError with a human-readable message on failure.
     """
     p = Path(path)
     if not p.exists():
         raise LoaderError(f"File not found: {p}")
+    logger.info("Loading %s (%s)", p.name, p.suffix.lower())
+    return load_bytes(p.read_bytes(), p.name)
 
-    suffix = p.suffix.lower()
+
+def load_bytes(raw_bytes: bytes, filename: str) -> pd.DataFrame:
+    """Parse already-in-memory file bytes (e.g. decrypted upload content) into
+    a raw DataFrame. Raises LoaderError with a human-readable message on failure."""
+    suffix = Path(filename).suffix.lower()
     if suffix not in SUPPORTED_EXTENSIONS:
         raise LoaderError(
             f"Unsupported file type '{suffix}'. Accepted: {sorted(SUPPORTED_EXTENSIONS)}"
         )
 
-    logger.info("Loading %s (%s, %.1f KB)", p.name, suffix, p.stat().st_size / 1024)
-
     try:
         if suffix == ".csv":
-            return _load_csv(p)
+            return _load_csv(raw_bytes, filename)
         else:
-            return _load_excel(p)
+            return _load_excel(raw_bytes, filename)
     except LoaderError:
         raise
     except Exception as exc:
-        raise LoaderError(f"Failed to parse '{p.name}': {exc}") from exc
+        raise LoaderError(f"Failed to parse '{filename}': {exc}") from exc
 
 
-def _load_csv(path: Path) -> pd.DataFrame:
+def _load_csv(raw_bytes: bytes, filename: str) -> pd.DataFrame:
     """Load CSV with automatic encoding detection."""
-    raw_bytes = path.read_bytes()
-
     # Detect encoding from the first 50KB — sufficient for most files
     sample = raw_bytes[:50_000]
     detected = chardet.detect(sample)
@@ -70,35 +82,35 @@ def _load_csv(path: Path) -> pd.DataFrame:
     for enc in [encoding, "utf-8", "latin-1"]:
         try:
             df = pd.read_csv(
-                path,
+                BytesIO(raw_bytes),
                 encoding=enc,
                 dtype=str,          # Read everything as string; normalizer handles types
                 keep_default_na=False,
                 skip_blank_lines=True,
             )
             if df.empty:
-                raise LoaderError(f"File '{path.name}' contains no data rows")
+                raise LoaderError(f"File '{filename}' contains no data rows")
             logger.info("Loaded %d rows with encoding '%s'", len(df), enc)
             return df
         except UnicodeDecodeError:
             logger.debug("Encoding '%s' failed, trying next", enc)
             continue
 
-    raise LoaderError(f"Could not decode '{path.name}' with any attempted encoding")
+    raise LoaderError(f"Could not decode '{filename}' with any attempted encoding")
 
 
-def _load_excel(path: Path) -> pd.DataFrame:
+def _load_excel(raw_bytes: bytes, filename: str) -> pd.DataFrame:
     """Load the first sheet of an Excel file."""
     df = pd.read_excel(
-        path,
+        BytesIO(raw_bytes),
         sheet_name=0,
         dtype=str,
         keep_default_na=False,
-        engine="openpyxl" if path.suffix.lower() == ".xlsx" else "xlrd",
+        engine="openpyxl",
     )
     if df.empty:
-        raise LoaderError(f"Excel file '{path.name}' contains no data rows")
-    logger.info("Loaded %d rows from Excel '%s'", len(df), path.name)
+        raise LoaderError(f"Excel file '{filename}' contains no data rows")
+    logger.info("Loaded %d rows from Excel '%s'", len(df), filename)
     return df
 
 
@@ -122,8 +134,8 @@ def infer_column_map(df: pd.DataFrame) -> dict[str, str]:
     mapping: dict[str, str] = {}
 
     # Date / Period
-    date_col = find(["period", "date", "posting date", "transaction date", "gl date",
-                     "accounting date", "post date", "month"])
+    date_col = find(["period", "date", "as of period", "posting date", "transaction date",
+                     "gl date", "accounting date", "post date", "month", "reporting period"])
     if date_col:
         mapping[date_col] = "period"
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { KpiCard } from "@/components/kpi-card";
 import { ChartCard } from "@/components/charts/chart-card";
@@ -13,6 +13,10 @@ import { AnalysisResponseSchema, type Metric } from "@/lib/schemas/types";
 import { useGlobalStore } from "@/lib/store/use-global-store";
 import { MetricTraceModal } from "@/components/modals/metric-trace-modal";
 import { QoeCenter } from "@/components/fdd/qoe-center";
+import { NWCPanel } from "@/components/fdd/nwc-panel";
+import { StatementsPanel } from "@/components/fdd/statements-panel";
+import { CashFlowPanel } from "@/components/fdd/cash-flow-panel";
+import { MarginPanel } from "@/components/fdd/margin-panel";
 
 const subTabs = [
   { key: "qoe", label: "Quality of Earnings" },
@@ -41,6 +45,14 @@ const fallbackMetric: Metric = {
 };
 
 export default function FinancialAnalysisPage() {
+  return (
+    <Suspense fallback={<div className="h-80 animate-pulse rounded-lg bg-muted" />}>
+      <FinancialAnalysisPageContent />
+    </Suspense>
+  );
+}
+
+function FinancialAnalysisPageContent() {
   const params = useSearchParams();
   const router = useRouter();
   const sub = (params.get("sub") as SubTab) || "qoe";
@@ -52,13 +64,11 @@ export default function FinancialAnalysisPage() {
     AnalysisResponseSchema
   );
   const [statementMetric, setStatementMetric] = useState<Metric | null>(null);
-  const [highlightedAdjustmentId, setHighlightedAdjustmentId] = useState<string | null>(null);
   const data = query.data;
   useEffect(() => {
     if (sub !== "qoe" || !focusedAdjustmentId || !data) return;
     const target = data.adjustments.find((row) => row.id.toLowerCase() === focusedAdjustmentId.toLowerCase());
     if (!target) return;
-    setHighlightedAdjustmentId(target.id);
 
     const scrollTimer = window.setTimeout(() => {
       const node = document.querySelector(`[data-adjustment-id="${target.id}"]`);
@@ -67,10 +77,8 @@ export default function FinancialAnalysisPage() {
       }
     }, 220);
 
-    const clearTimer = window.setTimeout(() => setHighlightedAdjustmentId(null), 2200);
     return () => {
       window.clearTimeout(scrollTimer);
-      window.clearTimeout(clearTimer);
     };
   }, [data, focusedAdjustmentId, sub]);
 
@@ -120,6 +128,17 @@ export default function FinancialAnalysisPage() {
     }
 
     if (sub === "revenue") {
+      if (dealId) {
+        return (
+          <Card className="border-dashed">
+            <CardContent className="py-8 text-center text-sm text-muted-foreground">
+              Revenue QoE metrics (customer concentration, churn proxy, period-end recognition %) require
+              customer-level invoice data, which this system does not currently ingest. These metrics are
+              intentionally left unavailable rather than approximated from aggregate GL data.
+            </CardContent>
+          </Card>
+        );
+      }
       const top10 = data.concentration.find((c) => c.label === "Top 10")?.value ?? 0;
       const top5 = data.concentration.find((c) => c.label === "Top 5")?.value ?? 0;
       const largest = data.concentration.find((c) => c.label === "Top 1")?.value ?? 0;
@@ -146,6 +165,9 @@ export default function FinancialAnalysisPage() {
     }
 
     if (sub === "margin") {
+      if (dealId) {
+        return <MarginPanel dealId={dealId} />;
+      }
       const payrollPct = data.opexMix.find((x) => x.name === "Payroll")?.value ?? 35;
       const itPct = data.opexMix.find((x) => x.name === "IT")?.value ?? 10;
       const salesPct = data.opexMix.find((x) => x.name === "Sales")?.value ?? 18;
@@ -171,6 +193,9 @@ export default function FinancialAnalysisPage() {
     }
 
     if (sub === "working-capital") {
+      if (dealId) {
+        return <NWCPanel dealId={dealId} />;
+      }
       const extraWcMetrics: Metric[] = [
         createMetric("wc-peak-trough", "Peak / Trough NWC", `$${Math.max(...data.trend.map((t) => t.nwc)).toFixed(1)}M / $${Math.min(...data.trend.map((t) => t.nwc)).toFixed(1)}M`, "Peak/Trough from trailing monthly NWC"),
         createMetric("wc-pct-revenue", "NWC as % of Revenue", `${((avgNwc / Math.max(revenueLtm / 12, 0.1)) * 100).toFixed(1)}%`, "NWC % Revenue = NWC / Revenue"),
@@ -218,6 +243,9 @@ export default function FinancialAnalysisPage() {
     }
 
     if (sub === "cash-flow") {
+      if (dealId) {
+        return <CashFlowPanel dealId={dealId} />;
+      }
       const conversionThresholdMetrics: Metric[] = [
         createMetric("cash-threshold-60", "Conversion threshold (<60) status", avgCashConversion < 60 ? "Weak" : "Healthy", "Rule: conversion < 60% -> Weak", undefined, avgCashConversion < 60 ? "Amber" : "Green"),
         createMetric("cash-threshold-30", "Conversion threshold (<30) status", avgCashConversion < 30 ? "Triggered" : "Not Triggered", "Rule: conversion < 30% -> High Risk", undefined, avgCashConversion < 30 ? "Red" : "Green"),
@@ -233,6 +261,10 @@ export default function FinancialAnalysisPage() {
           </div>
         </>
       );
+    }
+
+    if (dealId) {
+      return <StatementsPanel dealId={dealId} />;
     }
 
     const incomeRows = [

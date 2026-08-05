@@ -13,7 +13,7 @@ type ChatMessage = {
 };
 
 export function TamLlmSidebar() {
-  const { deal, period, basis } = useGlobalStore();
+  const { deal, dealId, period, basis } = useGlobalStore();
   const theme = useThemeStore((s) => s.theme);
   const isDark = theme === "dark";
   const [open, setOpen] = useState(false);
@@ -50,7 +50,7 @@ export function TamLlmSidebar() {
       const res = await fetch("/api/inquiry/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: text, deal, period, basis }),
+        body: JSON.stringify({ question: text, deal, dealId, period, basis }),
       });
       const json = (await res.json()) as { answer?: string; mode?: string };
       setMessages((prev) => [
