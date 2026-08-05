@@ -38,8 +38,3 @@ class UserPublic(BaseModel):
 
 class ForgotPasswordResponse(BaseModel):
     message: str
-    # POC placeholder for a real email service: in production this endpoint
-    # would email the reset link and NOT return it in the API response. It's
-    # returned here only because there is no email provider wired up yet.
-    reset_token: str
-    reset_url: str

@@ -130,10 +130,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 }
 
 export const forgotPassword = (email: string) =>
-  authRequest<{ message: string; reset_token: string; reset_url: string }>(
-    "/auth/forgot-password",
-    { email }
-  );
+  authRequest<{ message: string }>("/auth/forgot-password", { email });
 
 export const resetPassword = (token: string, newPassword: string) =>
   authRequest<Record<string, never>>("/auth/reset-password", { token, new_password: newPassword });
