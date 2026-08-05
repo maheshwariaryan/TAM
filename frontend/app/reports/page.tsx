@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { InquiryResponseSchema, RiskResponseSchema } from "@/lib/schemas/types";
 import { useGlobalStore } from "@/lib/store/use-global-store";
-import { exportDatabook, getRedFlags, getTieOuts } from "@/lib/api/fdd-client";
+import { exportDatabook, getDecisionQueue } from "@/lib/api/fdd-client";
 import { JuniorAnalystReport } from "@/components/fdd/junior-analyst-report";
 
 export default function ReportsPage() {
@@ -30,15 +30,13 @@ export default function ReportsPage() {
       setRealReadiness(null);
       return;
     }
-    Promise.allSettled([getRedFlags(dealId), getTieOuts(dealId)]).then(([rf, to]) => {
-      const highCount = rf.status === "fulfilled" ? rf.value.summary.high : 0;
-      const mediumCount = rf.status === "fulfilled" ? rf.value.summary.medium : 0;
-      const tieOutFails = to.status === "fulfilled" ? to.value.tie_outs.filter((t) => t.status === "Fail").length : 0;
-      const tieOutWarns = to.status === "fulfilled" ? to.value.tie_outs.filter((t) => t.status === "Warn").length : 0;
-      if (highCount > 0 || tieOutFails > 0) setRealReadiness("Blocked");
-      else if (mediumCount > 0 || tieOutWarns > 0) setRealReadiness("Draft");
-      else setRealReadiness("Ready");
-    });
+    // Single source of truth for a real deal's readiness: the same derived
+    // decision queue the Inquiry page shows, not a second parallel calculation
+    // — the two used to disagree because this page ignored blocking inquiries
+    // while the decision queue's readiness factors them in.
+    getDecisionQueue(dealId)
+      .then((dq) => setRealReadiness(dq.readiness))
+      .catch(() => setRealReadiness(null));
   }, [dealId]);
 
   const handleDatabookExport = async () => {
@@ -76,7 +74,7 @@ export default function ReportsPage() {
         {displayReadiness && (
           <span className={`rounded-full px-3 py-1 text-sm font-semibold ${displayReadiness === "Ready" ? "bg-emerald-100 text-emerald-700" : displayReadiness === "Draft" ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700"}`}>
             Report Readiness: {displayReadiness}
-            {dealId ? " (from red flags + tie-outs)" : ""}
+            {dealId ? " (from decision queue)" : ""}
           </span>
         )}
       </div>
