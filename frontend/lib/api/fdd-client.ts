@@ -206,9 +206,25 @@ export interface FinancialSummary {
 export const getFinancialSummary = (dealId: string) =>
   get<FinancialSummary>(`/deals/${dealId}/financials/summary`);
 
+export interface PnLRow {
+  period: string;
+  category: string;
+  label: string;
+  // Decimal string. Positive = income, negative = expense (economic sign) —
+  // e.g. an opex row's amount is negative, so callers displaying it as a
+  // magnitude or computing a % of revenue need Math.abs().
+  amount: string;
+  is_revenue: boolean;
+  is_cogs: boolean;
+  is_opex: boolean;
+  is_da: boolean;
+  is_below_ebitda: boolean;
+}
+
 export interface PnLStatement {
   deal_id: string;
   periods: string[];
+  rows: PnLRow[];
   revenue: Record<string, string>;
   gross_profit: Record<string, string>;
   ebitda: Record<string, string>;
