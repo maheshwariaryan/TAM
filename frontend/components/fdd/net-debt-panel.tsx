@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
 import { getNetDebt, type NetDebtReport } from "@/lib/api/fdd-client";
 import { cn } from "@/lib/utils/cn";
+import { BridgeChart, type BridgeItem } from "@/components/charts/common-charts";
 
 const fmt = (v: string | number | null) =>
   v === null ? "—" : `$${Math.abs(Number(v)).toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
@@ -45,6 +46,12 @@ export function NetDebtPanel({ dealId }: { dealId: string }) {
     );
   }
 
+  const bridgeItems: BridgeItem[] = report.bridge.map((c, idx) => ({
+    label: c.label,
+    amount: c.amount,
+    type: c.is_subtotal ? "result" : idx === 0 ? "base" : Number(c.amount) < 0 ? "negative" : "positive",
+  }));
+
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-3">
@@ -73,13 +80,16 @@ export function NetDebtPanel({ dealId }: { dealId: string }) {
 
       <Card>
         <CardHeader><CardTitle className="text-sm font-semibold">Net Debt Bridge</CardTitle></CardHeader>
-        <CardContent className="space-y-2">
-          {report.bridge.map((c) => (
-            <div key={c.label} className={cn("flex items-center justify-between rounded border px-3 py-2 text-sm", c.is_subtotal && "bg-muted/50 font-semibold")}>
-              <span>{c.label}</span>
-              <span className={Number(c.amount) < 0 ? "text-emerald-600" : ""}>{fmt(c.amount)}</span>
-            </div>
-          ))}
+        <CardContent className="space-y-4">
+          <BridgeChart items={bridgeItems} />
+          <div className="space-y-2">
+            {report.bridge.map((c) => (
+              <div key={c.label} className={cn("flex items-center justify-between rounded border px-3 py-2 text-sm", c.is_subtotal && "bg-muted/50 font-semibold")}>
+                <span>{c.label}</span>
+                <span className={Number(c.amount) < 0 ? "text-emerald-600" : ""}>{fmt(c.amount)}</span>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
 

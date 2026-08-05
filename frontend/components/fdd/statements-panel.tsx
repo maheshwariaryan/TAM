@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DataTable } from "@/components/tables/data-table";
 import { getPnL, getBalanceSheet, type PnLStatement, type BalanceSheet } from "@/lib/api/fdd-client";
+import { TrendLineChart } from "@/components/charts/common-charts";
+import { lookupByPeriod } from "@/lib/utils/format";
 
 const fmt = (v: string | number) =>
   `$${(Math.abs(Number(v)) / 1_000_000).toFixed(1)}M`;
@@ -55,8 +57,18 @@ export function StatementsPanel({ dealId }: { dealId: string }) {
       })
     : [];
 
+  const trendData = pnl.periods.map((p) => ({
+    month: p.slice(0, 7),
+    revenue: Number((Number(lookupByPeriod(pnl.revenue, p) ?? 0) / 1_000_000).toFixed(2)),
+    adjustedEbitda: Number((Number(lookupByPeriod(pnl.ebitda, p) ?? 0) / 1_000_000).toFixed(2)),
+  }));
+
   return (
     <div className="space-y-4">
+      <Card>
+        <CardHeader><CardTitle className="text-sm font-semibold">Revenue &amp; EBITDA Trend ($M)</CardTitle></CardHeader>
+        <CardContent><TrendLineChart data={trendData} /></CardContent>
+      </Card>
       <DataTable
         title="Standardized Income Statement (Latest Year + Full History)"
         rows={incomeRows}

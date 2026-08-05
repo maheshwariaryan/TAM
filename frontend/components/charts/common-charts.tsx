@@ -10,6 +10,7 @@ import {
   Line,
   LineChart,
   ReferenceArea,
+  ReferenceLine,
   ResponsiveContainer,
   Cell,
   Scatter,
@@ -44,6 +45,10 @@ function useChartPalette() {
     riskLowDot: isDark ? "#22c55e" : "#16a34a",
     riskWatchDot: isDark ? "#f59e0b" : "#d97706",
     riskHighDot: isDark ? "#f43f5e" : "#e11d48",
+    bridgeBase: isDark ? "#818cf8" : "#6366f1",
+    bridgePositive: isDark ? "#4ade80" : "#22c55e",
+    bridgeNegative: isDark ? "#fb7185" : "#ef4444",
+    bridgeResult: isDark ? "#4ade80" : "#22c55e",
   };
 }
 
@@ -191,6 +196,66 @@ export function WaterfallLikeChart({ data, expanded = false }: { data: Array<{ s
             labelStyle={{ color: p.axis }}
           />
           <Bar dataKey="value" fill={p.waterfall} radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+export type BridgeItem = {
+  label: string;
+  amount: string | number;
+  type: "base" | "positive" | "negative" | "result";
+};
+
+const bridgeMoneyFormat = (value: number) =>
+  `$${Math.abs(value).toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+
+/**
+ * Floating-bar bridge/waterfall: each non-base/result item is drawn as a bar
+ * that starts at the running total and rises or falls by its own amount,
+ * via a transparent "base" bar stacked under the visible delta bar.
+ */
+export function BridgeChart({ items, expanded = false }: { items: BridgeItem[]; expanded?: boolean }) {
+  const p = useChartPalette();
+  const bars = items.map((item, i) => {
+    const val = Number(item.amount);
+    const isBase = item.type === "base";
+    const isResult = item.type === "result";
+    const runningTotal = items
+      .slice(0, i)
+      .filter((w) => w.type !== "result")
+      .reduce((sum, w) => (w.type === "base" ? Number(w.amount) : sum + Number(w.amount)), 0);
+
+    return {
+      name: item.label.length > 28 ? item.label.slice(0, 26) + "…" : item.label,
+      fullLabel: item.label,
+      value: isBase || isResult ? val : Math.abs(val),
+      base: isBase || isResult ? 0 : Math.min(runningTotal, runningTotal + val),
+      fill: isBase ? p.bridgeBase : isResult ? p.bridgeResult : val < 0 ? p.bridgeNegative : p.bridgePositive,
+    };
+  });
+
+  return (
+    <div className={expanded ? "h-[420px]" : "h-[280px]"}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={bars} margin={{ top: 10, right: 10, left: 10, bottom: 60 }}>
+          <CartesianGrid strokeDasharray="4 4" stroke={p.grid} />
+          <XAxis dataKey="name" tick={{ fontSize: 11, fill: p.tick }} angle={-35} textAnchor="end" interval={0} axisLine={{ stroke: p.axis }} tickLine={{ stroke: p.axis }} />
+          <YAxis tickFormatter={(v) => `$${(v / 1_000).toFixed(0)}K`} tick={{ fontSize: 11, fill: p.tick }} width={65} axisLine={{ stroke: p.axis }} tickLine={{ stroke: p.axis }} />
+          <Tooltip
+            formatter={(v: number, _name: string, props) => [bridgeMoneyFormat(v), props.payload.fullLabel]}
+            labelFormatter={() => ""}
+            contentStyle={{ backgroundColor: p.tooltipBg, borderColor: p.tooltipBorder, color: p.axis, borderRadius: 10 }}
+            itemStyle={{ color: p.axis }}
+          />
+          <ReferenceLine y={0} stroke={p.axis} />
+          <Bar dataKey="base" stackId="a" fill="transparent" />
+          <Bar dataKey="value" stackId="a" radius={[3, 3, 0, 0]}>
+            {bars.map((b, i) => (
+              <Cell key={i} fill={b.fill} />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>
