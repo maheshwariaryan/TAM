@@ -2,7 +2,9 @@
 Chart of Accounts Mapper Agent.
 
 Maps raw (account_code, account_description) pairs to standardised
-ChartOfAccountsCategory values using OpenAI function calling.
+ChartOfAccountsCategory values using Anthropic tool calling (the _TOOLS
+definition below is written in OpenAI's function-calling shape and
+translated to Anthropic's format by BaseAgent._call — see agents/base.py).
 
 Design:
   - Batches up to 30 unique account pairs per API call to minimise cost
@@ -94,7 +96,8 @@ RULES:
 6. Never return "Memo / Unclassified" unless you have genuinely no basis to classify
 """
 
-# OpenAI function definition for structured output
+# Tool definition in OpenAI's function-calling shape for structured output —
+# translated to Anthropic's tool format by BaseAgent._call() at request time.
 _TOOLS = [
     {
         "type": "function",

@@ -2,7 +2,7 @@
 BaseAgent — shared foundation for all LLM agents in the FDD Engine.
 
 Responsibilities:
-  - Holds the OpenAI async client (one per process, shared across agents)
+  - Holds the Anthropic async client (one per process, shared across agents)
   - Enforces the mock/real mode switch via USE_MOCK_LLM
   - Provides _call() with exponential-backoff retry for transient API errors
   - Tracks token usage per call for cost visibility
@@ -52,7 +52,10 @@ class BaseAgent:
     Subclasses must implement: _build_messages, _tools, _parse_response, _mock_response
     """
 
-    #: Override in subclass with the OpenAI function/tool definitions
+    #: Override in subclass with tool definitions in OpenAI's function-calling
+    #: shape ({"type": "function", "function": {...}}) — _call() below translates
+    #: them to Anthropic's tool format at request time. The client is Anthropic;
+    #: only this one definition format is borrowed from OpenAI's convention.
     _tools: list[dict] = []
 
     #: Name used in logs
