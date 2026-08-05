@@ -45,7 +45,7 @@ def run(deal_id: str, stages: list[str]) -> None:
             try:
                 deal_store.set_stage_status(deal_id, stage, "running")
                 logger.info("Stage '%s' started for deal %s", stage, deal_id)
-                _run_stage(deal_id, stage)
+                _run_stage(deal_id, stage, stages)
                 deal_store.set_stage_status(deal_id, stage, "complete")
                 logger.info("Stage '%s' complete for deal %s", stage, deal_id)
             except Exception as exc:
@@ -78,7 +78,7 @@ def _record_failure(deal_id: str, stage: str, error: str) -> None:
         )
 
 
-def _run_stage(deal_id: str, stage: str) -> None:
+def _run_stage(deal_id: str, stage: str, requested_stages: list[str]) -> None:
     if stage == "ingestion":
         from app.pipeline.ingestion import orchestrator as ingestion_orch
         result = ingestion_orch.run(deal_id)
@@ -92,7 +92,25 @@ def _run_stage(deal_id: str, stage: str) -> None:
         )
 
     elif stage == "coa_mapping":
-        logger.info("coa_mapping is run as part of financial_builder — no-op here")
+        # coa_mapping has no independent implementation — it always runs as part
+        # of financial_builder. In the default full-pipeline run both are in
+        # `requested_stages` together, so this is a harmless, expected no-op.
+        # But if a caller ever requests `stages=["coa_mapping"]` on its own
+        # (e.g. a future partial-reprocess API, or a manual /process call),
+        # this branch will still report "complete" having done nothing — worth
+        # a loud warning rather than the same quiet info-level line either way.
+        if "financial_builder" not in requested_stages:
+            logger.warning(
+                "Stage 'coa_mapping' was requested without 'financial_builder' in "
+                "the same run for deal %s — coa_mapping has no independent "
+                "implementation, so this is a complete no-op. It will still be "
+                "marked 'complete' since nothing failed, but no chart-of-accounts "
+                "mapping was actually performed. Include 'financial_builder' in "
+                "`stages` to run it.",
+                deal_id,
+            )
+        else:
+            logger.info("coa_mapping is run as part of financial_builder — no-op here")
 
     elif stage == "financial_builder":
         from app.pipeline.financial_builder import orchestrator as fb_orch

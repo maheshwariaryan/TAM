@@ -4,9 +4,13 @@ Red Flag Analyst Agent — enriches rule-detected red flags with:
   - Specific diligence questions for the deal team
   - Refined financial impact range estimates
 
-Runs concurrently on High-severity flags via asyncio.gather.
-Medium flags are enriched only if < 10 total (cost control).
-Low/Informational flags use mock enrichment always (not worth the API cost).
+Cost control happens by severity, not by count: the orchestrator
+(redflag_detector/orchestrator.py) only ever sends High and Medium flags to
+enrich() — there is no additional numeric cap on how many Medium flags get
+enriched, and every flag in the batch runs as its own concurrent call via
+asyncio.gather. Low/Informational flags are excluded from the enrichment
+batch entirely and pass through with only their rule-detected fields (no
+llm_context, no diligence_questions, not even mock ones).
 
 Mock: returns templated questions per flag category.
 """
