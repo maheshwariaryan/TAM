@@ -16,6 +16,7 @@ import { QoeCenter } from "@/components/fdd/qoe-center";
 import { NWCPanel } from "@/components/fdd/nwc-panel";
 import { StatementsPanel } from "@/components/fdd/statements-panel";
 import { CashFlowPanel } from "@/components/fdd/cash-flow-panel";
+import { MarginPanel } from "@/components/fdd/margin-panel";
 
 const subTabs = [
   { key: "qoe", label: "Quality of Earnings" },
@@ -165,15 +166,7 @@ function FinancialAnalysisPageContent() {
 
     if (sub === "margin") {
       if (dealId) {
-        return (
-          <Card className="border-dashed">
-            <CardContent className="py-8 text-center text-sm text-muted-foreground">
-              Margin/cost-category breakdowns (marketing %, IT %, rent %, contractor %) require a cost-category
-              mapping this system does not yet produce per GL account. See the Quality of Earnings and Working
-              Capital tabs above for real, backend-computed metrics for this deal.
-            </CardContent>
-          </Card>
-        );
+        return <MarginPanel dealId={dealId} />;
       }
       const payrollPct = data.opexMix.find((x) => x.name === "Payroll")?.value ?? 35;
       const itPct = data.opexMix.find((x) => x.name === "IT")?.value ?? 10;
