@@ -40,9 +40,7 @@ function InquiryPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<InquiryItem | null>(null);
   const [selectedQueueItem, setSelectedQueueItem] = useState<DecisionQueueItem | null>(null);
-  const [queueStatusOverrides, setQueueStatusOverrides] = useState<Record<string, InquiryStatus>>({});
   const [highlightedInquiryId, setHighlightedInquiryId] = useState<string | null>(null);
-  const queueStorageKey = `tam-decision-queue-status:${dealId ?? "none"}`;
 
   const refresh = useCallback(() => {
     if (!dealId) return;
@@ -80,26 +78,7 @@ function InquiryPageContent() {
     return [draft, ...inquiries];
   }, [params, inquiries, dealId]);
 
-  const decisionQueueRows = useMemo(() => {
-    if (!decisionQueue) return [];
-    return decisionQueue.items.map((item) => ({
-      ...item,
-      status: queueStatusOverrides[item.id] ?? item.status,
-    }));
-  }, [decisionQueue, queueStatusOverrides]);
-
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(queueStorageKey);
-      setQueueStatusOverrides(raw ? (JSON.parse(raw) as Record<string, InquiryStatus>) : {});
-    } catch {
-      setQueueStatusOverrides({});
-    }
-  }, [queueStorageKey]);
-
-  useEffect(() => {
-    window.localStorage.setItem(queueStorageKey, JSON.stringify(queueStatusOverrides));
-  }, [queueStatusOverrides, queueStorageKey]);
+  const decisionQueueRows = decisionQueue?.items ?? [];
 
   useEffect(() => {
     const focusType = params.get("focus");
@@ -149,6 +128,19 @@ function InquiryPageContent() {
     if (!dealId || !selected || selected.id === PREFILL_ID) return;
     await deleteInquiry(dealId, selected.id);
     setSelected(null);
+    refresh();
+  };
+
+  const handleQueueItemStatusChange = async (status: InquiryStatus) => {
+    if (!dealId || !selectedQueueItem || selectedQueueItem.source_tab !== "inquiry") return;
+    // Decision queue items are derived fresh every request, never persisted —
+    // this one's status IS the backing InquiryItem's status (source_id ===
+    // inquiry id), so changing it for real means updating that inquiry, then
+    // letting the queue re-derive. Any other source_tab has no backing entity
+    // to update (a tie-out fail or red flag isn't something a status button
+    // can resolve — only fixing the underlying data can).
+    await updateInquiry(dealId, selectedQueueItem.source_id, { status });
+    setSelectedQueueItem(null);
     refresh();
   };
 
@@ -232,7 +224,6 @@ function InquiryPageContent() {
             <div className="space-y-3">
               <h3 className="text-lg font-semibold">{selected.id === PREFILL_ID ? "New Inquiry" : selected.id}</h3>
               <p className="text-sm">{selected.request}</p>
-              <div className="rounded border bg-muted/30 p-3 text-sm">Discussion thread placeholder: analyst comments, seller responses, attachment links.</div>
 
               {selected.id === PREFILL_ID ? (
                 <Button size="sm" onClick={handleSaveDraft}>Save to Tracker</Button>
@@ -278,23 +269,25 @@ function InquiryPageContent() {
                 <p><span className="font-semibold">Blocking:</span> {selectedQueueItem.blocking ? "Yes" : "No"}</p>
                 <p><span className="font-semibold">Source:</span> {selectedQueueItem.source_label}</p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {STATUS_OPTIONS.map((status) => (
-                  <Button
-                    key={status}
-                    variant={status === (queueStatusOverrides[selectedQueueItem.id] ?? selectedQueueItem.status) ? "default" : "outline"}
-                    size="sm"
-                    onClick={() =>
-                      setQueueStatusOverrides((prev) => ({
-                        ...prev,
-                        [selectedQueueItem.id]: status,
-                      }))
-                    }
-                  >
-                    Mark {status}
-                  </Button>
-                ))}
-              </div>
+              {selectedQueueItem.source_tab === "inquiry" ? (
+                <div className="flex flex-wrap gap-2">
+                  {STATUS_OPTIONS.map((status) => (
+                    <Button
+                      key={status}
+                      variant={status === selectedQueueItem.status ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleQueueItemStatusChange(status)}
+                    >
+                      Mark {status}
+                    </Button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  This item is derived from {selectedQueueItem.source_tab} data, not a tracked inquiry —
+                  it clears from the queue once the underlying issue is resolved there, not by a status change here.
+                </p>
+              )}
               <Button onClick={() => router.push(selectedQueueItem.source_url)}>Open Source Context</Button>
             </div>
           ) : null}
