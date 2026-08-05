@@ -14,8 +14,6 @@ const PROTECTED_ROUTES = [
   "/notes",
   "/reports",
   "/settings",
-  "/deal-archive",
-  "/onboarding",
 ];
 
 export function middleware(request: NextRequest) {
