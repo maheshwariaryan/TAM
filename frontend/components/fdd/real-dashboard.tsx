@@ -93,16 +93,27 @@ export function RealDashboard({ dealId }: { dealId: string }) {
   return (
     <div className="space-y-6">
       {dcf && dcf.status === "complete" && dcf.enterprise_value && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-4">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Enterprise Value (DCF)</p>
-            <p className="text-3xl font-semibold leading-tight tracking-tight text-foreground">{fmtMoney(dcf.enterprise_value)}</p>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Enterprise Value (DCF)</p>
+              <p className="text-3xl font-semibold leading-tight tracking-tight text-foreground">{fmtMoney(dcf.enterprise_value)}</p>
+            </div>
+            {dcf.assumptions && (
+              <p className="text-right text-sm text-muted-foreground">
+                {(dcf.assumptions.discount_rate_annual * 100).toFixed(1)}% discount rate ·{" "}
+                {(dcf.assumptions.terminal_growth_rate_annual * 100).toFixed(1)}% terminal growth
+                <br />
+                <span className="text-xs">directional cross-check only</span>
+              </p>
+            )}
           </div>
-          {dcf.assumptions && (
-            <p className="text-sm text-muted-foreground">
-              {(dcf.assumptions.discount_rate_annual * 100).toFixed(1)}% discount rate ·{" "}
-              {(dcf.assumptions.terminal_growth_rate_annual * 100).toFixed(1)}% terminal growth — directional cross-check only
-            </p>
+          {dcf.limitations.length > 0 && (
+            <ul className="mt-3 space-y-1 border-t pt-3 text-xs text-muted-foreground">
+              {dcf.limitations.map((limitation, i) => (
+                <li key={i}>· {limitation}</li>
+              ))}
+            </ul>
           )}
         </div>
       )}
