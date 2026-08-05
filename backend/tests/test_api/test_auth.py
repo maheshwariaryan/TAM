@@ -1,9 +1,11 @@
 """Auth API tests — signup/login/me/logout and the forgot->reset->login flow."""
 
+import re
 import uuid
 
 from fastapi.testclient import TestClient
 
+from app.config import settings
 from app.main import app
 
 
@@ -19,6 +21,21 @@ def _signup(client: TestClient, password: str = "test-password-123") -> tuple[di
     )
     assert resp.status_code == 201, resp.text
     return resp.json(), email
+
+
+def _latest_reset_token_for(email: str) -> str | None:
+    # No SMTP configured in tests, so forgot-password falls back to writing
+    # the reset link to the dev outbox (see app/services/email.py) instead of
+    # returning it in the API response — read it back from there.
+    candidates = sorted(
+        settings.dev_email_outbox_dir.glob(f"*__{email}.txt"),
+        key=lambda p: p.stat().st_mtime,
+    )
+    if not candidates:
+        return None
+    body = candidates[-1].read_text(encoding="utf-8")
+    match = re.search(r"[?&]token=([^\s&]+)", body)
+    return match.group(1) if match else None
 
 
 class TestSignup:
@@ -125,8 +142,8 @@ class TestForgotAndResetPassword:
         )
         assert resp.status_code == 200
         body = resp.json()
-        assert body["reset_token"] == ""
-        assert "message" in body
+        assert set(body.keys()) == {"message"}
+        assert _latest_reset_token_for("nobody-here@example.com") is None
 
     def test_forgot_then_reset_then_login_with_new_password(self):
         signup_client = _fresh_client()
@@ -134,7 +151,8 @@ class TestForgotAndResetPassword:
 
         forgot_resp = signup_client.post("/api/v1/auth/forgot-password", json={"email": email})
         assert forgot_resp.status_code == 200
-        reset_token = forgot_resp.json()["reset_token"]
+        assert set(forgot_resp.json().keys()) == {"message"}
+        reset_token = _latest_reset_token_for(email)
         assert reset_token
 
         reset_resp = signup_client.post(
@@ -168,9 +186,10 @@ class TestForgotAndResetPassword:
         signup_client = _fresh_client()
         _, email = _signup(signup_client, password="original-password-123")
 
-        reset_token = signup_client.post(
-            "/api/v1/auth/forgot-password", json={"email": email}
-        ).json()["reset_token"]
+        forgot_resp = signup_client.post("/api/v1/auth/forgot-password", json={"email": email})
+        assert forgot_resp.status_code == 200
+        reset_token = _latest_reset_token_for(email)
+        assert reset_token
 
         first = signup_client.post(
             "/api/v1/auth/reset-password",

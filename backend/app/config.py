@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     user_store_dir: Path = Path("data/users")
     notes_dir: Path = Path("data/notes")
     inquiries_dir: Path = Path("data/inquiries")
+    # Local-dev-only "sent" mailbox — see app/services/email.py. Never used
+    # when smtp_host is configured, so this stays empty in any real deployment.
+    dev_email_outbox_dir: Path = Path("data/dev_outbox")
 
     # Security — at-rest file encryption + JWT session tokens.
     #
@@ -87,6 +90,24 @@ class Settings(BaseSettings):
             )
         return v
 
+    # Email — outbound mail for password reset, etc.
+    #
+    # If smtp_host is unset (the default), no real email provider is configured
+    # and app/services/email.py falls back to writing each message to
+    # dev_email_outbox_dir instead of sending it — this is the local-dev
+    # equivalent of Django's console email backend / Rails' letter_opener, not
+    # a production delivery path. Set smtp_host (+ the rest) to any real SMTP
+    # relay — SES, SendGrid, Mailgun, Postmark, and Gmail all expose one — to
+    # switch to real delivery; no code changes needed, this is the seam.
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_address: str = "no-reply@tam.local"
+    # Used to build absolute links (e.g. the password reset URL) inside emails,
+    # since the API itself has no notion of where the frontend is hosted.
+    frontend_base_url: str = "http://localhost:3000"
+
     # Server
     cors_origins: list[str] = [
         "http://localhost:3000",
@@ -109,3 +130,4 @@ settings.processed_dir.mkdir(parents=True, exist_ok=True)
 settings.user_store_dir.mkdir(parents=True, exist_ok=True)
 settings.notes_dir.mkdir(parents=True, exist_ok=True)
 settings.inquiries_dir.mkdir(parents=True, exist_ok=True)
+settings.dev_email_outbox_dir.mkdir(parents=True, exist_ok=True)

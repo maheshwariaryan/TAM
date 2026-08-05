@@ -28,6 +28,7 @@ from app.schemas.auth import (
 )
 from app.security.jwt_tokens import create_access_token
 from app.security.passwords import hash_password, verify_password
+from app.services.email import send_password_reset_email
 from app.storage import user_store
 
 logger = logging.getLogger(__name__)
@@ -104,13 +105,12 @@ def forgot_password(body: ForgotPasswordRequest) -> ForgotPasswordResponse:
     user = user_store.get_user_by_email(body.email)
     # Always return the same generic response whether or not the email is
     # registered — otherwise this endpoint becomes an account-enumeration oracle.
-    generic_message = "If an account exists for this email, a reset link has been generated."
+    # The reset link itself is never part of this response either way — it's
+    # emailed (see app/services/email.py), not returned to the caller.
+    generic_message = "If an account exists for this email, a reset link has been sent."
 
     if user is None:
-        # No email service exists yet (see module docstring in jwt_tokens.py's
-        # sibling note below) — for a non-existent user we still must not
-        # return a real token, so respond with an obviously inert placeholder.
-        return ForgotPasswordResponse(message=generic_message, reset_token="", reset_url="")
+        return ForgotPasswordResponse(message=generic_message)
 
     raw_token = secrets.token_urlsafe(32)
     # Tokens are high-entropy random values, not user-chosen secrets, so a
@@ -125,11 +125,9 @@ def forgot_password(body: ForgotPasswordRequest) -> ForgotPasswordResponse:
     })
     logger.info("AUDIT password_reset_requested user_id=%s", user["id"])
 
-    # POC placeholder for a real email provider (SES/SendGrid/etc.): in
-    # production this endpoint would email reset_url and NOT return either
-    # field in the API response. Returning it here is the seam to replace.
-    reset_url = f"/reset-password?token={raw_token}"
-    return ForgotPasswordResponse(message=generic_message, reset_token=raw_token, reset_url=reset_url)
+    reset_url = f"{settings.frontend_base_url}/reset-password?token={raw_token}"
+    send_password_reset_email(to=user["email"], reset_url=reset_url)
+    return ForgotPasswordResponse(message=generic_message)
 
 
 @router.post("/reset-password")

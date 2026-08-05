@@ -11,7 +11,7 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ message: string; resetUrl: string } | null>(null);
+  const [result, setResult] = useState<{ message: string } | null>(null);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -24,7 +24,7 @@ export default function ForgotPasswordPage() {
         setError(res.message);
         return;
       }
-      setResult({ message: res.message, resetUrl: res.reset_url });
+      setResult({ message: res.message });
     } catch {
       setError("Unable to request a password reset");
     } finally {
@@ -46,21 +46,6 @@ export default function ForgotPasswordPage() {
             {result ? (
               <div className="space-y-4">
                 <p className="text-sm text-slate-200">{result.message}</p>
-                {result.resetUrl ? (
-                  <div className="rounded-md border border-amber-400/30 bg-amber-500/10 px-3 py-2">
-                    <p className="text-xs text-amber-200">
-                      No email service is configured for this POC, so here is your reset link
-                      directly:
-                    </p>
-                    <button
-                      type="button"
-                      className="mt-2 break-all text-left text-xs text-cyan-300 underline"
-                      onClick={() => router.push(result.resetUrl)}
-                    >
-                      {result.resetUrl}
-                    </button>
-                  </div>
-                ) : null}
                 <Button type="button" className="w-full" onClick={() => router.push("/login")}>
                   Back to sign in
                 </Button>
